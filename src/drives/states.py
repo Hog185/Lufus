@@ -8,4 +8,3 @@ cluster_size = 0
 QF = 0
 create_extended = 0
 check_bad = 0
-new_label = "Volume Label"

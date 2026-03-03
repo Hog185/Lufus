@@ -16,7 +16,6 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.drives import states
-from src.drives import formatting
 
 
 class LogWindow(QDialog):
@@ -311,7 +310,6 @@ class Rufus(QMainWindow):
         lbl_vol = QLabel("Volume label")
         lbl_vol.setStyleSheet("font-weight: normal; font-size: 9pt; padding-bottom: 2px;")
         self.input_label = QLineEdit("Volume label")
-        self.input_label.textChanged.connect(self.update_new_label)
         
         vol_layout = QVBoxLayout()
         vol_layout.setSpacing(2)
@@ -383,7 +381,7 @@ class Rufus(QMainWindow):
         main_layout.addLayout(self.create_header("Status"))
 
         self.progress_bar = QProgressBar()
-        self.progress_bar.setValue(0)
+        self.progress_bar.setValue(86)
         self.progress_bar.setFormat("")
         main_layout.addWidget(self.progress_bar)
 
@@ -461,10 +459,6 @@ class Rufus(QMainWindow):
         states.target_system = self.combo_target.currentIndex()
         # print(f"Global state updated to: {states.target_system}")
     
-    def update_new_label(self, current_text):
-        states.new_label = current_text
-        # print(f"Stored in state: {states.new_label}")
-    
     def update_cluster_size(self):
         states.cluster_size = self.combo_cluster.currentIndex()
         # print(f"Global state updated to: {states.cluster_size}")
@@ -516,12 +510,6 @@ class Rufus(QMainWindow):
     def about_message(self, msg):
         if hasattr(self, 'about_window'):
             self.log_window.about_text.append(f"Rufus-Py is a disk image writer written in py for linux")
-
-    def ready(self):
-        self.btn_start.setEnabled(True)
-        self.btn_cancel.setEnabled(False)
-        self.progress_bar.setValue(100)
-        self.progress_bar.setFormat("READY FOR ACTION")
 
     def start_process(self):
         self.btn_start.setEnabled(False)

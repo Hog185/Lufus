@@ -3,13 +3,13 @@ import os
 import subprocess
 import getpass
 
-### USB RECOGNITION ###
+###USB RECOGNITION###
 def find_usb():
     usbdict = {}    # DICTIONARY WHERE USB MOUNT PATH IS KEY AND LABEL IS VALUE
     
     # Get current username
     username = getpass.getuser()
-
+    
     # Properly formatted paths with actual username
     paths = ["/media", "/run/media", f"/media/{username}", f"/run/media/{username}"]
     
@@ -48,33 +48,3 @@ def find_usb():
                         print(f"Found USB: {mount_path} -> {label}")
     
     return usbdict
-
-### FOR DEVICE NODE ###
-def find_DN():
-    usbdict = {}    # DICTIONARY WHERE USB MOUNT PATH IS KEY AND LABEL IS VALUE
-    
-    # Get current username
-    username = getpass.getuser()
-
-    # Properly formatted paths with actual username
-    paths = ["/media", "/run/media", f"/media/{username}", f"/run/media/{username}"]
-    
-    # First, collect all possible user directories from media paths
-    all_directories = []
-    for path in paths:
-        if os.path.exists(path) and os.path.isdir(path):
-            try:
-                directories = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-                all_directories.extend([os.path.join(path, d) for d in directories])
-            except PermissionError:
-                print(f"Permission denied accessing {path}")
-                continue
-            except Exception as err:
-                # catching other exceptions makes debugging easier
-                print(f"Error accessing {path}: {err}")
-                continue
-    for part in psutil.disk_partitions():
-        for mount_path in all_directories:
-            if part.mountpoint == mount_path:
-                device_node = part.device
-                return device_node
