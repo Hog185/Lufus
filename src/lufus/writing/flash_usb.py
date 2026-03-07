@@ -7,7 +7,7 @@ from lufus.drives import find_usb as fu
 from lufus.drives import states
 from lufus.writing.detect_windows import is_windows_iso
 from lufus.writing.flash_windows import flash_windows
-from lufus.writing.flash_woeusb import flash_woeusb, _woeusb_available
+from lufus.writing.flash_woeusb import flash_woeusb
 
 
 def pkexecNotFound():
@@ -33,16 +33,16 @@ def FlashUSB(iso_path, raw_device, progress_cb=None, status_cb=None) -> bool:
         if is_windows_iso(iso_path):
             print("Windows ISO detected")
 
-            if _woeusb_available():
-                print("woeusb found — using woeusb")
-                return flash_woeusb(
+            if states.currentflash == 0:
+                print("ISO mode selected - using flash_windows")
+                return flash_windows(
                     raw_device, iso_path,
                     progress_cb=progress_cb,
                     status_cb=status_cb,
                 )
-            else:
-                print("woeusb not found — falling back to built-in flash_windows")
-                return flash_windows(
+            elif states.currentflash == 1:
+                print("Woe USB mode selected - using woeusb")
+                return flash_woeusb(
                     raw_device, iso_path,
                     progress_cb=progress_cb,
                     status_cb=status_cb,

@@ -697,7 +697,7 @@ class lufus(QMainWindow):
         states.currentFS = self.combo_fs.currentIndex()
 
     def updateflash(self):
-        # self.combo_device.clear()
+        self.combo_device.clear()
         states.currentflash = self.combo_flash.currentIndex()
         print(states.currentflash)
     
@@ -736,7 +736,7 @@ class lufus(QMainWindow):
             self.combo_flash.addItems(["None"])
             self.combo_flash.setCurrentText("None")
         self.combo_flash.blockSignals(False)
-        # self.updateflash()
+        self.updateflash()
 
     def update_partition_scheme(self):
         states.partition_scheme = self.combo_partition.currentIndex()

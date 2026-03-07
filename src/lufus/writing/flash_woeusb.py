@@ -3,10 +3,6 @@ import shutil
 import subprocess
 
 
-def _woeusb_available() -> bool:
-    """Check for woeusb or woeusb-ng on PATH."""
-    return shutil.which("woeusb") is not None
-
 
 def flash_woeusb(device: str, iso_path: str, progress_cb=None, status_cb=None) -> bool:
     def _emit(pct: int):
@@ -17,14 +13,6 @@ def flash_woeusb(device: str, iso_path: str, progress_cb=None, status_cb=None) -
         print(msg)
         if status_cb:
             status_cb(msg)
-
-    if not _woeusb_available():
-        _status(
-            "Error: woeusb not found. "
-            "Install with: sudo apt install woeusb  "
-            "or: pip install WoeUSB-ng"
-        )
-        return False
 
     woeusb_args = [
         "sudo",
