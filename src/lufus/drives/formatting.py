@@ -161,7 +161,6 @@ def createextended():
 
 def checkdevicebadblock():
     """Check the device for bad blocks using badblocks.
-
     Requires the drive to be unmounted.  The number of passes is determined by
     states.check_bad (0 = 1 pass read-only, 1 = 2 passes read/write).
     """
