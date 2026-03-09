@@ -90,8 +90,7 @@ menuentry "Power Off" { halt }
             cfg.write(config_content)
         
         subprocess.run(['umount', efi_mount], check=True)
-        print("\nSUCCESS: USB is prepared.")
-        print("You can now manually copy your .iso files to the 'OS_PART' partition.")        
+        print("\nSUCCESS: USB is prepared.")   
         
     except subprocess.CalledProcessError as e:
         print(f"Command failed: {e}")
