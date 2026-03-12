@@ -21,8 +21,6 @@ test_sources = [
 ]
 
 requires = [
-    "PySide6-Essentials~=6.8",
-    # "PySide6-Addons~=6.8",
     "psutil>=7.2.2",
     "pyqt6>=6.10.2",
     "pyudev>=0.24.4"
