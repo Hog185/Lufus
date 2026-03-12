@@ -1,0 +1,91 @@
+key,value
+window_title,lufus
+log_window_title,lufus Log
+about_window_title,Sobre
+settings_window_title,Configurações
+btn_copy_log,Copiar para area de transferência
+btn_save_log,Salvar log...
+dlg_save_log_title,Salvar Log
+save_failed_title,Falha ao salvar
+save_failed_body,Não foi possível salvar o log:
+settings_label_language,Idioma
+settings_no_languages,Nenhum idioma encontrado
+header_drive_properties,Propriedades de disco
+header_format_options,Opções de formatação
+header_status,Status
+lbl_device,Dispositivo
+lbl_boot_selection,Seleção de boot
+lbl_image_option,Opções de imagem
+lbl_partition_scheme,Esquema de partição
+lbl_target_system,Sistema alvo
+lbl_volume_label,Nome do volume
+lbl_file_system,Sistema de arquivos
+lbl_flash_option,Opções de gravação
+lbl_cluster_size,Tamanho do cluster
+combo_image_windows,Instalação normal do Windows
+combo_image_linux,Linux normal
+combo_image_format,Apenas modo de formatação
+combo_partition_gpt,GPT
+combo_partition_mbr,MBR
+combo_target_uefi,UEFI (sem CSM)
+combo_target_bios,BIOS (ou UEFI-CSM)
+combo_cluster_4096,4096 bytes (Padrão)
+combo_cluster_8192,8192 bytes
+combo_badblocks_1pass,1 ciclo
+combo_flash_iso,Modo Iso
+combo_flash_woe,Woe USB
+combo_flash_ventoy,Ventoy
+combo_flash_dd,DD
+combo_flash_none,None
+chk_quick_format,Formatação rapida
+chk_extended_label,Criar arquivos de rótulo e ícone estendidos
+chk_bad_blocks,Checar dispositivo por setores ruims
+btn_select,SELECIONAR
+btn_start,INICIAR
+btn_cancel,CANCELAR
+tooltip_refresh,Recarregar lista de dispositivos (Ctrl+R)
+tooltip_download,Baixar atualizações
+tooltip_about,Sobre
+tooltip_settings,Configurações
+tooltip_log,Log
+status_ready,Pronto
+status_scanning,Escaneando Dispositivos USB
+status_scan_failed,Falha ao escanear dispositivos USB
+status_flashing,Gravando...
+progress_preparing,Preparando...
+progress_complete,Completo! 100%
+progress_failed,Falha
+progress_starting,Iniciando.. 10%
+progress_unmounted,Disco desmontado.. 20%
+progress_formatted,Formatação de disco.. 60%
+progress_label_changed,Mudando rótulo .. 80%
+progress_mount_done,Disco montado.. Completed! 100%
+msgbox_cancel_title,Cancelar
+msgbox_cancel_body,Tem certeza de que deseja cancelar?
+msgbox_success_title,Sucesso
+msgbox_success_body,Disco USB gravado com sucesso!
+msgbox_error_title,Erro
+msgbox_error_body,Falha ao gravar imagem no disco USB.
+msgbox_no_image_title,Sem Imagem.
+msgbox_no_image_body,Por favor selecione um caminho de arquivo valido primeiro.
+msgbox_no_device_title,Sem Dispositvo
+msgbox_no_device_body,Por favor selecione um Dispositivo USB primeiro.
+msgbox_usb_found_title,Novo Dispositivo USB descoberto.
+msgbox_usb_found_body,Dispositivo USB descoberto.
+msgbox_no_devices_title,Sem Dispositivos.
+msgbox_no_devices_body,"Nenhum Dispositivo USB descoberto.
+
+Por favor connecte algum e tente denovo."
+msgbox_scan_error_title,Falha ao Escanear
+msgbox_scan_error_body,Falha ao Escanear Dispostivos USB:
+no_usb_found,Nenhum Dispositivo USB descoberto
+dlg_select_image_title,Selecionar imagem de disco
+dlg_select_image_filter,Imagems ISO (*.iso);;Todos os arquivos (*)
+about_content,"O Lufus é um gravador de imagem escrito em python para o Linux.
+
+É inspirado no Rufus para o Windows.
+
+Version: 1.0.0
+GitHub: github.com/hog185/lufus"
+
+#s1oplus was here meow :3
