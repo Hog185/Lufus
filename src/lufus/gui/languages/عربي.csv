@@ -92,3 +92,26 @@ about_content,"لوفس (lufus) هو برنامج مصنوع بلغة بايثو
 مستوحى من برنامج روفس (rufus) الأصلي لنظام تشغيل ويندوز.
 الإصدار: 1.0.0
 GitHub: github.com/hog185/lufus"
+accessibility_combo_device,اختيار جهاز USB المستهدف للحرق
+accessibility_combo_boot,مسار ملف ISO أو صورة القرص
+accessibility_btn_select,فتح مستعرض الملفات لاختيار صورة قرص
+accessibility_combo_image_option,اختيار ويندوز أو لينيكس أو أي تحميلة أو وضع المحي فقط
+accessibility_combo_partition,GPT لأنظمة UEFI الحديثة و MBR للأنظمة القديمة
+accessibility_combo_target,UEFI للأنظمة الحديثة و BIOS للأجهزة القديمة
+accessibility_input_label,اسم مخصص لجهاز USB بعد المحي والتهيئة
+accessibility_combo_fs,اختيار نظام الملفات لجهاز USB
+accessibility_combo_cluster,حجم وحدة التخصيص لنظام الملفات
+accessibility_combo_flash,اختيار طريقة كتابة الصورة على الجهاز
+accessibility_chk_quick,تخطي مسح القطاعات وإعادة تهيئة نظام الملفات فقط
+accessibility_chk_extended,كتابة ملفات التشغيل التلقائي والأيقونات على الجهاز
+accessibility_chk_badblocks,فحص الجهاز بحثاً عن القطاعات غير القابلة للقراءة قبل الحرق
+accessibility_chk_verify,مقارنة ملف الصورة بالبصمة المتوقعة قبل الحرق
+accessibility_input_hash,لصق بصمة SHA256 السداسية العشرية المكونة من 64 حرفاً للتحقق
+accessibility_progress_bar,يُظهر التقدم الحالي لعملية الحرق أو المحي والتهيئة
+accessibility_btn_start,بدء عملية الحرق أو المحي والتهيئة للجهاز المختار
+accessibility_btn_cancel,إلغاء عملية الحرق أو المحي والتهيئة الجارية
+accessibility_btn_refresh,البحث مجدداً عن أجهزة USB المتصلة
+accessibility_btn_website,فتح الموقع الإلكتروني لمشروع lufus على GitHub
+accessibility_btn_about,عرض معلومات عن برنامج lufus
+accessibility_btn_settings,فتح نافذة الإعدادات
+accessibility_btn_log,فتح عارض السجلات
