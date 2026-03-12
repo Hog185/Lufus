@@ -21,6 +21,16 @@ lufus aims to:
 * Simplify bootable media creation for  Linux users
 * Provide a clean, minimal, and accessible interface
 
+## Running Lufus
+
+Currently, running the project can be done by installing briefcase in a venv with
+```
+python3 -m venv venv
+source venv/bin/activate
+pip install briefcase
+```
+Cloning the project, and running `briefcase dev -r` in the root directory
+
 ## Contributing
 
 Feedback, testing, and contributions are appreciated.
