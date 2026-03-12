@@ -92,3 +92,26 @@ about_content,"Lufus est un programme d'écriture d'images disque écrit en Pyth
 Inspiré par l'outil original Rufus pour Windows.
 Version : 1.0.0
 GitHub : github.com/hog185/lufus"
+accessibility_combo_device,Sélectionner le périphérique USB cible à flasher
+accessibility_combo_boot,Chemin vers le fichier ISO ou l'image disque
+accessibility_btn_select,Ouvrir l'explorateur de fichiers pour choisir une image disque
+accessibility_combo_image_option,Choisir Windows Linux Autre installation ou Formatage uniquement
+accessibility_combo_partition,GPT pour les systèmes UEFI modernes MBR pour le BIOS hérité
+accessibility_combo_target,UEFI pour les systèmes modernes BIOS pour le matériel ancien
+accessibility_input_label,Nom personnalisé du périphérique USB après le formatage
+accessibility_combo_fs,Choisir le format de système de fichiers pour le périphérique USB
+accessibility_combo_cluster,Taille d'unité d'allocation pour le système de fichiers
+accessibility_combo_flash,Choisir la méthode d'écriture de l'image sur le périphérique
+accessibility_chk_quick,Ignorer l'effacement des secteurs et réinitialiser uniquement le système de fichiers
+accessibility_chk_extended,Écrire les fichiers d'exécution automatique et d'icônes sur le périphérique
+accessibility_chk_badblocks,Analyser le périphérique à la recherche de secteurs illisibles avant le flashage
+accessibility_chk_verify,Comparer le fichier image avec un hachage attendu avant le flashage
+accessibility_input_hash,Coller le hachage SHA256 hexadécimal de 64 caractères à vérifier
+accessibility_progress_bar,Affiche la progression actuelle du flashage ou du formatage
+accessibility_btn_start,Lancer le flashage ou le formatage du périphérique USB sélectionné
+accessibility_btn_cancel,Annuler le flashage ou le formatage en cours
+accessibility_btn_refresh,Rechercher à nouveau les périphériques USB connectés
+accessibility_btn_website,Ouvrir le site web du projet lufus sur GitHub
+accessibility_btn_about,Afficher les informations sur lufus
+accessibility_btn_settings,Ouvrir la boîte de dialogue des paramètres
+accessibility_btn_log,Ouvrir le visualiseur de journal
