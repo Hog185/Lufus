@@ -411,10 +411,10 @@ class VerifyWorker(QThread):
 class lufus(QMainWindow):
     def __init__(self, usb_devices=None):
         super().__init__()
+        self.usb_devices = usb_devices or {}
         self.monitor = UsbMonitor()
         self.monitor.device_added.connect(self.on_usb_added)
         self.monitor.device_list_updated.connect(self.update_usb_list)
-        self.usb_devices = usb_devices or {}
 
         self.current_language = getattr(states, "language", "English")
         self._T = load_translations(self.current_language)
@@ -432,6 +432,7 @@ class lufus(QMainWindow):
 
         self._apply_styles()
         self.init_ui()
+        self.update_usb_list(self.monitor.devices)
         self.setAcceptDrops(True)
         self.notifier = NotificationManager(self)
 

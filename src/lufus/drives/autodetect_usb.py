@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal, QSocketNotifier
 import pyudev
 
 
@@ -12,14 +12,19 @@ class UsbMonitor(QObject):
         self.context = pyudev.Context()
         self.monitor = pyudev.Monitor.from_netlink(self.context)
         self.monitor.filter_by(subsystem="block")
+        self.monitor.start()
         self.devices = {}
+
+        self._notifier = QSocketNotifier(
+            self.monitor.fileno(),
+            QSocketNotifier.Type.Read,
+            self,
+        )
+        self._notifier.activated.connect(self._on_socket_ready)
 
         print("UsbMonitor: initializing, scanning existing block devices...")
         self._load_existing()
-
-        self.observer = pyudev.MonitorObserver(self.monitor, callback=self._event)
-        self.observer.start()
-        print("UsbMonitor: udev observer started, watching for hotplug events")
+        print("UsbMonitor: QSocketNotifier active, watching for hotplug events")
 
     def _load_existing(self):
         found = 0
@@ -37,9 +42,15 @@ class UsbMonitor(QObject):
                 )
                 found += 1
         print(f"UsbMonitor: initial scan complete, {found} USB block device(s) found")
-        self.device_list_updated.emit(self.devices)
 
-    def _event(self, device):
+    def _on_socket_ready(self):
+        while True:
+            device = self.monitor.poll(timeout=0)
+            if device is None:
+                break
+            self._handle_event(device)
+
+    def _handle_event(self, device):
         if device.get("DEVTYPE") != "disk":
             return
         if device.get("ID_BUS") != "usb":
