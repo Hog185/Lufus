@@ -1,0 +1,51 @@
+{
+    "colors": {
+        "uni_bg" : "#F4F4F4",
+        "bg": "#F0F0F0",
+        "fg": "#000000",
+        "accent": "#0078D7",
+        "accent_hover": "#4A9FE0",
+        "border_light": "#D0D0D0",
+        "border_dark": "#A0A0A0",
+        "input_bg": "#FFFFFF",
+        "selected_text": "#FFFFFF",
+        "button_bg": "#E1E1E1",
+        "button_hover_bg": "#E5F1FB",
+        "button_pressed_bg": "#D0D0D0",
+        "button_disabled_fg": "#888888",
+        "button_disabled_bg": "#F0F0F0",
+        "button_disabled_border": "#D0D0D0",
+        "tool_button_bg": "#FFFFFF",
+        "tool_button_hover_bg": "#E5F1FB",
+        "tool_button_pressed_bg": "#D0D0D0",
+        "progress_chunk": "#00CC00",
+        "progress_border": "#A0A0A0",
+        "btn_start_pressed": "#00AA00"
+    },
+    "fonts": {
+        "base": 9,
+        "small": 8,
+        "header": 16,
+        "tool": 14
+    },
+    "dimensions": {
+        "combo_height": 28,
+        "combo_radius": 6,
+        "combo_pad_vertical": 4,
+        "combo_pad_horizontal": 6,
+        "combo_dropdown_width": 20,
+        "btn_radius": 6,
+        "btn_pad_vertical": 6,
+        "btn_pad_horizontal": 15,
+        "btn_min_height": 32,
+        "btn_min_width": 100,
+        "tool_size": 32,
+        "progress_height": 22,
+        "progress_radius": 6,
+        "label_padding": 2,
+        "section_padding_vertical": 5,
+        "check_indicator_size": 14,
+        "tool_padding": 4,
+        "tool_border_radius": 6
+    }
+}

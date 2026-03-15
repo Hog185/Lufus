@@ -1,11 +1,6 @@
-import subprocess
-import json
 import sys
 import os
-import urllib.parse
-from pathlib import Path
 from lufus.drives.find_usb import find_usb
-import site
 
 
 def ensure_root():
@@ -19,7 +14,6 @@ def ensure_root():
             or os.path.expanduser("~/.Xauthority"),
             "WAYLAND_DISPLAY": os.environ.get("WAYLAND_DISPLAY"),
             "XDG_RUNTIME_DIR": os.environ.get("XDG_RUNTIME_DIR"),
-            # THIS IS THE FIX: Pass the current PATH so Bedrock can find all strata commands
             "PATH": os.environ.get("PATH"),
             "PYTHONPATH": os.environ.get("PYTHONPATH", ""),
         }
@@ -27,30 +21,25 @@ def ensure_root():
         for key, value in gui_env.items():
             if value:
                 env_args.append(f"{key}={value}")
-        cmd = ["pkexec"] + env_args + [sys.executable] + sys.argv
+        appimage = os.environ.get("APPIMAGE")
+        executable = appimage if appimage else sys.executable
+        cmd = ["pkexec"] + env_args + [executable] + (sys.argv[1:] if appimage else sys.argv)
         os.execvp("pkexec", cmd)
-
+usb_devices = find_usb()
 
 def launch_gui_with_usb_data() -> None:
     ensure_root()
-    usb_devices = find_usb()
-    print("Detected USB devices:", usb_devices)
-    usb_json = json.dumps(usb_devices)
-    encoded_data = urllib.parse.quote(usb_json)
+    #usb_devices = find_usb()
+    #print("Detected USB devices:", usb_devices)
 
-    try:
-        # START WITH ROOT PERMS
-        gui_path = Path(__file__).resolve().with_name("gui.py")
-        subprocess.run([sys.executable, str(gui_path), encoded_data], check=True)
-    except FileNotFoundError as e:
-        print(f"Failed to launch GUI: executable or script not found: {e}")
-        sys.exit(1)
-    except subprocess.CalledProcessError as e:
-        print(f"GUI exited with an error (return code {e.returncode}): {e}")
-        sys.exit(e.returncode or e)
-    except Exception as e:
-        print(f"Unexpected error while launching GUI: {e}")
-        sys.exit(1)
+    from PyQt6.QtWidgets import QApplication
+    from lufus.gui.gui import lufus as LufusWindow
+
+    app = QApplication(sys.argv)
+    app.setStyle("Fusion")
+    window = LufusWindow(usb_devices)
+    window.show()
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":

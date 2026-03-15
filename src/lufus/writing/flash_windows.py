@@ -149,7 +149,30 @@ device: {device}
         _status(f"Formatting {efi} as FAT32 with label BOOT...")
         run(["sudo", "mkfs.vfat", "-F32", "-n", "BOOT", efi])
         _status(f"Formatting {data} as NTFS with label WINDOWS...")
-        run(["sudo", "mkfs.ntfs", "-f", "-L", "WINDOWS", data])
+        ntfs_cmd = None
+        for candidate in ["mkfs.ntfs", "mkntfs"]:
+            if subprocess.run(["which", candidate], capture_output=True).returncode == 0:
+                ntfs_cmd = candidate
+                break
+        if ntfs_cmd is None:
+            _status("ntfs-3g not found, attempting to install...")
+            pkg_managers = [
+                ["apt-get", "install", "-y", "ntfs-3g"],
+                ["dnf", "install", "-y", "ntfs-3g"],
+                ["pacman", "-S", "--noconfirm", "ntfs-3g"],
+                ["zypper", "install", "-y", "ntfs-3g"],
+            ]
+            for pm_cmd in pkg_managers:
+                if subprocess.run(["which", pm_cmd[0]], capture_output=True).returncode == 0:
+                    subprocess.run(["sudo"] + pm_cmd, check=True)
+                    break
+            for candidate in ["mkfs.ntfs", "mkntfs"]:
+                if subprocess.run(["which", candidate], capture_output=True).returncode == 0:
+                    ntfs_cmd = candidate
+                    break
+        if ntfs_cmd is None:
+            raise FileNotFoundError("mkfs.ntfs / mkntfs not found. Install ntfs-3g: sudo pacman -S ntfs-3g")
+        run(["sudo", ntfs_cmd, "-f", "-L", "WINDOWS", data])
         _emit(22)
 
         _status(f"Mounting {efi} -> {mount_efi}")
@@ -158,6 +181,20 @@ device: {device}
         run(["sudo", "mount", data, mount_data])
 
         try:
+            if subprocess.run(["which", "7z"], capture_output=True).returncode != 0:
+                _status("7z not found, attempting to install...")
+                pkg_managers = [
+                    ["apt-get", "install", "-y", "p7zip-full"],
+                    ["dnf", "install", "-y", "p7zip-plugins"],
+                    ["pacman", "-S", "--noconfirm", "p7zip"],
+                    ["zypper", "install", "-y", "p7zip-full"],
+                ]
+                for pm_cmd in pkg_managers:
+                    if subprocess.run(["which", pm_cmd[0]], capture_output=True).returncode == 0:
+                        subprocess.run(["sudo"] + pm_cmd, check=True)
+                        break
+                if subprocess.run(["which", "7z"], capture_output=True).returncode != 0:
+                    raise FileNotFoundError("7z not found. Install p7zip: sudo pacman -S p7zip")
             _status(f"Extracting ISO {iso} to {host_extract} with 7z...")
             run(["7z", "x", iso, f"-o{host_extract}", "-y"])
             extracted = os.listdir(host_extract)
@@ -222,10 +259,13 @@ device: {device}
             run(["sudo", "sync"])
             _emit(97)
             _status("Sync complete")
+        except Exception as e:
+            _status(f"flash_windows: ERROR - {type(e).__name__}: {e}")
+            raise
         finally:
             _status(f"Unmounting {mount_efi} and {mount_data}...")
-            run(["sudo", "umount", mount_efi])
-            run(["sudo", "umount", mount_data])
+            subprocess.run(["sudo", "umount", mount_efi], capture_output=True)
+            subprocess.run(["sudo", "umount", mount_data], capture_output=True)
             _status("Unmount complete")
 
         _status("flash_windows: finished successfully, Windows USB is ready")

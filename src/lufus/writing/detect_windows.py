@@ -1,8 +1,35 @@
 import subprocess
+import re
+
+
+def _read_iso_label(iso_path: str) -> str:
+    try:
+        with open(iso_path, "rb") as f:
+            f.seek(32808)
+            return f.read(32).decode("ascii", errors="replace").strip()
+    except Exception:
+        return ""
+
+
+def _label_is_windows(label: str) -> bool:
+    label = label.upper()
+    if label.startswith("WIN") or label.startswith("WINDOWS"):
+        return True
+    if label == "ESD-ISO":
+        return True
+    if re.search(r"CC[A-Z]+_[A-Z0-9]+FRE_", label):
+        return True
+    return False
 
 
 def is_windows_iso(iso_path: str) -> bool:
     print(f"Windows detection: checking {iso_path}")
+
+    label = _read_iso_label(iso_path)
+    print(f"Windows detection: ISO volume label={label!r}")
+    if label and _label_is_windows(label):
+        print("Windows detection: Windows label match -> Windows ISO confirmed via ISO header")
+        return True
 
     try:
         print("Windows detection: running 7z to list ISO contents...")
@@ -15,13 +42,12 @@ def is_windows_iso(iso_path: str) -> bool:
             markers = [
                 "sources/install.wim",
                 "sources/install.esd",
+                "sources/install.swm",
+                "sources/boot.wim",
                 "sources\\install.wim",
                 "sources\\install.esd",
-                "base.pkg",  # macOS
-                "basesystem.dmg",  # macOS
-                "boot.catalog",  # Common for many ISOs including BSD
-                "boot/kernel/kernel",  # FreeBSD
-                "boot/loader",  # BSD
+                "sources\\install.swm",
+                "sources\\boot.wim",
             ]
             for marker in markers:
                 if marker in files:
@@ -49,13 +75,13 @@ def is_windows_iso(iso_path: str) -> bool:
             text=True,
             timeout=10,
         )
-        label = result.stdout.strip().upper()
+        blkid_label = result.stdout.strip()
         print(
-            f"Windows detection: blkid returned label={label!r} (exit code {result.returncode})"
+            f"Windows detection: blkid returned label={blkid_label!r} (exit code {result.returncode})"
         )
-        if "WIN" in label or "WINDOWS" in label:
+        if _label_is_windows(blkid_label):
             print(
-                f"Windows detection: Windows label match -> Windows ISO confirmed via label"
+                f"Windows detection: Windows label match -> Windows ISO confirmed via blkid"
             )
             return True
         print("Windows detection: label does not match Windows patterns")
