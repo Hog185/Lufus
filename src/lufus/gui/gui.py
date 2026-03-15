@@ -443,7 +443,18 @@ class lufus(QMainWindow):
         self._T = load_translations(self.current_language)
 
         self.setWindowTitle(self._T.get("window_title", "lufus"))
-        self.setFixedSize(640, 1000)
+
+        screen = QApplication.primaryScreen().availableGeometry()
+        aspect = Scale.DESIGN_W / Scale.DESIGN_H
+        win_w = int(screen.width() * 0.450)
+        win_h = int(win_w / aspect)
+        if win_h > screen.height() * 1:
+            win_h = int(screen.height() * 1)
+            win_w = int(win_h * aspect)
+        ui_factor = win_w / Scale.DESIGN_W
+        self._S = Scale(QApplication.instance(), factor=ui_factor)
+        self.setFixedSize(win_w, win_h)
+
         self.flash_worker = None
         self.verify_worker = None
         self.log_window = None
@@ -538,7 +549,7 @@ class lufus(QMainWindow):
 
     def create_header(self, text):
         layout = QHBoxLayout()
-        layout.setContentsMargins(0, 5, 0, 5)
+        layout.setContentsMargins(0, self._S.px(10), 0, self._S.px(5))
         label = QLabel(text)
         label.setObjectName("sectionHeader")
         line = QFrame()
@@ -593,9 +604,9 @@ class lufus(QMainWindow):
 
 
     def init_ui(self):
-        """Initialize the user interface"""
-        FIELD_SPACING = 2
-        GROUP_SPACING = 6
+        S = self._S
+        FIELD_SPACING = S.px(2)
+        GROUP_SPACING = S.px(10)
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -619,7 +630,7 @@ class lufus(QMainWindow):
         main_layout.addLayout(
             self.create_header(self._T.get("header_drive_properties", "Drive Properties"))
         )
-        main_layout.addSpacing(2)
+        main_layout.addSpacing(S.px(4))
 
         self.lbl_device = QLabel(self._T.get("lbl_device", "Device"))
         self.combo_device = QComboBox()
@@ -697,12 +708,12 @@ class lufus(QMainWindow):
         grid_part.addWidget(self.combo_target, 1, 1)
         main_layout.addLayout(grid_part)
 
-        main_layout.addSpacing(10)
+        main_layout.addSpacing(S.px(16))
 
         main_layout.addLayout(
             self.create_header(self._T.get("header_format_options", "Format Options"))
         )
-        main_layout.addSpacing(2)
+        main_layout.addSpacing(S.px(4))
 
         self.lbl_vol = QLabel(self._T.get("lbl_volume_label", "Volume Label"))
         self.input_label = QLineEdit(self._T.get("lbl_volume_label", "Volume Label"))
@@ -791,13 +802,12 @@ class lufus(QMainWindow):
         main_layout.addLayout(chk_layout)
 
         main_layout.addStretch()
-
-        main_layout.addSpacing(10)
+        main_layout.addSpacing(S.px(16))
 
         main_layout.addLayout(
             self.create_header(self._T.get("header_status", "Status"))
         )
-        main_layout.addSpacing(2)
+        main_layout.addSpacing(S.px(4))
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setValue(0)
