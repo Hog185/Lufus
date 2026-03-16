@@ -1,5 +1,8 @@
 from PyQt6.QtCore import QObject, pyqtSignal, QSocketNotifier
 import pyudev
+from lufus.lufus_logging import get_logger
+
+log = get_logger(__name__)
 
 
 class UsbMonitor(QObject):
@@ -22,9 +25,9 @@ class UsbMonitor(QObject):
         )
         self._notifier.activated.connect(self._on_socket_ready)
 
-        print("UsbMonitor: initializing, scanning existing block devices...")
+        log.info("UsbMonitor: initializing, scanning existing block devices...")
         self._load_existing()
-        print("UsbMonitor: QSocketNotifier active, watching for hotplug events")
+        log.info("UsbMonitor: QSocketNotifier active, watching for hotplug events")
 
     def _load_existing(self):
         found = 0
@@ -38,12 +41,13 @@ class UsbMonitor(QObject):
                 model = device.get("ID_MODEL") or "unknown model"
                 serial = device.get("ID_SERIAL_SHORT") or "no serial"
                 self.devices[node] = label
-                print(
-                    f"UsbMonitor: found existing USB device: {node} label={label!r} "
-                    f"vendor={vendor!r} model={model!r} serial={serial!r}"
+                log.info(
+                    "UsbMonitor: found existing USB device: %s label=%r "
+                    "vendor=%r model=%r serial=%r",
+                    node, label, vendor, model, serial,
                 )
                 found += 1
-        print(f"UsbMonitor: initial scan complete, {found} USB block device(s) found")
+        log.info("UsbMonitor: initial scan complete, %d USB block device(s) found", found)
 
     def _on_socket_ready(self):
         while True:
@@ -60,7 +64,9 @@ class UsbMonitor(QObject):
 
         node = device.device_node
         if not node:
-            print(f"UsbMonitor: ignoring event with no device_node (action={device.action})")
+            log.warning(
+                "UsbMonitor: ignoring event with no device_node (action=%s)", device.action
+            )
             return
 
         action = device.action
@@ -68,27 +74,27 @@ class UsbMonitor(QObject):
         vendor = device.get("ID_VENDOR") or "unknown vendor"
         model = device.get("ID_MODEL") or "unknown model"
 
-        print(
-            f"UsbMonitor: udev event -> action={action}, node={node}, label={label!r}, "
-            f"vendor={vendor!r}, model={model!r}"
+        log.info(
+            "UsbMonitor: udev event -> action=%s, node=%s, label=%r, vendor=%r, model=%r",
+            action, node, label, vendor, model,
         )
 
         changed = False
         if action == "add":
             self.devices[node] = label
-            print(f"UsbMonitor: device added: {node} ({label})")
+            log.info("UsbMonitor: device added: %s (%s)", node, label)
             self.device_added.emit(node)
             changed = True
         elif action == "remove":
             if node in self.devices:
                 removed_label = self.devices.pop(node)
-                print(
-                    f"UsbMonitor: device removed: {node} (was labeled {removed_label!r})"
+                log.info(
+                    "UsbMonitor: device removed: %s (was labeled %r)", node, removed_label
                 )
                 self.device_removed.emit(node)
                 changed = True
             else:
-                print(f"UsbMonitor: remove event for unknown node {node}, ignoring")
+                log.warning("UsbMonitor: remove event for unknown node %s, ignoring", node)
 
         if changed:
             self.device_list_updated.emit(self.devices)
