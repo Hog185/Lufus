@@ -23,8 +23,31 @@ def unexpected():
     print("An unexpected error occurred")
 
 
-def FlashUSB(iso_path, raw_device, progress_cb=None, status_cb=None) -> bool:
-    def _status(msg):
+def _strip_partition_suffix(device: str) -> str:  # [ANNOTATION] Extract helper so NVMe/MMC/SCSI stripping is testable in isolation.
+    """Strip a partition number suffix to get the raw block device.
+
+    Handles NVMe (/dev/nvme0n1p1 -> /dev/nvme0n1), MMC
+    (/dev/mmcblk0p1 -> /dev/mmcblk0), and standard SCSI/SATA/USB
+    (/dev/sdb1 -> /dev/sdb). Returns the input unchanged if no
+    partition suffix is found.
+    """
+    # NVMe: /dev/nvmeXnYpZ -> /dev/nvmeXnY
+    m = re.match(r"^(/dev/nvme\d+n\d+)p\d+$", device)  # [ANNOTATION] Dedicated NVMe pattern prevents stripping 'n1' number from device name.
+    if m:
+        return m.group(1)
+    # MMC/eMMC: /dev/mmcblkXpY -> /dev/mmcblkX
+    m = re.match(r"^(/dev/mmcblk\d+)p\d+$", device)  # [ANNOTATION] Dedicated MMC pattern handles 'p' separator correctly.
+    if m:
+        return m.group(1)
+    # Standard SCSI/SATA/USB: /dev/sdXN -> /dev/sdX
+    m = re.match(r"^(/dev/[a-z]+)\d+$", device)  # [ANNOTATION] Restrict to letter-only base name so numeric device names aren't mangled.
+    if m:
+        return m.group(1)
+    return device
+
+
+def FlashUSB(iso_path: str, raw_device: str, progress_cb=None, status_cb=None) -> bool:  # [ANNOTATION] Add type hints to public function signature for clarity.
+    def _status(msg: str) -> None:
         print(msg)
         if status_cb:
             status_cb(msg)
@@ -32,7 +55,7 @@ def FlashUSB(iso_path, raw_device, progress_cb=None, status_cb=None) -> bool:
     _status(f"FlashUSB called: iso={iso_path}, device={raw_device}")
 
     original_device = raw_device
-    raw_device = re.sub(r"[0-9]+$", "", raw_device)
+    raw_device = _strip_partition_suffix(raw_device)  # [ANNOTATION] Use dedicated helper instead of bare re.sub which broke NVMe device names.
     if raw_device != original_device:
         _status(f"Stripped partition suffix: {original_device} -> {raw_device}")
 
@@ -49,7 +72,7 @@ def FlashUSB(iso_path, raw_device, progress_cb=None, status_cb=None) -> bool:
         else:
             _status(f"Not an ISO file ({os.path.basename(iso_path)}), skipping ISO signature check")
 
-        _status(f"Checking if image contains installation markers...")
+        _status("Checking if image contains installation markers...")
         if is_windows_iso(iso_path):
             _status("OS Installation media detected, routing to flash_windows (ISO mode)")
             return flash_windows(
@@ -76,15 +99,20 @@ def FlashUSB(iso_path, raw_device, progress_cb=None, status_cb=None) -> bool:
             f"Writing {iso_size:,} bytes to {raw_device}, this may take several minutes..."
         )
 
-        process = subprocess.Popen(
-            dd_args, stderr=subprocess.PIPE, stdout=subprocess.DEVNULL
-        )
+        try:  # [ANNOTATION] Wrap Popen in inner try so FileNotFoundError returns False instead of propagating.
+            process = subprocess.Popen(
+                dd_args, stderr=subprocess.PIPE, stdout=subprocess.DEVNULL
+            )
+        except FileNotFoundError:  # [ANNOTATION] Catch missing 'dd' binary explicitly and return False gracefully.
+            _status("Flash failed: 'dd' utility not found. Install coreutils.")
+            return False
+
         _status(f"dd process started with PID {process.pid}")
 
         buf = b""
         last_pct = -1
         while True:
-            chunk = process.stderr.read(256)
+            chunk = process.stderr.readline()  # [ANNOTATION] Use readline() instead of read(256) to avoid partial-line parsing and potential blocking on exit.
             if not chunk:
                 break
             buf += chunk
@@ -115,6 +143,9 @@ def FlashUSB(iso_path, raw_device, progress_cb=None, status_cb=None) -> bool:
         _status(f"dd completed successfully: {iso_path} -> {raw_device}")
         return True
 
+    except OSError as e:  # [ANNOTATION] Catch OSError from os.path.getsize (missing file) so callers always get False not an exception.
+        _status(f"Flash failed with OSError: {e}")
+        return False
     except subprocess.CalledProcessError as e:
         _status(
             f"Flash failed with CalledProcessError: returncode={e.returncode}, cmd={e.cmd}"
