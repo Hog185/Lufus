@@ -67,23 +67,40 @@ class TestStatesTypeAnnotations:
     """
 
     def test_all_int_fields_annotated(self):
-        import inspect
-        src = inspect.getsource(states)
-        for name in ("currentFS", "image_option", "partition_scheme",
-                     "target_system", "cluster_size", "QF",
-                     "create_extended", "check_bad", "currentflash"):
-            assert f"{name}: int" in src, f"{name} missing int annotation"
+        annotations = getattr(states, "__annotations__", {})
+        for name in (
+            "currentFS",
+            "image_option",
+            "partition_scheme",
+            "target_system",
+            "cluster_size",
+            "QF",
+            "create_extended",
+            "check_bad",
+            "currentflash",
+        ):
+            assert name in annotations, f"{name} missing int annotation"
+            anno = annotations[name]
+            assert anno is int or anno == "int", (
+                f"{name} annotation is {anno!r}, expected int"
+            )
 
     def test_all_str_fields_annotated(self):
-        import inspect
-        src = inspect.getsource(states)
+        annotations = getattr(states, "__annotations__", {})
         for name in ("new_label", "iso_path", "DN", "language", "expected_hash"):
-            assert f"{name}: str" in src, f"{name} missing str annotation"
+            assert name in annotations, f"{name} missing str annotation"
+            anno = annotations[name]
+            assert anno is str or anno == "str", (
+                f"{name} annotation is {anno!r}, expected str"
+            )
 
     def test_bool_fields_annotated(self):
-        import inspect
-        src = inspect.getsource(states)
-        assert "verify_hash: bool" in src
+        annotations = getattr(states, "__annotations__", {})
+        assert "verify_hash" in annotations, "verify_hash missing bool annotation"
+        anno = annotations["verify_hash"]
+        assert anno is bool or anno == "bool", (
+            f"verify_hash annotation is {anno!r}, expected bool"
+        )
 
     def test_default_values_correct_types(self):
         assert isinstance(states.currentFS, int)
