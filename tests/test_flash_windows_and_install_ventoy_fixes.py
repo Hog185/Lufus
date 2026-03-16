@@ -33,11 +33,12 @@ class TestFlashWindowsImports:
         # If Optional/Callable were still imported they'd be attributes
         assert not hasattr(mod, "Optional"), "Optional should not be imported"
         assert not hasattr(mod, "Callable"), "Callable should not be imported"
-      
+
 class TestRunOutRemoved:
     def test_run_out_no_longer_present(self):
         """run_out() was dead code — it should be gone."""
         assert not hasattr(fw_module, "run_out"), "run_out() dead code should be removed"
+
 
 class TestFlashWindowsOsErrorOnMissingIso:
     """Before the fix, flash_windows(...) with a missing ISO raised OSError.
