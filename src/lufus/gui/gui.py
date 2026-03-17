@@ -6,6 +6,7 @@ import os
 import csv
 import platform
 import getpass
+from typing import Dict, Any
 from platformdirs import user_config_dir
 from datetime import datetime
 from glob import glob
@@ -45,6 +46,7 @@ from PyQt6.QtCore import (
 from PyQt6.QtGui import QFont, QFontDatabase
 from lufus.drives import states
 from lufus.drives.autodetect_usb import UsbMonitor
+from lufus.lufus_logging import get_logger
 
 THEME_DIR = Path(__file__).parent / 'themes'
 
@@ -487,9 +489,20 @@ class FlashWorker(QThread):
             sys.stdout = _saved_stdout
 
 
+_LOG_LEVELS = {
+    "DEBUG":    ("debug",    "#888888"),
+    "INFO":     ("info",     None),
+    "WARN":     ("warning",  "#f0a500"),
+    "WARNING":  ("warning",  "#f0a500"),
+    "ERROR":    ("error",    "#e05555"),
+    "CRITICAL": ("critical", "#e05555"),
+}
+
+
 class lufus(QMainWindow):
     def __init__(self, usb_devices=None, scale: Scale = None):
         super().__init__()
+        self._logger = get_logger("gui")
 
         self.usb_devices = usb_devices or {}
         self.monitor = UsbMonitor()
@@ -1123,7 +1136,17 @@ class lufus(QMainWindow):
     def show_log(self):
         if self.log_window is None:
             self.log_window = LogWindow(self)
-        self.log_window.log_text.setPlainText("\n".join(self.log_entries))
+        self.log_window.log_text.clear()
+        for entry in self.log_entries:
+            level = "INFO"
+            for lvl in _LOG_LEVELS:
+                if f"[{lvl}]" in entry:
+                    level = lvl
+                    break
+            _, colour = _LOG_LEVELS.get(level, ("info", None))
+            escaped = entry.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            html = f'<span style="color:{colour};">{escaped}</span>' if colour else f'<span>{escaped}</span>'
+            self.log_window.log_text.append(html)
         self.log_window.show()
         self.log_window.raise_()
         self.log_window.activateWindow()
@@ -1134,8 +1157,12 @@ class lufus(QMainWindow):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
         entry = f"[{timestamp}] [{level}] {msg}"
         self.log_entries.append(entry)
+        log_method_name, colour = _LOG_LEVELS.get(level.upper(), ("info", None))
+        getattr(self._logger, log_method_name)(msg)
         if self.log_window is not None:
-            self.log_window.log_text.append(entry)
+            escaped = entry.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            html = f'<span style="color:{colour};">{escaped}</span>' if colour else f'<span>{escaped}</span>'
+            self.log_window.log_text.append(html)
             scrollbar = self.log_window.log_text.verticalScrollBar()
             scrollbar.setValue(scrollbar.maximum())
 
