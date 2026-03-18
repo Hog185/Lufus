@@ -2,6 +2,12 @@
 
 set -euo pipefail
 
+# Require sudo/root
+if [ "$EUID" -ne 0 ]; then
+    echo "usage: sudo ./lufus.sh"
+    exit 1
+fi
+
 VENV_DIR=".venv"
 
 # Ensure python exists
@@ -52,4 +58,4 @@ fi
 echo "Running app..."
 
 # Run the app
-briefcase dev
+briefcase dev -r
