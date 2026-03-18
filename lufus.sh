@@ -45,6 +45,7 @@ if [ ${#MISSING[@]} -ne 0 ]; then
     echo "Missing system tools:"
     printf ' - %s\n' "${MISSING[@]}"
     echo "Install them before continuing."
+    exit 1
 fi
 
 

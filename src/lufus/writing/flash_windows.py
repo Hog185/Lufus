@@ -156,7 +156,7 @@ device: {device}
             _status(f"Formatting {data} as NTFS with label WINDOWS...")
             ntfs_cmd = None
             for candidate in ["mkfs.ntfs", "mkntfs"]:
-                if subprocess.run(["sudo","which", candidate], capture_output=True).returncode == 0:
+                if subprocess.run(["which", candidate], capture_output=True).returncode == 0:
                     ntfs_cmd = candidate
                     break
             if ntfs_cmd is None:
@@ -188,7 +188,7 @@ device: {device}
             run(["sudo", "mount", data, mount_data])
 
             try:
-                if subprocess.run(["sudo","which", "7z"], capture_output=True).returncode != 0:
+                if subprocess.run(["which", "7z"], capture_output=True).returncode != 0:
                     log.warning("7z not found, attempting to install...")
                     _status("7z not found, attempting to install...")
                     pkg_managers = [

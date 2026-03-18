@@ -113,7 +113,12 @@ def remount():
 
 ### DISK FORMATTING ###
 def volumecustomlabel():
-    newlabel =str(states.new_label or "") # re crashing if the label was null
+    newlabel =states.new_label  
+    #recomended by sorcery
+    if newlabel is None:
+        newlabel = ""
+    elif not isinstance(newlabel,str):
+        raise TypeError(f"states.new_label must be a string or None, got {type(newlabel).__name__}")
     # Sanitize label: allow only alphanumeric, spaces, hyphens, and underscores
     newlabel = re.sub(r'[^a-zA-Z0-9 \-_]', '', newlabel).strip()
     if not newlabel:
@@ -268,7 +273,9 @@ def checkdevicebadblock():
         return False
     
     
-def get_first_partition(raw_device:str):
+def get_first_partition(raw_device:str|None):
+    if not raw_device:
+        return None
     for _ in range(10): # wait for kernel sync
         if "nvme" in raw_device or "mmcblk" in raw_device:
             candidates=sorted(glob.glob(f"{raw_device}p*"))
