@@ -37,3 +37,6 @@ Thumbs.db
 *.AppImage
 AppDir
 *.spec
+
+# testing
+test.result

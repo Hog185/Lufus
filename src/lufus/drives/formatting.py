@@ -1,9 +1,11 @@
+import glob
 import re
 import shlex
 import subprocess
 import sys
 import os
 from pathlib import Path
+import time
 from lufus.drives import states
 from lufus.drives import find_usb as fu
 from lufus.lufus_logging import get_logger
@@ -11,14 +13,18 @@ from lufus.lufus_logging import get_logger
 log = get_logger(__name__)
 
 
-def _get_raw_device(drive: str) -> str:
+def _get_raw_device(drive: str|None) -> str|None:
     """Return the raw disk device for a partition node.
 
     Handles standard SCSI/SATA names (e.g. /dev/sdb1 → /dev/sdb),
     NVMe names (e.g. /dev/nvme0n1p1 → /dev/nvme0n1), and
     MMC/eMMC names (e.g. /dev/mmcblk0p1 → /dev/mmcblk0).
+    if a null device given return None
     Falls back to the input unchanged if no pattern matches.
     """
+    # handling if null is given as drive
+    if not drive:
+        return None
     # NVMe: /dev/nvmeXnYpZ  → /dev/nvmeXnY
     m = re.match(r"^(/dev/nvme\d+n\d+)p\d+$", drive)
     if m:
@@ -31,6 +37,7 @@ def _get_raw_device(drive: str) -> str:
     m = re.match(r"^(/dev/[a-z]+)\d+$", drive)
     if m:
         return m.group(1)
+
     return drive
 
 
@@ -70,7 +77,9 @@ def unmount(drive: str = None):
     if not drive:
         _, drive, _ = _get_mount_and_drive()
     if not drive:
-        log.error("No drive node found. Cannot unmount.")
+        msg="No drive node found. Cannot unmount."
+        log.error(msg)
+        print(msg)
         return
     log.info("Unmounting %s...", drive)
     try:
@@ -87,7 +96,9 @@ def unmount(drive: str = None):
 def remount():
     mount, drive, _ = _get_mount_and_drive()
     if not drive or not mount:
-        log.error("No drive node or mount point found. Cannot remount.")
+        msg = "No drive node or mount point found. Cannot remount."
+        log.error(msg)
+        print(msg) 
         return
     log.info("Remounting %s -> %s...", drive, mount)
     try:
@@ -102,9 +113,8 @@ def remount():
 
 ### DISK FORMATTING ###
 def volumecustomlabel():
-    newlabel = states.new_label
+    newlabel =str(states.new_label or "") # re crashing if the label was null
     # Sanitize label: allow only alphanumeric, spaces, hyphens, and underscores
-    import re
     newlabel = re.sub(r'[^a-zA-Z0-9 \-_]', '', newlabel).strip()
     if not newlabel:
         newlabel = "USB_DRIVE"
@@ -125,7 +135,7 @@ def volumecustomlabel():
     cmd_map = {
         0: ["ntfslabel", drive, newlabel],
         1: ["fatlabel", drive, newlabel],
-        2: ["fatlabel", drive, newlabel],
+        2: ["exfatlabel", drive, newlabel], # this should be exfatlabel
         3: ["e2label", drive, newlabel],
     }
     cmd = cmd_map.get(fs_type)
@@ -256,6 +266,19 @@ def checkdevicebadblock():
         log.error("(BADBLOCK) Unexpected error: %s: %s", type(e).__name__, e)
         unexpected()
         return False
+    
+    
+def get_first_partition(raw_device:str):
+    for _ in range(10): # wait for kernel sync
+        if "nvme" in raw_device or "mmcblk" in raw_device:
+            candidates=sorted(glob.glob(f"{raw_device}p*"))
+        else:
+            candidates=sorted(glob.glob(f"{raw_device}[0-9]*"))
+        if candidates:
+            return candidates[0]
+        time.sleep(0.5)
+        
+    return None
 
 
 def dskformat():
@@ -283,8 +306,8 @@ def dskformat():
         pass
 
     # Determine the first partition node
-    p_prefix = "p" if "nvme" in raw_device or "mmcblk" in raw_device else ""
-    partition = f"{raw_device}{p_prefix}1"
+
+    partition = get_first_partition(raw_device)
 
     log.info("Formatting partition %s (fs_type=%d, clusters=%d, sectors=%d)...", partition, fs_type, clusters, sectors)
 
@@ -340,13 +363,23 @@ def dskformat():
         unexpected()
 
 
-def _apply_partition_scheme(drive: str):
+def _apply_partition_scheme(drive: str|None):
     """Write a GPT or MBR partition table to the raw disk.
 
     states.partition_scheme: 0 = GPT, 1 = MBR
     states.target_system:    0 = UEFI (non CSM), 1 = BIOS (or UEFI-CSM)
     """
+    # check if null drive
+    if not drive:
+        log.error("No drive provided for partitioning.")
+        return
+    
     raw_device = _get_raw_device(drive)
+    
+    # again null drive
+    if not raw_device:
+        log.error("Got null as drive at formatting.py")
+        return
     scheme = states.partition_scheme  # 0 = GPT, 1 = MBR
 
     scheme_name = "GPT" if scheme == 0 else "MBR"
@@ -430,9 +463,9 @@ def winlocalacc():
     mount, _, _ = _get_mount_and_drive()
     commands = [
         "cd Microsoft\\Windows\\CurrentVersion\\OOBE\n"
-        "addvalue BypassNRO 4 1\n"
-        "save\n"
-        "exit\n"
+        "addvalue BypassNRO 4 1" # \n will break cause its already joined with \n
+        "save"
+        "exit"
     ]
     cmd_string = "\n".join(commands) + "\n"
     log.info("winlocalacc: bypassing online account requirement at %s...", mount)
