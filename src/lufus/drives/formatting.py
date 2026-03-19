@@ -1,5 +1,6 @@
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import os
@@ -9,6 +10,18 @@ from lufus.drives import find_usb as fu
 from lufus.lufus_logging import get_logger
 
 log = get_logger(__name__)
+
+# pkexec strips /sbin and /usr/sbin from PATH so we must search them explicitly
+_TOOL_PATH = "/usr/sbin:/usr/bin:/sbin:/bin"
+
+
+def _find_tool(name: str) -> str:
+    # resolve full path of a system tool, searching sbin dirs pkexec drops
+    found = shutil.which(name, path=_TOOL_PATH)
+    if found:
+        return found
+    log.warning("_find_tool: %s not found in %s, falling back to bare name", name, _TOOL_PATH)
+    return name
 
 
 def _get_raw_device(drive: str) -> str:
@@ -38,7 +51,7 @@ def _get_raw_device(drive: str) -> str:
 
 
 def _get_mount_and_drive():
-    """Resolve mount point and drive node from current state or live detection."""
+# gets the mount location and drive info
     drive = states.DN
     mount_dict = fu.find_usb()
     mount = next(iter(mount_dict)) if mount_dict else None
@@ -65,7 +78,7 @@ def unexpected():
     log.error("An unexpected error occurred")
 
 
-# UNMOUNT FUNCTION
+#unmountain
 def unmount(drive: str = None):
     if not drive:
         _, drive, _ = _get_mount_and_drive()
@@ -83,7 +96,7 @@ def unmount(drive: str = None):
         unexpected()
 
 
-# MOUNT FUNCTION
+#mountain
 def remount():
     mount, drive, _ = _get_mount_and_drive()
     if not drive or not mount:
@@ -100,8 +113,8 @@ def remount():
         unexpected()
 
 
-### DISK FORMATTING ###
-def volumecustomlabel():
+#disk formatting
+def volumecustomlabel(target_partition: str = None):
     newlabel = states.new_label
     # Sanitize label: allow only alphanumeric, spaces, hyphens, and underscores
     import re
@@ -109,7 +122,11 @@ def volumecustomlabel():
     if not newlabel:
         newlabel = "USB_DRIVE"
 
-    _, drive, _ = _get_mount_and_drive()
+    if target_partition:
+        drive = target_partition
+    else:
+        _, drive, _ = _get_mount_and_drive()
+
     if not drive:
         log.error("No drive node found. Cannot relabel.")
         return
@@ -121,12 +138,12 @@ def volumecustomlabel():
     safe_label = shlex.quote(newlabel)
 
     # 0 -> NTFS, 1 -> FAT32, 2 -> exFAT, 3 -> ext4
-    fs_type = states.currentFS
+    fs_type = getattr(states, 'currentFS', 0)
     cmd_map = {
-        0: ["ntfslabel", drive, newlabel],
-        1: ["fatlabel", drive, newlabel],
-        2: ["fatlabel", drive, newlabel],
-        3: ["e2label", drive, newlabel],
+        0: [_find_tool("ntfslabel"), drive, newlabel],
+        1: [_find_tool("fatlabel"), drive, newlabel],
+        2: [_find_tool("fatlabel"), drive, newlabel],
+        3: [_find_tool("e2label"), drive, newlabel],
     }
     cmd = cmd_map.get(fs_type)
     if cmd is None:
@@ -146,11 +163,7 @@ def volumecustomlabel():
 
 
 def cluster():
-    """Return (cluster_bytes, sector_bytes, cluster_in_sectors) tuple.
-
-    Falls back to safe defaults when the drive node is unavailable.
-    Never crashes — always returns a valid 3-tuple.
-    """
+#cluster bs, go
     _, drive, mount_dict = _get_mount_and_drive()
 
     if not mount_dict and not drive:
@@ -159,7 +172,7 @@ def cluster():
 
     # Map states.cluster_size index to block size in bytes
     cluster_size_map = {0: 4096, 1: 8192}
-    cluster1 = cluster_size_map.get(states.cluster_size, 4096)
+    cluster1 = cluster_size_map.get(getattr(states, 'cluster_size', 0), 4096)
 
     # Logical sector size — 512 bytes is the universal safe default
     cluster2 = 512
@@ -197,7 +210,7 @@ def checkdevicebadblock():
     logical_block_size = 4096
     try:
         probe = subprocess.run(
-            ["blockdev", "--getss", drive],
+            [_find_tool("blockdev"), "--getss", drive],
             capture_output=True,
             text=True,
             check=False,
@@ -223,7 +236,7 @@ def checkdevicebadblock():
 
     # -s = show progress, -v = verbose output
     # -n = non-destructive read-write test (safe default)
-    args = ["badblocks", "-sv", "-b", str(logical_block_size)]
+    args = [_find_tool("badblocks"), "-sv", "-b", str(logical_block_size)]
     if passes > 1:
         args.append("-n")  # non-destructive read-write
     args.append(drive)
@@ -246,7 +259,7 @@ def checkdevicebadblock():
         bad_lines = [line for line in output.splitlines() if line.strip().isdigit()]
         if bad_lines:
             log.warning("%d bad block(s) found on %s!", len(bad_lines), drive)
-            return False
+            return True
         log.info("No bad blocks found on %s.", drive)
         return True
     except FileNotFoundError:
@@ -258,86 +271,120 @@ def checkdevicebadblock():
         return False
 
 
-def dskformat():
+def dskformat(status_cb=None) -> bool:
+    """Format the drive. Returns True on success, False on failure.
+    Accepts an optional status_cb(str) to emit progress messages to the GUI.
+    """
+    def _status(msg: str) -> None:
+        log.info(msg)
+        if status_cb:
+            status_cb(msg)
+
     cluster1, cluster2, sector = cluster()
     _, drive, _ = _get_mount_and_drive()
     if not drive:
-        log.error("No drive found. Cannot format.")
-        return
+        _status("ERROR: No drive found. Cannot format.")
+        return False
 
-    # Ensure we have the raw device for partitioning
+    # Get the raw device (whole disk, not partition)
     raw_device = _get_raw_device(drive)
+    
+    try:
+        _status(f"Unmounting {drive} before formatting...")
+        subprocess.run(["umount", drive], check=True)
+    except subprocess.CalledProcessError:
+        _status(f"WARNING: Failed to unmount {drive}. It may already be unmounted or in use.")
+    except Exception as e:
+        _status(f"WARNING: Unexpected unmount error: {type(e).__name__}: {e}")  
 
-    fs_type = states.currentFS
+    fs_type = getattr(states, 'currentFS', 0)
     clusters = cluster1
     sectors = sector
 
-    # Build partition table based on scheme before formatting
-    _apply_partition_scheme(raw_device)
+    # Check if quick format is enabled (states.QF: 0 = quick, 1 = full)
+    is_quick_format = (getattr(states, 'QF', 0) == 0)
 
-    # Sync kernel partition table
-    try:
-        subprocess.run(["partprobe", raw_device], check=False)
-        subprocess.run(["udevadm", "settle"], timeout=10, check=False)
-    except Exception:
-        pass
+    _status(f"Starting format: device={raw_device}, fs_type={fs_type}, clusters={clusters}, sectors={sectors}, quick={is_quick_format}")
 
-    # Determine the first partition node
-    p_prefix = "p" if "nvme" in raw_device or "mmcblk" in raw_device else ""
-    partition = f"{raw_device}{p_prefix}1"
+    if fs_type == 0:  # NTFS
+        try:
+            tool = _find_tool("mkfs.ntfs")
+            cmd = [tool, "-c", str(clusters), "-F"]
+            if is_quick_format:
+                cmd.append("-Q")
+            cmd.append(raw_device)
+            _status(f"Running: {' '.join(cmd)}")
+            subprocess.run(cmd, check=True)
+            _status(f"Successfully formatted {raw_device} as NTFS.")
+        except FileNotFoundError:
+            _status(f"ERROR: mkfs.ntfs not found. Install ntfs-3g.")
+            return False
+        except subprocess.CalledProcessError as e:
+            _status(f"ERROR: mkfs.ntfs failed (exit {e.returncode}). Is the drive unmounted?")
+            return False
+        except Exception as e:
+            _status(f"ERROR (NTFS): {type(e).__name__}: {e}")
+            return False
 
-    log.info("Formatting partition %s (fs_type=%d, clusters=%d, sectors=%d)...", partition, fs_type, clusters, sectors)
+    elif fs_type == 1:  # FAT32
+        try:
+            tool = _find_tool("mkfs.vfat")
+            cmd = [tool, "-s", str(sectors), "-F", "32", raw_device]
+            _status(f"Running: {' '.join(cmd)}")
+            subprocess.run(cmd, check=True)
+            _status(f"Successfully formatted {raw_device} as FAT32.")
+        except FileNotFoundError:
+            _status(f"ERROR: mkfs.vfat not found. Install dosfstools.")
+            return False
+        except subprocess.CalledProcessError as e:
+            _status(f"ERROR: mkfs.vfat failed (exit {e.returncode}). Is the drive unmounted?")
+            return False
+        except Exception as e:
+            _status(f"ERROR (FAT32): {type(e).__name__}: {e}")
+            return False
 
-    if fs_type == 0:
+    elif fs_type == 2:  # exFAT
         try:
-            subprocess.run(
-                ["mkfs.ntfs", "-c", str(clusters), "-Q", partition], check=True
-            )
-            log.info("Successfully formatted %s as NTFS.", partition)
+            tool = _find_tool("mkfs.exfat")
+            cmd = [tool, "-b", str(clusters), raw_device]
+            _status(f"Running: {' '.join(cmd)}")
+            subprocess.run(cmd, check=True)
+            _status(f"Successfully formatted {raw_device} as exFAT.")
         except FileNotFoundError:
-            pkexecNotFound()
-        except subprocess.CalledProcessError:
-            FormatFail()
+            _status(f"ERROR: mkfs.exfat not found. Install exfatprogs or exfat-utils.")
+            return False
+        except subprocess.CalledProcessError as e:
+            _status(f"ERROR: mkfs.exfat failed (exit {e.returncode}). Is the drive unmounted?")
+            return False
         except Exception as e:
-            log.error("(NTFS) %s: %s", type(e).__name__, e)
-            unexpected()
-    elif fs_type == 1:
+            _status(f"ERROR (exFAT): {type(e).__name__}: {e}")
+            return False
+
+    elif fs_type == 3:  # ext4
         try:
-            subprocess.run(
-                ["mkfs.vfat", "-s", str(sectors), "-F", "32", partition], check=True
-            )
-            log.info("Successfully formatted %s as FAT32.", partition)
+            tool = _find_tool("mkfs.ext4")
+            cmd = [tool, "-b", str(clusters), raw_device]
+            _status(f"Running: {' '.join(cmd)}")
+            subprocess.run(cmd, check=True)
+            _status(f"Successfully formatted {raw_device} as ext4.")
         except FileNotFoundError:
-            pkexecNotFound()
-        except subprocess.CalledProcessError:
-            FormatFail()
+            _status(f"ERROR: mkfs.ext4 not found. Install e2fsprogs.")
+            return False
+        except subprocess.CalledProcessError as e:
+            _status(f"ERROR: mkfs.ext4 failed (exit {e.returncode}). Is the drive unmounted?")
+            return False
         except Exception as e:
-            log.error("(FAT32) %s: %s", type(e).__name__, e)
-            unexpected()
-    elif fs_type == 2:
-        try:
-            subprocess.run(["mkfs.exfat", "-b", str(clusters), partition], check=True)
-            log.info("Successfully formatted %s as exFAT.", partition)
-        except FileNotFoundError:
-            pkexecNotFound()
-        except subprocess.CalledProcessError:
-            FormatFail()
-        except Exception as e:
-            log.error("(exFAT) %s: %s", type(e).__name__, e)
-            unexpected()
-    elif fs_type == 3:
-        try:
-            subprocess.run(["mkfs.ext4", "-b", str(clusters), partition], check=True)
-            log.info("Successfully formatted %s as ext4.", partition)
-        except FileNotFoundError:
-            pkexecNotFound()
-        except subprocess.CalledProcessError:
-            FormatFail()
-        except Exception as e:
-            log.error("(ext4) %s: %s", type(e).__name__, e)
-            unexpected()
+            _status(f"ERROR (ext4): {type(e).__name__}: {e}")
+            return False
+
     else:
-        unexpected()
+        _status(f"ERROR: Unknown fs_type={fs_type}")
+        return False
+
+    # Apply volume label after successful format
+    _status("Applying volume label to formatted device...")
+    volumecustomlabel(target_partition=raw_device)
+    return True
 
 
 def _apply_partition_scheme(drive: str):
@@ -345,25 +392,27 @@ def _apply_partition_scheme(drive: str):
 
     states.partition_scheme: 0 = GPT, 1 = MBR
     states.target_system:    0 = UEFI (non CSM), 1 = BIOS (or UEFI-CSM)
+
+    NOTE: This function is currently bypassed in dskformat() - formatting happens directly on raw device
     """
     raw_device = _get_raw_device(drive)
-    scheme = states.partition_scheme  # 0 = GPT, 1 = MBR
+    scheme = getattr(states, 'partition_scheme', 0)  # 0 = GPT, 1 = MBR
 
     scheme_name = "GPT" if scheme == 0 else "MBR"
     log.info("Applying %s partition scheme to %s...", scheme_name, raw_device)
     try:
         if scheme == 0:
             # GPT — used for UEFI targets
-            subprocess.run(["parted", "-s", raw_device, "mklabel", "gpt"], check=True)
+            subprocess.run([_find_tool("parted"), "-s", raw_device, "mklabel", "gpt"], check=True)
             subprocess.run(
-                ["parted", "-s", raw_device, "mkpart", "primary", "1MiB", "100%"],
+                [_find_tool("parted"), "-s", raw_device, "mkpart", "primary", "1MiB", "100%"],
                 check=True,
             )
         else:
             # MBR — used for BIOS/legacy targets
-            subprocess.run(["parted", "-s", raw_device, "mklabel", "msdos"], check=True)
+            subprocess.run([_find_tool("parted"), "-s", raw_device, "mklabel", "msdos"], check=True)
             subprocess.run(
-                ["parted", "-s", raw_device, "mkpart", "primary", "1MiB", "100%"],
+                [_find_tool("parted"), "-s", raw_device, "mkpart", "primary", "1MiB", "100%"],
                 check=True,
             )
         log.info("Partition scheme %s applied to %s.", scheme_name, raw_device)
@@ -382,12 +431,12 @@ def drive_repair():
         log.error("No drive node found. Cannot repair.")
         return
     raw_device = _get_raw_device(drive)
-    cmd = ["sfdisk", raw_device]
+    cmd = [_find_tool("sfdisk"), raw_device]
     log.info("Attempting drive repair on %s (raw: %s)...", drive, raw_device)
     try:
         subprocess.run(["umount", drive], check=True)
         subprocess.run(cmd, input=b",,0c;\n", check=True)
-        subprocess.run(["mkfs.vfat", "-F", "32", "-n", "REPAIRED", drive], check=True)
+        subprocess.run([_find_tool("mkfs.vfat"), "-F", "32", "-n", "REPAIRED", drive], check=True)
         log.info("Successfully repaired drive %s (FAT32).", drive)
     except Exception as e:
         log.error("Could not repair drive %s: %s: %s", drive, type(e).__name__, e)
@@ -493,7 +542,7 @@ def winlocalaccname():
                             <Description>Primary Local Account</Description>
                             <DisplayName>{user_name}</DisplayName>
                             <Group>Administrators</Group>
-                            <Name>{user_name}</Name>
+                            <n>{user_name}</n>
                         </LocalAccount>
                     </LocalAccounts>
                 </UserAccounts>
@@ -508,3 +557,4 @@ def winlocalaccname():
         "winlocalaccname: autounattend.xml created — privacy screens skipped, local account %r created.",
         user_name,
     )
+    #fuck you, formatting.py

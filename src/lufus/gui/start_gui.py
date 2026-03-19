@@ -39,16 +39,26 @@ usb_devices = find_usb()
 
 def launch_gui_with_usb_data() -> None:
     ensure_root()
-    #usb_devices = find_usb()
 
     log.info("Launching GUI with USB devices: %s", usb_devices)
 
     from PyQt6.QtWidgets import QApplication
+    from PyQt6.QtCore import QTimer
     from lufus.gui.gui import lufus as LufusWindow
 
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
+
+    autoflash_path = None
+    if "--flash-now" in sys.argv:
+        idx = sys.argv.index("--flash-now")
+        if idx + 1 < len(sys.argv):
+            autoflash_path = sys.argv[idx + 1]
+
     window = LufusWindow(usb_devices)
+    if autoflash_path:
+        window._autoflash_path = autoflash_path
+        QTimer.singleShot(0, window._do_autoflash)
     window.show()
     sys.exit(app.exec())
 

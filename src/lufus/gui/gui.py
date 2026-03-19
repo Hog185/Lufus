@@ -455,7 +455,7 @@ class SettingsDialog(QDialog):
 
     @staticmethod
     def _detect_languages():
-        # find all available language csv files
+        # find all available language csv files- ay carumba
         lang_dir = _find_resource_dir("languages")
         if lang_dir is None:
             return []
@@ -478,9 +478,9 @@ class SettingsDialog(QDialog):
 
 
 class VerifyWorker(QThread):
-    # worker thread for sha256 verification :D
+    # worker thread for sha256 verification >:D
     progress = pyqtSignal(str)
-    verify_done = pyqtSignal(bool)
+    flash_done = pyqtSignal(bool)
 
     def __init__(self, iso_path: str, expected_hash: str):
         super().__init__()
@@ -494,7 +494,7 @@ class VerifyWorker(QThread):
             from lufus.writing.check_file_sig import check_sha256
             self.progress.emit(f"Verifying SHA256 checksum for {self.iso_path}...")
             result = check_sha256(self.iso_path, self.expected_hash)
-            self.verify_done.emit(result)
+            self.flash_done.emit(result)
         except Exception as e:
             self.progress.emit(f"Verification error: {str(e)}")
             self.flash_done.emit(False)
@@ -526,7 +526,8 @@ class FlashWorker(QThread):
                 setattr(states, key, value)
 
             device_node = options["device"]
-            iso_path = options["iso_path"]
+            states.DN = device_node
+            iso_path = options.get("iso_path", "")
             flash_mode = options["currentflash"]
             image_option = options["image_option"]
 
@@ -534,11 +535,24 @@ class FlashWorker(QThread):
             self.status.emit(f"Unmounting all partitions on {device_node}...")
             partitions = glob.glob(f"{device_node}*")
             for part in partitions:
-                self.status.emit(f"Unmounting {part}...")
-                fo.unmount(part)
+                if part != device_node:  # don't unmount the device itself
+                    self.status.emit(f"Unmounting {part}...")
+                    fo.unmount(part)
 
-            # perform flash based on mode
-            if image_option == 0:
+            # perform operation based on image option
+            if image_option == 3:  # Format Only
+                self.status.emit("Starting format operation...")
+                self.progress.emit(10)
+                self.status.emit("Formatting drive...")
+                self.progress.emit(50)
+                success = fo.dskformat(status_cb=self.status.emit)
+                if success:
+                    self.progress.emit(100)
+                    self.status.emit("Format complete!")
+                else:
+                    self.status.emit("Format FAILED. Check the log above for the exact error.")
+
+            elif image_option == 0:  # Windows
                 if flash_mode == 0:
                     # iso mode for microslop windows
                     success = FlashUSB(iso_path, device_node,
@@ -547,7 +561,7 @@ class FlashWorker(QThread):
                 else:
                     success = False
             else:
-                # other flash modes
+                # other flash modes (Linux, Other)
                 success = FlashUSB(iso_path, device_node,
                                    progress_cb=self.progress.emit,
                                    status_cb=self.status.emit)
@@ -602,6 +616,7 @@ class lufus(QMainWindow):
         # initialize worker threads and windows :3
         self.flash_worker = None
         self.verify_worker = None
+        self._autoflash_path = None
         self.log_window = None
         self.about_window = None
         self.log_entries = []
@@ -701,7 +716,7 @@ class lufus(QMainWindow):
                 flat_theme[f"{category}_{key}"] = val
 
         try:
-            # load qss template 
+            # load qss template
             with open(template_path, 'r', encoding='utf-8') as f:
                 template = f.read()
         except FileNotFoundError: # (╯°□°)╯( ┻━┻
@@ -710,6 +725,7 @@ class lufus(QMainWindow):
 
         if not use_gradient:
             # replace gradient rules with solid colors when disabled
+            import re
             template = re.sub(
                 r"background:\s*qlineargradient\(\s*x1:0,\s*y1:0,\s*x2:0,\s*y2:1,\s*"
                 r"stop:0\s*\{colors_input_bg_top\},\s*stop:1\s*\{colors_input_bg\}\s*\)",
@@ -755,7 +771,6 @@ class lufus(QMainWindow):
         layout.addWidget(label)
         layout.addWidget(line, 1)
         return layout
-
 
     def update_usb_list(self, devices: dict):
         # update device dropdown with current usb devices
@@ -967,7 +982,7 @@ class lufus(QMainWindow):
         self.combo_badblocks.addItem(self._T.get("combo_badblocks_3pass", "3 Pass"))
         self.combo_badblocks.setEnabled(False)
         self.chk_badblocks.stateChanged.connect(self.update_check_bad)
-        
+
         # sha256 verification checkbox and input :D
         self.chk_verify = QCheckBox(self._T.get("chk_verify_hash", "Verify SHA256 Checksum"))
         self.chk_verify.stateChanged.connect(self.update_verify_hash)
@@ -1008,7 +1023,6 @@ class lufus(QMainWindow):
         btn_icon1.setText("🌐")
         btn_icon1.setToolTip(self._T.get("tooltip_download", "Download"))
         btn_icon1.clicked.connect(self._open_url)
-        
 
         btn_icon2 = QToolButton()
         btn_icon2.setText("ℹ")
@@ -1130,7 +1144,6 @@ class lufus(QMainWindow):
                 self._T.get("msgbox_scan_error_title", "Scan Error"),
                 f'{self._T.get("msgbox_scan_error_body", "Scan failed")}\n{str(e)}',
             )
-
 
     def updateFS(self):
         # update filesystem selection in states :D
@@ -1256,7 +1269,6 @@ class lufus(QMainWindow):
         # store expected hash for verification :3
         states.expected_hash = text.strip()
 
-
     def _check_clipboard(self):
         # monitor clipboard for iso file paths :D
         text = QApplication.clipboard().text().strip()
@@ -1274,7 +1286,6 @@ class lufus(QMainWindow):
             self.log_message(f"Image loaded from clipboard: {path}")
             self.log_message(f"Image size: {file_size:,} bytes ({file_size / (1024**3):.2f} GiB)")
             self.notifier.show(f"✓ {clean_name} loaded from clipboard", notification_type="success", duration=3000)
-
 
     def dragEnterEvent(self, event):
         # accept drag of supported image files :D
@@ -1315,7 +1326,6 @@ class lufus(QMainWindow):
         else:
             event.ignore()
 
-
     def browse_file(self):
         # open file dialog to select image :D
         file_name, _ = QFileDialog.getOpenFileName(
@@ -1333,7 +1343,6 @@ class lufus(QMainWindow):
             self.input_label.setText(clean_name.split(".")[0].upper())
             self.log_message(f"Image selected: {file_name}")
             self.log_message(f"Image size: {file_size:,} bytes ({file_size / (1024**3):.2f} GiB)")
-
 
     def show_log(self):
         # show log window with all entries :D
@@ -1497,12 +1506,10 @@ class lufus(QMainWindow):
             self.combo_device.addItem(self._T.get("no_usb_found", "No USB devices found"), None)
         self._update_flashing_options()
 
-
     def get_selected_mount_path(self) -> str:
         # get device path from selected combo item :3
         data = self.combo_device.currentData()
         return data if isinstance(data, str) else ""
-
 
     def cancel_process(self):
         # cancel ongoing flash operation D:
@@ -1539,14 +1546,14 @@ class lufus(QMainWindow):
                 self.log_message("fuser -k executed")
             except Exception as e:
                 self.log_message(f"fuser fallback failed: {e}")
-            
+
             if hasattr(self, "verify_worker") and self.verify_worker and self.verify_worker.isRunning():
                 # terminate verify worker :D
                 self.log_message("Terminating verify worker", level="WARN")
                 self.verify_worker.terminate()
                 self.verify_worker.wait(2000)
                 self.log_message("Verify worker terminated")
-            
+
             if self.is_terminal:
                 # reset terminal state :3
                 try:
@@ -1561,7 +1568,7 @@ class lufus(QMainWindow):
             self.btn_start.setEnabled(True)
             self.btn_cancel.setEnabled(False)
             self.statusBar.showMessage(self._T.get("status_ready", "Ready"), 0)
-            self.log_message("Flash process cancelled by user", level="WARN")    
+            self.log_message("Flash process cancelled by user", level="WARN")
 
     def start_process(self):
         # start flashing process with validation :3
@@ -1578,21 +1585,13 @@ class lufus(QMainWindow):
                                     self._T.get("msgbox_no_image_body", "Please select an image file"))
                 return
 
-            # validate device selected :3
-            device_node = self.get_selected_mount_path()
-            if not device_node:
-                self.log_message("Start aborted: no USB device selected", level="WARN")
-                QMessageBox.warning(self, self._T.get("msgbox_no_device_title", "No Device"),
-                                    self._T.get("msgbox_no_device_body", "Please select a USB device"))
-                return
-
-        elif states.image_option == 4:  # ventoy no iso required but device is :D
-            device_node = self.get_selected_mount_path()
-            if not device_node:
-                self.log_message("Start aborted: no USB device selected", level="WARN")
-                QMessageBox.warning(self, self._T.get("msgbox_no_device_title", "No Device"),
-                                    self._T.get("msgbox_no_device_body", "Please select a USB device"))
-                return
+        # validate device selected
+        device_node = self.get_selected_mount_path()
+        if not device_node:
+            self.log_message("Start aborted: no USB device selected", level="WARN")
+            QMessageBox.warning(self, self._T.get("msgbox_no_device_title", "No Device"),
+                                self._T.get("msgbox_no_device_body", "Please select a USB device"))
+            return
 
         if states.image_option in [0, 1, 2] and states.verify_hash:
             # validate sha256 hash format
@@ -1611,7 +1610,7 @@ class lufus(QMainWindow):
 
             self.verify_worker = VerifyWorker(states.iso_path, states.expected_hash)
             self.verify_worker.progress.connect(self.log_message)
-            self.verify_worker.verify_done.connect(self.on_verify_finished)
+            self.verify_worker.flash_done.connect(self.on_verify_finished)
             self.verify_worker.start()
         else:
             # skip verification and start flash :3
@@ -1705,6 +1704,10 @@ class lufus(QMainWindow):
             self.flash_worker.status.connect(self._on_flash_status, Qt.ConnectionType.QueuedConnection)
             self.flash_worker.flash_done.connect(self.on_flash_finished, Qt.ConnectionType.QueuedConnection)
             self.flash_worker.start()
+            self.btn_start.setEnabled(False)
+            self.btn_cancel.setEnabled(True)
+            self.progress_bar.setValue(0)
+            self.statusBar.showMessage(self._T.get("status_flashing", "Flashing..."), 0)
 
     def _do_autoflash(self) -> None:
         # called after init when launched with flash now :3
@@ -1735,7 +1738,7 @@ class lufus(QMainWindow):
         self.btn_cancel.setEnabled(True)
         self.progress_bar.setValue(0)
         self.statusBar.showMessage(self._T.get("status_flashing", "Flashing..."), 0)
-    
+
     def _on_flash_status(self, msg):
         # update status bar and log with flash status :D
         self.log_message(msg)
@@ -1770,7 +1773,6 @@ class lufus(QMainWindow):
         self.btn_cancel.setEnabled(False)
         self.statusBar.showMessage(self._T.get("status_ready", "Ready"), 0)
 
-
     def keyPressEvent(self, event):
         # handle keyboard shortcuts :3
         if (event.key() == Qt.Key.Key_R
@@ -1780,8 +1782,6 @@ class lufus(QMainWindow):
             # f5 also refreshes device list :D
             self.refresh_usb_devices()
         super().keyPressEvent(event)
-
-
 
     def check_polkit_agent(self):
         # check if a polkit authentication agent is running :3
@@ -1804,8 +1804,6 @@ class lufus(QMainWindow):
         except Exception:
             # if pgrep fails assume agent might be present better to try :D
             return True
-
-
 
 
 if __name__ == "__main__":
