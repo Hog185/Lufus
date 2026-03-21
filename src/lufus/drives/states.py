@@ -15,5 +15,6 @@ verify_hash: bool = False
 expected_hash: str = ""
 winhardware = 0
 winmicrosoftacc = 0
-winlocalacc = 'default'
+winlocalacc = 'User1'
+winlocalaccchk = 0
 winprivacy = 0

@@ -47,6 +47,7 @@ from PyQt6.QtGui import QFont, QFontDatabase, QIcon
 from lufus.drives import states
 from lufus.drives.autodetect_usb import UsbMonitor
 from lufus.lufus_logging import get_logger
+from lufus.drives import formatting as fo
 
 # themes live here :3
 THEME_DIR = Path(__file__).parent / 'themes'
@@ -408,7 +409,7 @@ class FlashWorker(QThread):
     progress = pyqtSignal(int)
     status = pyqtSignal(str)
     flash_done = pyqtSignal(bool)
-
+    request_tweaks = pyqtSignal()
     def __init__(self, options: dict, t: dict):
         super().__init__()
         # store options for flashing
@@ -462,6 +463,7 @@ class FlashWorker(QThread):
                     success = FlashUSB(iso_path, device_node,
                                        progress_cb=self.progress.emit,
                                        status_cb=self.status.emit)
+                    self.request_tweaks.emit() # request win tweaks
                 else:
                     success = False
             else:
@@ -489,6 +491,91 @@ _LOG_LEVELS = {
     "CRITICAL": ("critical", "#e05555"),
 }
 
+# wintweaks window
+class WinTweaks(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        re = QRegularExpression("^[a-zA-Z0-9_]*$")
+        validator = QRegularExpressionValidator(re)
+        self.setWindowTitle("Windows Tweaks (MAY BREAK! USE CAUTION)")
+        self.setFixedSize(600, 300)
+        self.ask_label = QLabel("Do you want to customize your windows installation?")
+
+        self.hardware_checkbox = QCheckBox("Remove requirement for 4GB+ RAM, Secure Boot and TPM 2.0")
+        self.hardware_checkbox.stateChanged.connect(self.update_winhardware)
+
+        self.microsoft_checkbox = QCheckBox("Remove requirement for an online Microsoft Account")
+        self.microsoft_checkbox.stateChanged.connect(self.update_winmicrosoftacc)
+
+        self.localacc_checkbox = QCheckBox("Create a local account with username:")
+        self.localacc_checkbox.stateChanged.connect(self.update_winlocalaccchk)
+
+        self.username_input = QLineEdit()
+        self.username_input.setMaxLength(20)
+        self.username_input.setValidator(validator)
+        self.username_input.setPlaceholderText("Enter username here...")
+        self.microsoft_checkbox.toggled.connect(self.localacc_checkbox.setEnabled)
+        self.localacc_checkbox.toggled.connect(self.username_input.setEnabled)
+        self.username_input.setEnabled(self.localacc_checkbox.isChecked())
+        self.username_input.textChanged.connect(self.sync_username)
+
+        self.data_checkbox = QCheckBox("Disable data collection (skip privacy questions)")
+        self.data_checkbox.stateChanged.connect(self.update_winprivacy)
+
+        self.applytweaks_btn = QPushButton("Apply")
+        self.applytweaks_btn.clicked.connect(self.applywintweaks)
+
+        self.canceltweaks_btn = QPushButton("Cancel")
+        self.canceltweaks_btn.clicked.connect(self.reject)  # closes window
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.ask_label)
+        layout.addWidget(self.hardware_checkbox)
+        layout.addWidget(self.microsoft_checkbox)
+        layout.addWidget(self.localacc_checkbox)
+        layout.addWidget(self.username_input)
+        layout.addWidget(self.data_checkbox)
+        layout.addWidget(self.applytweaks_btn)
+        layout.addWidget(self.canceltweaks_btn)
+    
+        self.setLayout(layout)
+
+    def update_winhardware(self):
+        # update winhardware req disable setting
+        states.winhardware = 1 if self.hardware_checkbox.isChecked() else 0
+        self.log_message(f"Windows hardware reqquirement disable: {'enabled' if self.hardware_checkbox.isChecked() else 'disabled'}")
+    def update_winmicrosoftacc(self):
+        # update microsoft acc disable setting
+        states.winmicrosoftacc = 1 if self.microsoft_checkbox.isChecked() else 0
+        self.log_message(f"Microsoft account requirement disable: {'enabled' if self.microsoft_checkbox.isChecked() else 'disabled'}")
+    def update_winlocalaccchk(self):
+        # update local acc setting
+        states.winlocalaccchk = 1 if self.localacc_checkbox.isChecked() else 0
+        self.log_message(f"Windows Local Account Add: {'enabled' if self.localacc_checkbox.isChecked() else 'disabled'}")
+    def sync_username(self, new_username):
+        # changes local username
+        states.winlocalacc = new_username
+    def update_winprivacy(self):
+        # update win privacy setting
+        states.winprivacy = 1 if self.data_checkbox.isChecked() else 0
+        self.log_message(f"Windows privacy questions disable: {'enabled' if self.data_checkbox.isChecked() else 'disabled'}")
+        # main tweaks apply logic function
+    def applywintweaks(self):
+        if states.winhardware == 1:
+            # call winhardwarebypass from formatting
+            fo.winhardwarebypass()
+        if states.winmicrosoftacc == 1:
+            if states.winlocalaccchk == 1:
+                # call winlocalaccname from formatting
+                fo.winlocalaccname()
+            else:
+                # call winlocalacc from formatting
+                fo.winlocalacc()
+        if states.winprivacy == 1:
+            # call winskipprivacyques from formatting
+            fo.winskipprivacyques()
+        #closes window
+        self.accept()
 
 class lufus(QMainWindow):
     def __init__(self, usb_devices=None, scale: Scale = None):
@@ -526,6 +613,7 @@ class lufus(QMainWindow):
         self.log_entries = []
         self._last_clipboard = ""
         self.is_terminal = False
+        self.worker = FlashWorker() #flashworker instance
         try:
             self.is_terminal = sys.stdout.isatty()
         except (AttributeError, OSError):
@@ -1709,6 +1797,12 @@ class lufus(QMainWindow):
         except Exception:
             # if pgrep fails assume agent might be present better to try :D
             return True
+    # Wintweaks Execution using signals 
+    # Connect the worker signal to a function that opens the dialog
+    self.worker.request_tweaks.connect(self.show_tweak_dialog)
+    def show_tweak_dialog(self):
+        dialog = WinTweaks(self)
+        dialog.exec()
 
 
 if __name__ == "__main__":

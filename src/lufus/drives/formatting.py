@@ -464,6 +464,7 @@ def drive_repair():
 1. Hardware Requirements Bypass
 2. Making Local Accounts
 3. Disabling privacy questions'''
+# dependency: wimmountrw and chntpw
 # bypass hardware requirements
 def winhardwarebypass():
     mount, _, _ = _get_mount_and_drive()
