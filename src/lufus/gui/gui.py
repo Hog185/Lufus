@@ -42,8 +42,9 @@ from PyQt6.QtCore import (
     QObject,
     pyqtSignal,
     QPropertyAnimation,
+    QRegularExpression,
 )
-from PyQt6.QtGui import QFont, QFontDatabase, QIcon
+from PyQt6.QtGui import QFont, QFontDatabase, QIcon, QRegularExpressionValidator
 from lufus.drives import states
 from lufus.drives.autodetect_usb import UsbMonitor
 from lufus.lufus_logging import get_logger
@@ -410,11 +411,11 @@ class FlashWorker(QThread):
     status = pyqtSignal(str)
     flash_done = pyqtSignal(bool)
     request_tweaks = pyqtSignal()
-    def __init__(self, options: dict, t: dict):
+    def __init__(self, options: dict = None, t: dict = None):
         super().__init__()
         # store options for flashing
-        self.options = options
-        self._T = t
+        self.options = options or {}
+        self._T = t or {}
 
     def run(self):
         # run flash operation in background thread
@@ -463,7 +464,6 @@ class FlashWorker(QThread):
                     success = FlashUSB(iso_path, device_node,
                                        progress_cb=self.progress.emit,
                                        status_cb=self.status.emit)
-                    self.request_tweaks.emit() # request win tweaks
                 else:
                     success = False
             else:
@@ -540,10 +540,18 @@ class WinTweaks(QDialog):
     
         self.setLayout(layout)
 
+    def log_message(self, msg):
+        # delegate logging to parent window if available, otherwise use module logger
+        parent = self.parent()
+        if parent is not None and hasattr(parent, 'log_message'):
+            parent.log_message(msg)
+        else:
+            get_logger("wintweaks").info(msg)
+
     def update_winhardware(self):
         # update winhardware req disable setting
         states.winhardware = 1 if self.hardware_checkbox.isChecked() else 0
-        self.log_message(f"Windows hardware reqquirement disable: {'enabled' if self.hardware_checkbox.isChecked() else 'disabled'}")
+        self.log_message(f"Windows hardware requirement disable: {'enabled' if self.hardware_checkbox.isChecked() else 'disabled'}")
     def update_winmicrosoftacc(self):
         # update microsoft acc disable setting
         states.winmicrosoftacc = 1 if self.microsoft_checkbox.isChecked() else 0
@@ -561,19 +569,6 @@ class WinTweaks(QDialog):
         self.log_message(f"Windows privacy questions disable: {'enabled' if self.data_checkbox.isChecked() else 'disabled'}")
         # main tweaks apply logic function
     def applywintweaks(self):
-        if states.winhardware == 1:
-            # call winhardwarebypass from formatting
-            fo.winhardwarebypass()
-        if states.winmicrosoftacc == 1:
-            if states.winlocalaccchk == 1:
-                # call winlocalaccname from formatting
-                fo.winlocalaccname()
-            else:
-                # call winlocalacc from formatting
-                fo.winlocalacc()
-        if states.winprivacy == 1:
-            # call winskipprivacyques from formatting
-            fo.winskipprivacyques()
         #closes window
         self.accept()
 
@@ -613,7 +608,8 @@ class lufus(QMainWindow):
         self.log_entries = []
         self._last_clipboard = ""
         self.is_terminal = False
-        self.worker = FlashWorker() #flashworker instance
+        self.worker = FlashWorker()
+        self.worker.request_tweaks.connect(self.show_tweak_dialog)
         try:
             self.is_terminal = sys.stdout.isatty()
         except (AttributeError, OSError):
@@ -1606,6 +1602,10 @@ class lufus(QMainWindow):
             self.verify_worker.flash_done.connect(self.on_verify_finished)
             self.verify_worker.start()
         else:
+            if states.image_option == 0 and states.currentflash == 0:
+                dlg = WinTweaks(self)
+                if dlg.exec() == QDialog.DialogCode.Rejected:
+                    return
             # skip verification and start flash :3
             self.perform_flash()
 
@@ -1613,6 +1613,14 @@ class lufus(QMainWindow):
         # handle verification result :D
         if success:
             self.log_message("SHA256 verification successful, proceeding to flash")
+            if states.image_option == 0 and states.currentflash == 0:
+                dlg = WinTweaks(self)
+                if dlg.exec() == QDialog.DialogCode.Rejected:
+                    self.btn_start.setEnabled(True)
+                    self.btn_cancel.setEnabled(False)
+                    self.progress_bar.setValue(0)
+                    self.progress_bar.setFormat("")
+                    return
             self.perform_flash()
         else:
             # verification failed  (╯°□°)╯( ┻━┻
@@ -1696,6 +1704,7 @@ class lufus(QMainWindow):
             self.flash_worker.progress.connect(self.progress_bar.setValue, Qt.ConnectionType.QueuedConnection)
             self.flash_worker.status.connect(self._on_flash_status, Qt.ConnectionType.QueuedConnection)
             self.flash_worker.flash_done.connect(self.on_flash_finished, Qt.ConnectionType.QueuedConnection)
+            self.flash_worker.request_tweaks.connect(self.show_tweak_dialog, Qt.ConnectionType.QueuedConnection)
             self.flash_worker.start()
             self.btn_start.setEnabled(False)
             self.btn_cancel.setEnabled(True)
@@ -1726,6 +1735,7 @@ class lufus(QMainWindow):
         self.flash_worker.progress.connect(self.progress_bar.setValue, Qt.ConnectionType.QueuedConnection)
         self.flash_worker.status.connect(self._on_flash_status, Qt.ConnectionType.QueuedConnection)
         self.flash_worker.flash_done.connect(self.on_flash_finished, Qt.ConnectionType.QueuedConnection)
+        self.flash_worker.request_tweaks.connect(self.show_tweak_dialog, Qt.ConnectionType.QueuedConnection)
         self.flash_worker.start()
         self.btn_start.setEnabled(False)
         self.btn_cancel.setEnabled(True)
@@ -1746,6 +1756,16 @@ class lufus(QMainWindow):
             self.progress_bar.setValue(100)
             self.progress_bar.setFormat(self._T.get("progress_complete", "Complete"))
             self.log_message("Flash operation finished with result: SUCCESS")
+            if states.image_option == 0 and states.currentflash == 0:
+                if getattr(states, 'winhardware', 0) == 1:
+                    fo.winhardwarebypass()
+                if getattr(states, 'winmicrosoftacc', 0) == 1:
+                    if getattr(states, 'winlocalaccchk', 0) == 1:
+                        fo.winlocalaccname()
+                    else:
+                        fo.winlocalacc()
+                if getattr(states, 'winprivacy', 0) == 1:
+                    fo.winskipprivacyques()
             QMessageBox.information(
                 self,
                 self._T.get("msgbox_success_title", "Success"),
@@ -1797,9 +1817,7 @@ class lufus(QMainWindow):
         except Exception:
             # if pgrep fails assume agent might be present better to try :D
             return True
-    # Wintweaks Execution using signals 
-    # Connect the worker signal to a function that opens the dialog
-    self.worker.request_tweaks.connect(self.show_tweak_dialog)
+
     def show_tweak_dialog(self):
         dialog = WinTweaks(self)
         dialog.exec()
