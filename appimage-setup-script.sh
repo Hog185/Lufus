@@ -1,96 +1,99 @@
 #!/usr/bin/env bash
-set -e
-
-echo "=== Lufus AppImage build script ==="
-
-APP_NAME="Lufus"
-PY_ENTRY="src/lufus/__main__.py"
-
-echo "== Checking python venv =="
-if [ ! -d "venv" ]; then
-    python3 -m venv venv
-fi
-
-source venv/bin/activate
-
-echo "== Installing Python dependencies =="
-pip install --upgrade pip
-pip install pyinstaller pyqt6 psutil pyudev
-
-echo "== Downloading linuxdeploy if missing =="
-
-if [ ! -f linuxdeploy-x86_64.AppImage ]; then
-    wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-    chmod +x linuxdeploy-x86_64.AppImage
-fi
-
-if [ ! -f linuxdeploy-plugin-qt-x86_64.AppImage ]; then
-    wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
-    chmod +x linuxdeploy-plugin-qt-x86_64.AppImage
-fi
-
-echo "== Cleaning old builds =="
-rm -rf build dist
-
-echo "== Building binary with PyInstaller =="
-
-pyinstaller "$PY_ENTRY" \
-    --name lufus \
-    --windowed \
-    --paths src \
-    --collect-all PyQt6 \
-    --collect-all psutil \
-    --hidden-import lufus.drives.autodetect_usb \
-    --hidden-import lufus.drives.states \
-    --add-data "src/lufus/gui:lufus/gui" \
-    --noconfirm
-
-echo "== Preparing AppDir =="
-mkdir -p AppDir/usr/bin
-rm -rf AppDir/usr/bin/*
-cp -r dist/lufus/* AppDir/usr/bin/
-
-echo "== Creating desktop file if missing =="
-
-if [ ! -f AppDir/lufus.desktop ]; then
-cat > AppDir/lufus.desktop <<EOF
-[Desktop Entry]
-Name=Lufus
-Exec=lufus
-Icon=lufus
-Type=Application
-Categories=Utility;
-EOF
-fi
-
-echo "== Setting up icon =="
-
-mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
-
-if [ -f src/lufus/gui/assets/lufus.png ]; then
-    cp src/lufus/gui/assets/lufus.png AppDir/usr/share/icons/hicolor/256x256/apps/lufus.png
-elif [ -f AppDir/lufus.png ]; then
-    cp AppDir/lufus.png AppDir/usr/share/icons/hicolor/256x256/apps/lufus.png
+set -euo pipefail
+# INTRO :3
+clear
+printf "      \033[0;34mWelcome to the Installation setup!\033[0;0m\n\n"
+printf "  The Installation script will let you decide sequentially:\n"
+printf "  - Distro choice\n"
+printf "  - Check if the installation commands in appimage-installer-config.sh are compatible with the distro\n"
+printf "  - Pick up requirements-system.txt, requirements-python.txt\n"
+printf "\n"
+printf "  Printing out the contents of requirements-system.txt... \033[0;34m1/3\033[0;0m\n"
+printf "\n"
+if [[ -f requirements-system.txt ]]; then
+    printf "$(cat requirements-system.txt)\n"
+    printf "\033[0;31m  All good here?\033[0;0m\n"
+    printf "  (press any key if you are satisfied if what will be installed from requirements-system.txt...)\n"
+    printf "  Or cancel with CTRL + C and edit the above file as per your suite.\n"
+    read 
 else
-    if command -v convert >/dev/null 2>&1; then
-        convert -size 256x256 xc:gray AppDir/usr/share/icons/hicolor/256x256/apps/lufus.png
-    else
-        touch AppDir/usr/share/icons/hicolor/256x256/apps/lufus.png
-    fi
+    printf "  We did not find requirements-system.txt, please:\n"
+    printf "  - Make the file in the root directory of the project with \033[0;31mtouch requirements-system.txt\033[0;0m\n"
 fi
 
-echo "== Verifying build contents =="
-ls AppDir/usr/bin
+printf "  Printing out the contents of requirements-python.txt... \033[0;34m2/3\033[0;0m\n"
 
-echo "== Building AppImage =="
+if [[ -f requirements-python.txt ]]; then
+    printf "$(cat requirements-python.txt)\n"
+    printf "\033[0;31m  All good here?\033[0;0m\n"
+    printf "  (press any key if you are satisfied if what will be installed from requirements-python.txt...)\n"
+    printf "  Or cancel with CTRL + C and edit the above file as per your suite.\n"
+    read 
+else
+    printf "  \033[0;32We did not find requirements-system.txt\033[0;32m, please:\n"
+    printf "  - Make the file in the root directory of the project with \033[0;31mtouch requirements-python.txt\033[0;0m\n"
+fi
 
-ARCH=x86_64 ./linuxdeploy-x86_64.AppImage \
-    --appdir AppDir \
-    --executable AppDir/usr/bin/lufus \
-    --desktop-file AppDir/lufus.desktop \
-    --output appimage
+printf "  Giving \033[0;34mfirst 7 lines\033[0;0m of appimage-installer-config.sh \033[0;34m3/3\033[0;0m\n"
 
-echo ""
-echo "✅ Build complete!"
-echo "Output:"
-ls *.AppImage
+if [[ -f appimage-installer-config.sh ]]; then
+    printf "$(head -n 7 appimage-installer-config.sh)\n"
+    printf "\033[0;31m  All good here?\033[0;0m\n"
+    printf "  (press any key if you are satisfied if what will be installed from requirements-python.txt...)\n"
+    printf "  Or cancel with CTRL + C and edit the above file as per your suite.\n"
+    read
+else
+    printf "  \033[0;32We did not find appimage-installer-config.sh\033[0;32m, please:\n"
+    printf "  - Make sure you fetched the GitHub repo properly next time :c\n"
+    exit 1
+fi
+
+if ! command -v docker &>/dev/null; then
+    print "  \033[0;31mERROR: Docker not found, Install it first on your host machine\033[0;0m\n"
+    exit 1
+fi
+
+if ! docker info &>/dev/null; then
+    printf "\033[0;31mERROR: Docker daemon not running. Start it and try again.\033[0;0m\n"
+    exit 1
+fi
+
+if [ ! -d "src/lufus" ]; then
+    printf "\033[0;31ERROR: Run this script from the Lufus project root (where src/ is).\033[0;0m\n"
+    exit 1
+fi
+
+# ------------------------------------------------------------------
+# Run the build inside Docker (all steps are here) FUCK YOU LLMS I, SEEDY WILL DO IT MYSELF! >:D
+# ------------------------------------------------------------------
+
+while true; do
+    read -p "Enter the docker image (or type 'quit' to quit the installation: " BASE_IMAGE
+    if [[ "$BASE_IMAGE" == "quit" ]]; then
+        printf "Exiting AppImage Creation...\n"
+        break
+    fi
+    printf "Attempting to run with image: $BASE_IMAGE\n"
+    if docker run -t --rm -v "$PWD":/workspace -w /workspace "$BASE_IMAGE" sh -c "bash -ex ./appimage-setup.sh" > appimage-setup.log 2>&1; then
+        printf "Success! Check appimage-setup.log for details\n"
+        break
+    else
+        printf "Error: Command failed. The $BASE_IMAGE does not exist or doesn't pull on your machine, check appimage-setup.log for details and try again in this session...\n"
+        printf " --------------------------------------- Or enter 'quit' to quit the setup --------------------------------------- \n"
+    fi
+done
+
+# ------------------------------------------------------------------
+# After container exits, check for AppImage
+# ------------------------------------------------------------------
+if [ -f "Lufus-x86_64.AppImage" ]; then
+    # Optionally rename with image info
+    IMAGE_NAME=$(printf "$BASE_IMAGE" | sed 's/[^a-zA-Z0-9_.-]/_/g')
+    NEW_NAME="Lufus-${IMAGE_NAME}.AppImage"
+    mv "Lufus-x86_64.AppImage" "$NEW_NAME"
+    printf "  \033[0;32mSUCCESS: AppImage created: $NEW_NAME\033[0;0m\n"
+    ls -lh "$NEW_NAME"
+else
+    printf "  \033[0;31mERROR: AppImage not found – something went wrong. Check the Docker output above.\033[0;0m\n"
+    exit 1
+fi

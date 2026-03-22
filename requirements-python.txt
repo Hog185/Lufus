@@ -1,0 +1,4 @@
+pyinstaller
+pyqt6
+psutil
+pyudev
