@@ -95,7 +95,7 @@ input_hash_placeholder,Ingresa el hash SHA256 esperado aquí...
 about_subtitle,Herramienta de flash USB
 btn_close,Cerrar
 btn_ok,OK
-combo_boot_default,installation_media.iso
+combo_boot_default,medios_de_instalación.iso
 tooltip_website,Sitio web
 settings_label_theme,Tema
 status_unmounting_all,Desmontando todas las particiones en {device}...

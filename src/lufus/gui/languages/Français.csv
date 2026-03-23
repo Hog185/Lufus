@@ -95,7 +95,7 @@ GitHub : github.com/hog185/lufus"
 about_subtitle,Outil de flash USB
 btn_close,Fermer
 btn_ok,OK
-combo_boot_default,installation_media.iso
+combo_boot_default,média_d_installation.iso
 tooltip_website,Site web
 settings_label_theme,Thème
 input_hash_placeholder,Saisissez le hachage SHA256 attendu ici...
@@ -107,4 +107,4 @@ status_format_starting,Démarrage de l'opération de formatage...
 status_format_in_progress,Formatage du lecteur...
 status_format_complete,Formatage terminé !
 status_format_failed,Formatage ÉCHOUÉ. Consultez le journal ci-dessus pour l'erreur exacte.
-status_flash_error,Erreur de flash : {error}
+status_flash_error,Erreur lors de l'écriture : {error}
