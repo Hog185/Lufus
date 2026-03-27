@@ -1,3 +1,0 @@
-Lufus (formerly rufus-py) is a program that is written in python that allows flashing various linux and windows iso onto a usb drive (much like Rufus for windows). The aim of the project was to fulfill the need of a simple tool for new users to flash isos on linux. We know that one can use dd but for a new user it may be very dangerous to use dd without proper knowledge of the risks around it, so this tools is like a easier and safer way to use dd.
-
-THIS DOCUMENTATION IS CURRENTLY NOT COMPREHENSIVE AND MAY BE INCOMPLETE IN SOME PLACES.

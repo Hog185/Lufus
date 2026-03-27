@@ -31,6 +31,11 @@ pip install briefcase
 ```
 Cloning the project, and running `briefcase dev -r` in the root directory
 
+## Documentation
+Lufus uses [MkDocs](https://www.mkdocs.org/) for its documentation.
+To build the docs locally, simply `pip install mkdocs` in the venv and run `mkdocs build`,
+or `mkdocs serve` to run a dev server.
+
 ## Contributing
 
 Feedback, testing, and contributions are appreciated.
