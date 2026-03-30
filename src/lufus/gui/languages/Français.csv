@@ -108,3 +108,31 @@ status_format_in_progress,Formatage du lecteur...
 status_format_complete,Formatage terminé !
 status_format_failed,Formatage ÉCHOUÉ. Consultez le journal ci-dessus pour l'erreur exacte.
 status_flash_error,Erreur lors de l'écriture : {error}
+acc_device,Sélection de l'appareil
+acc_device_desc,Sélectionnez l'appareil que vous voulez utiliser
+acc_refresh,Rafraîchir les appareils
+acc_refresh_desc,Cherche des nouveaux appareils USB
+acc_boot,Sélection de l'image de démarrage
+acc_boot_desc,Montre l'image actuellement sélectionnée
+acc_select,Chercher une image
+acc_image_option,Options de l'image
+acc_image_option_desc,Choisissez le type d'image à écrire : Windows, Linux, Autre, ou formatage
+acc_volume_label,Nom du volume
+acc_volume_label_desc,Donnez un nom au volume USB
+acc_filesystem,Sélection du système de fichier
+acc_cluster,Cluster size selector
+acc_flash_option,Sélection de la méthode d'écriture
+acc_quick_format,Formattage rapide
+acc_extended_label,Create extended label checkbox
+acc_bad_blocks,Vérifier la présence de mauvais segments
+acc_bad_blocks_passes,Bad block check passes selector
+acc_verify_hash,Vérifier le hachage SHA256
+acc_hash_input,Hachage SHA256 attendu
+acc_hash_input_desc,Collez le hachage SHA256 à 64 caractères attendu ici
+acc_progress,Barre de progression
+acc_start,Commencer
+acc_cancel,Annuler
+acc_website,Accéder au site de Lufus
+acc_about,À propos de Lufus
+acc_settings,Ouvrir les préférences
+acc_log,Ouvrir le journal
