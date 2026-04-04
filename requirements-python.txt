@@ -2,3 +2,6 @@ pyinstaller
 pyqt6
 psutil
 pyudev
+requests
+packaging
+platformdirs
