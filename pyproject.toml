@@ -141,3 +141,24 @@ dependencies = [
     "packaging",
     "platformdirs>=4.9.4"
 ]
+
+[tool.uv]
+default-groups = [
+    "dev",
+    "pkg"
+]
+
+[dependency-groups]
+dev = [
+  {include-group = "lint"},
+  {include-group = "test"}
+]
+lint = [
+  "ruff"
+]
+test = [
+  "pytest"
+]
+pkg = [
+    "briefcase"
+]
