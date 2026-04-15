@@ -1,0 +1,138 @@
+key,value
+window_title,lufus
+log_window_title,lufus Logg
+about_window_title,Om
+settings_window_title,Inställningar
+btn_copy_log,Kopiera till Urklipp
+btn_save_log,Spara Logg...
+dlg_save_log_title,Spara Logg
+save_failed_title,Sparandet Misslyckades
+save_failed_body,Kunde inte spara logg:
+settings_label_language,Språk
+settings_no_languages,Hittade inte några språk
+header_drive_properties,Enhetsegenskaper
+header_format_options,Formateringsalternativ
+header_status,Status
+lbl_device,Enhet
+lbl_boot_selection,Startval
+lbl_image_option,Bildalternativ
+lbl_partition_scheme,Partitionsschema
+lbl_target_system,Målsystem
+lbl_volume_label,Volymetikett
+lbl_file_system,Filsystem
+lbl_flash_option,Flashalternativ
+lbl_cluster_size,Klusterstorlek
+combo_image_windows,Standardinstallation av Windows
+combo_image_linux,Standardinstallation av Linux
+combo_image_other,Valfri installation (DD-läge)
+combo_image_format,Endast formatering läge
+combo_partition_gpt,GPT
+combo_partition_mbr,MBR
+combo_target_uefi,UEFI (utan CSM)
+combo_target_bios,BIOS (eller UEFI-CSM)
+combo_cluster_4096,4096 bytes (standard)
+combo_cluster_8192,8192 bytes
+combo_badblocks_1pass,1 Pass
+chk_quick_format,Snabbformatering
+chk_extended_label,Skapa Utökad Etikett
+chk_bad_blocks,Kontrollera Dåliga Block
+chk_verify_hash,Verifiera SHA256-kontrollsumma
+lbl_expected_hash,Förväntad SHA256:
+progress_verifying,Verifierar Kontrollsumma...
+msgbox_verify_fail_title,Fel vid Verifiering
+msgbox_verify_fail_body,SHA256-kontrollsumma stämmer inte! Filen kan vara korrupt.
+msgbox_invalid_hash_title,Felaktig hash
+msgbox_invalid_hash_body,Den angivna SHA256-hashen är ogiltig.
+combo_flash_iso,Iso Läge
+combo_flash_woe,Woe USB
+combo_flash_ventoy,Ventoy
+combo_flash_dd,DD
+combo_flash_none,Ingen
+btn_select,VÄLJ
+btn_start,BÖRJAN
+btn_cancel,AVBRYT
+tooltip_refresh,Uppdatera USB-enheter (Ctrl+R)
+tooltip_download,Ladda ner uppdateringar
+tooltip_about,Om
+tooltip_settings,Inställningar
+tooltip_log,Logg
+status_ready,Redo
+status_scanning,Skannar efter USB-enheter...
+status_scan_failed,Skanning misslyckades
+status_flashing,Flashing...
+progress_preparing,Förbereder...
+progress_complete,Färdig! 100%
+progress_failed,Misslyckades
+progress_starting,Börjar... 10%
+progress_unmounted,Avmonterade Enhet... 20%
+progress_formatted,Formaterar Enhet... 60%
+progress_label_changed,Ändrade etikett... 80%
+progress_mount_done,Montering Klar... Slutförd! 100%
+msgbox_cancel_title,Avbryt
+msgbox_cancel_body,Är du säker på att du vill avbryta?
+msgbox_success_title,Lyckades
+msgbox_success_body,USB-flashning lyckades!
+msgbox_error_title,Fel uppstod
+msgbox_error_body,Misslyckades med att flasha USB-enheten.
+msgbox_no_image_title,Ingen Avbildning
+msgbox_no_image_body,Vänligen välj en giltig installationsfil först.
+msgbox_no_device_title,Ingen Enhet
+msgbox_no_device_body,Vänligen välj en giltig USB-enhet.
+msgbox_usb_found_title,Ny USB-enhet hittad
+msgbox_usb_found_body,USB-enhet hittad
+msgbox_no_devices_title,Inga enheter
+msgbox_no_devices_body,"Inga USB-enheter hittades.
+Vänligen koppla in en enhet och försök igen."
+msgbox_scan_error_title,Fel vid Skanning
+msgbox_scan_error_body,Misslyckades med att söka efter USB-enheter:
+no_usb_found,Inga USB-enheter hittade.
+dlg_select_image_title,Välj enhetsavbildning
+dlg_select_image_filter,"Enhetsavbildningar (*.iso *.dmg *.img *.bin *.raw);;Alla filer (*)"
+about_content,"Lufus är ett verktyg för att skriva diskavbildningar, skrivet i Python för Linux.
+Inspirerat av det ursprungliga Rufus-verktyget för Windows.
+Version: v1.0.0b1
+GitHub: github.com/hog185/lufus"
+about_subtitle,USB-flashnings verktyg
+btn_close,Stäng
+btn_ok,OK
+combo_boot_default,installations_media.iso
+tooltip_website,Webbplats
+settings_label_theme,Tema
+input_hash_placeholder,Ange förväntad SHA256-hash här...
+combo_badblocks_2pass,2 Pass
+combo_badblocks_3pass,3 Pass
+status_unmounting_all,Avmonterar alla partitioner på {device}...
+status_unmounting,Avmonterar {part}...
+status_format_starting,Börjar formatering...
+status_format_in_progress,Formaterar enhet...
+status_format_complete,Formatering slutförd!
+status_format_failed,Formatering MISSLYCKADES. Kolla på loggen ovan för att se det exakta felmeddelandet.
+status_flash_error,Fel uppstod vid flashning: {error}
+acc_device,Enhetsväljare
+acc_device_desc,Välj USB-enheten du vill använda
+acc_refresh,Uppdatera enheter
+acc_refresh_desc,Skanna efter kopplade USB-enheter
+acc_boot,Startavbildningsväljare
+acc_boot_desc,Visar den akutellt valda avbildningsfilen
+acc_select,Bläddra efter avbildningsfil
+acc_image_option,Avbildningsval
+acc_image_option_desc,Välj vilken typ av avbildning som ska skrivas: Windows, Linux, Annat eller endast formatering
+acc_volume_label,Volymetikettinmatning
+acc_volume_label_desc,Ange ett namn för USB-volymen
+acc_filesystem,Filsystemväljare
+acc_cluster,Klusterstorlekväljare
+acc_flash_option,Flashningmetodsväljare
+acc_quick_format,Snabbformateringsruta
+acc_extended_label,Kryssruta för utökad etikett
+acc_bad_blocks,Kyrssruta för kontroll av dåliga block
+acc_bad_blocks_passes,Väljare för godkänd kontroll av dåliga block
+acc_verify_hash,Kryssruta för verifiering av SHA256-kontrollsumma
+acc_hash_input,Inmatning av förväntad SHA256-hash
+acc_hash_input_desc,Klistra in den förväntade 64-tecken långa SHA256-hashen här
+acc_progress,Operationsförloppsindikator
+acc_start,Starta operation
+acc_cancel,Avbryt operation
+acc_website,Öppna Lufus webbplats
+acc_about,Om Lufus
+acc_settings,Öppna inställningar
+acc_log,Öppna loggfönster
