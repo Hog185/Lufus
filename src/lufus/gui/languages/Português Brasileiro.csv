@@ -24,6 +24,7 @@ lbl_flash_option,Opções de gravação
 lbl_cluster_size,Tamanho do cluster
 combo_image_windows,Instalação normal do Windows
 combo_image_linux,Linux normal
+combo_image_other,Qualquer instalação (modo DD)
 combo_image_format,Apenas modo de formatação
 combo_partition_gpt,GPT
 combo_partition_mbr,MBR
@@ -32,14 +33,21 @@ combo_target_bios,BIOS (ou UEFI-CSM)
 combo_cluster_4096,4096 bytes (Padrão)
 combo_cluster_8192,8192 bytes
 combo_badblocks_1pass,1 ciclo
+chk_quick_format,Formatação rapida
+chk_extended_label,Criar arquivos de rótulo e ícone estendidos
+chk_bad_blocks,Checar dispositivo por setores ruims
+chk_verify_hash,Verificar soma de verificação SHA256
+lbl_expected_hash,SHA256 esperado:
+progress_verifying,Verificando soma de verificação...
+msgbox_verify_fail_title,Verificação falhou
+msgbox_verify_fail_body,Soma de verificação SHA256 não confere! O arquivo pode estar corrompido.
+msgbox_invalid_hash_title,Hash inválido
+msgbox_invalid_hash_body,O hash SHA256 fornecido é inválido.
 combo_flash_iso,Modo Iso
 combo_flash_woe,Woe USB
 combo_flash_ventoy,Ventoy
 combo_flash_dd,DD
-combo_flash_none,None
-chk_quick_format,Formatação rapida
-chk_extended_label,Criar arquivos de rótulo e ícone estendidos
-chk_bad_blocks,Checar dispositivo por setores ruims
+combo_flash_none,Nenhum
 btn_select,SELECIONAR
 btn_start,INICIAR
 btn_cancel,CANCELAR
@@ -74,7 +82,6 @@ msgbox_usb_found_title,Novo Dispositivo USB descoberto.
 msgbox_usb_found_body,Dispositivo USB descoberto.
 msgbox_no_devices_title,Sem Dispositivos.
 msgbox_no_devices_body,"Nenhum Dispositivo USB descoberto.
-
 Por favor connecte algum e tente denovo."
 msgbox_scan_error_title,Falha ao Escanear
 msgbox_scan_error_body,Falha ao Escanear Dispostivos USB:
@@ -82,12 +89,9 @@ no_usb_found,Nenhum Dispositivo USB descoberto
 dlg_select_image_title,Selecionar imagem de disco
 dlg_select_image_filter,Imagems ISO (*.iso);;Todos os arquivos (*)
 about_content,"O Lufus é um gravador de imagem escrito em python para o Linux.
-
 É inspirado no Rufus para o Windows.
-
 Version: v1.0.0b1
 GitHub: github.com/hog185/lufus"
-
 #s1oplus was here meow :3
 about_subtitle,Ferramenta de Flash USB
 btn_close,Fechar
@@ -105,3 +109,31 @@ status_format_in_progress,Formatando disco...
 status_format_complete,Formatação concluída!
 status_format_failed,Formatação FALHOU. Verifique o log acima para o erro exato.
 status_flash_error,Erro de gravação: {error}
+acc_device,Seletor de dispositivo
+acc_device_desc,Selecione o dispositivo USB que deseja usar
+acc_refresh,Atualizar dispositivos
+acc_refresh_desc,Escanear dispositivos USB conectados
+acc_boot,Seletor de imagem de inicialização
+acc_boot_desc,Mostra o arquivo de imagem atualmente selecionado
+acc_select,Navegar para arquivo de imagem
+acc_image_option,Seletor de opção de imagem
+acc_image_option_desc,Escolha o tipo de imagem a gravar: Windows, Linux, Outro ou Somente Formatar
+acc_volume_label,Campo de nome do volume
+acc_volume_label_desc,Digite um nome para o volume USB
+acc_filesystem,Seletor de sistema de arquivos
+acc_cluster,Seletor de tamanho de cluster
+acc_flash_option,Seletor de método de gravação
+acc_quick_format,Caixa de seleção de formatação rápida
+acc_extended_label,Caixa de seleção de rótulo estendido
+acc_bad_blocks,Caixa de seleção de verificação de setores defeituosos
+acc_bad_blocks_passes,Seletor de ciclos de verificação de setores
+acc_verify_hash,Caixa de seleção de verificação SHA256
+acc_hash_input,Campo de hash SHA256 esperado
+acc_hash_input_desc,Cole aqui o hash SHA256 esperado de 64 caracteres
+acc_progress,Barra de progresso da operação
+acc_start,Iniciar operação
+acc_cancel,Cancelar operação
+acc_website,Abrir site do Lufus
+acc_about,Sobre o Lufus
+acc_settings,Abrir configurações
+acc_log,Abrir janela de log
