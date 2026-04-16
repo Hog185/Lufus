@@ -108,3 +108,31 @@ status_format_in_progress,Laufwerk wird formatiert...
 status_format_complete,Formatierung abgeschlossen!
 status_format_failed,Formatierung FEHLGESCHLAGEN. Prüfen Sie das obige Protokoll für den genauen Fehler.
 status_flash_error,Flash-Fehler: {error}
+acc_device,Geräteauswahl
+acc_device_desc,Wählen Sie das USB-Gerät, das Sie verwenden möchten
+acc_refresh,Geräte aktualisieren
+acc_refresh_desc,Nach verbundenen USB-Geräten suchen
+acc_boot,Auswahl des Start-Images
+acc_boot_desc,Zeigt die aktuell ausgewählte Image-Datei
+acc_select,Nach Image-Datei suchen
+acc_image_option,Auswahl der Image-Option
+acc_image_option_desc,Wählen Sie den Typ des zu schreibenden Images: Windows, Linux, Sonstige oder Nur Formatieren
+acc_volume_label,Eingabe der Volumenbezeichnung
+acc_volume_label_desc,Geben Sie einen Namen für das USB-Volumen ein
+acc_filesystem,Auswahl des Dateisystems
+acc_cluster,Auswahl der Clustergröße
+acc_flash_option,Auswahl der Flash-Methode
+acc_quick_format,Checkbox für Schnellformatierung
+acc_extended_label,Checkbox für erweiterte Bezeichnung
+acc_bad_blocks,Checkbox zur Prüfung auf defekte Blöcke
+acc_bad_blocks_passes,Auswahl der Durchgänge für die Defektblockprüfung
+acc_verify_hash,Checkbox zur Verifizierung der SHA256-Prüfsumme
+acc_hash_input,Eingabe des erwarteten SHA256-Hashes
+acc_hash_input_desc,Fügen Sie hier den erwarteten 64-stelligen SHA256-Hash ein
+acc_progress,Fortschrittsanzeige der Operation
+acc_start,Operation starten
+acc_cancel,Operation abbrechen
+acc_website,Lufus-Website öffnen
+acc_about,Über Lufus
+acc_settings,Einstellungen öffnen
+acc_log,Protokollfenster öffnen
