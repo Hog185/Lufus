@@ -21,12 +21,12 @@ test_sources = [
     "tests",
 ]
 requires = [
-    "psutil>=7.2.2",
-    "pyqt6>=6.10.2",
+    "psutil>=7.2",
+    "pyqt6>=6.8",
     "pyudev>=0.24.4",
     "requests",
     "packaging",
-    "platformdirs>=4.9.4"
+    "platformdirs>=4.2.0"
 ]
 test_requires = [
     "pytest",
