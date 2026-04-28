@@ -9,4 +9,4 @@ paru -S lufus
 > The AUR package may not be in sync with the latest release of Lufus. 
 
 ## Other Distros
-For other distros, we recommend following the [build instructions](https://splayer.4plt.ch/lufus/building/).
+For other distros, we recommend following the build instructions.
