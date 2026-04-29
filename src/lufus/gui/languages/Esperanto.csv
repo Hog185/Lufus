@@ -1,0 +1,153 @@
+key,value
+key,value
+window_title,lufus
+log_window_title,lufus Protokolo
+about_window_title,Pri
+settings_window_title,Agordoj
+btn_copy_log,Kopii al tondujo
+btn_save_log,Konservi protokolon...
+dlg_save_log_title,Konservi protokolon
+save_failed_title,Konservo malsukcesis
+save_failed_body,Ne povis konservi:
+settings_label_language,Lingvo
+settings_no_languages,Neniu lingvo trovita
+header_drive_properties,Propraĵoj de la disko
+header_format_options,Opcioj pri formatado
+header_status,Stato
+lbl_device,Dispozitivo
+lbl_boot_selection,Selekto de ŝargado
+lbl_image_option,Opcio pri bildo
+lbl_partition_scheme,Partiga skemo
+lbl_target_system,Cela sistemo
+lbl_volume_label,Volumena etikedo
+lbl_file_system,Dossistemo
+lbl_flash_option,Opcio pri skribado
+lbl_cluster_size,Klastera grando
+combo_image_windows,Norma Windows-instalado
+combo_image_linux,Norma Linux-instalado
+combo_image_other,Iu ajn instalo (DD-reĝimo)
+combo_image_format,Nur formatado
+combo_partition_gpt,GPT
+combo_partition_mbr,MBR
+combo_target_uefi,UEFI (sen CSM)
+combo_target_bios,BIOS (aŭ UEFI-CSM)
+combo_cluster_4096,4096 bajtoj (defaŭlte)
+combo_cluster_8192,8192 bajtoj
+combo_badblocks_1pass,1 pasado
+chk_quick_format,Rapida formatado
+chk_extended_label,Krei etenditan etikedon kaj piktogramojn
+chk_bad_blocks,Kontroli malbonajn blokojn
+chk_verify_hash,Veri SHA256-sumon
+lbl_expected_hash,Atendita SHA256:
+progress_verifying,Kontrolante kontrolsumon...
+msgbox_verify_fail_title,Verado malsukcesis
+msgbox_verify_fail_body,SHA256-kontrolo malsukcesis! La dosiero povas esti difektita.
+msgbox_invalid_hash_title,Ne-valida Ĥash-o
+msgbox_invalid_hash_body,La provizita SHA256-hash-o estas ne-valida.
+combo_flash_iso,ISO-reĝimo
+combo_flash_woe,Woe USB
+combo_flash_ventoy,Ventoy
+combo_flash_dd,DD
+combo_flash_none,Neniu
+btn_select,ELEKTI
+btn_start,STARTI
+btn_cancel,NULIGI
+tooltip_refresh,Refreŝigi USBajn aparatojn (Ctrl+R)
+tooltip_download,Elŝuti ĝisdatigojn
+tooltip_about,Pri
+tooltip_settings,Agordoj
+tooltip_log,Protokolo
+status_ready,Pretulo
+status_scanning,Serĉado de USBaj aparatoj...
+status_scan_failed,Serĉado malsukcesis
+status_flashing,Skribado...
+progress_preparing,Pretigante...
+progress_complete,Fino! 100%
+progress_failed,Malsukcesinta
+progress_starting,Startante... 10%
+progress_unmounted,Malekipigita disko... 20%
+progress_formatted,Formatado de disko... 60%
+progress_label_changed,Etikedo ŝanĝita... 80%
+progress_mount_done,Muntado finita... 100%
+msgbox_cancel_title,Nuligi
+msgbox_cancel_body,Ĉu vi vere volas nuligi?
+msgbox_success_title,Sukceso
+msgbox_success_body,USB disko sukcese skribita!
+msgbox_error_title,Eraro
+msgbox_error_body,Malsukcese skribi USB diskan.
+msgbox_no_image_title,Nenia bildo
+msgbox_no_image_body,Unue elektu validan instal bildon.
+msgbox_no_device_title,Nenia aparato
+msgbox_no_device_body,Unue elektu USB aparaton.
+msgbox_usb_found_title,Nova USB aparatro trovita
+msgbox_usb_found_body,USB aparato trovita
+msgbox_no_devices_title,Neniaj aparatoj
+msgbox_no_devices_body,"Neniu USB drives trovita.
+msgbox_scan_error_title,Serĉeraro
+msgbox_scan_error_body,Malsukcesas serĉi USBajn aparatojn:
+no_usb_found,Neniu USBaj aparatoj trovita
+dlg_select_image_title,Elekti diskobildon
+dlg_select_image_filter,"Diskobildoj (*.iso *.dmg *.img *.bin *.raw);;Ĉiuj dosieroj (*)"
+about_content,"Lufus estas diskobilda skribilo verkita en Python por Linux.
+about_subtitle,USB-flashilo
+btn_close,Fermi
+btn_ok,OK
+combo_boot_default,instalmedio.iso
+tooltip_website,TTT-ejo
+settings_label_theme,Temo
+combo_badblocks_2pass,2 pasadoj
+combo_badblocks_3pass,3 pasadoj
+input_hash_placeholder,Enigi atenditan SHA256-hash-on ĉi tie...
+status_unmounting_all,Malekipigante ĉiujn partitionojn sur {device}...
+status_unmounting,Malekipigante {part}...
+status_format_starting,Startante formatoperacion...
+status_format_in_progress,Formatante diskon...
+status_format_complete,Formatado completa!
+status_format_failed,Formatado FALIS. Kontrolu la protokolon supre por la ekzakta eraro.
+status_flash_error,Skriberaro: {error}
+acc_device,Aparatselektilo
+acc_device_desc,Elektu la USB aparaton kiun vi volas uzi
+acc_refresh,Aparatrefreŝigo
+acc_refresh_desc,Serĉi konektitajn USBajn aparatojn
+acc_boot,Ŝargobildselektilo
+acc_boot_desc,Montras la aktuale elektitan bilddosieron
+acc_select,Serĉi bilddosieron
+acc_image_option,Bildoptio-selektilo
+acc_image_option_desc,Elektu la tipon de bildo por skribi: Vindozo, Linukso, Alia, aŭ Nur Formati
+acc_volume_label,Volumena etikedenda enigo
+acc_volume_label_desc,Enigu nomon por la USB volumeno
+acc_filesystem,Dossistemselektilo
+acc_cluster,Klastera grando-selektilo
+acc_flash_option,Skribmetoda selektilo
+acc_quick_format,Rapidformatada markobutono
+acc_extended_label,Etendita etikeda markobutono
+acc_bad_blocks,Malbonbloka kontrola markobutono
+acc_bad_blocks_passes,Malbonbloka kontrola pasadaselektilo
+acc_verify_hash,SHA256 kontrolmarkobutono
+acc_hash_input,Atendita SHA256-hash-enigo
+acc_hash_input_desc,Ĉi tie algluu la atenditan 64-karaktera SHA256-hash-on
+acc_progress,Operacia progresforto
+acc_start,Starti operacion
+acc_cancel,Nuligi operacion
+acc_website,Malfermi Lufus retpaĝon
+acc_about,Pri Lufus
+acc_settings,Malfermi agordojn
+acc_log,Malfermi protokolofenestron
+msgbox_confirm_flash_title,Avertado
+msgbox_confirm_flash_body,"AVERTADO: Ĉiuj datenoj sur {device} estos detruitaj!
+
+Ĉu vi certas ke vi volas daŭrigi?"
+msgbox_confirm_yes,Jes, daŭrigi
+msgbox_confirm_no,Ne, nuligi
+msgbox_invalid_hash_title,Ne-valida Ĥaŝo
+msgbox_invalid_hash_body,La provizita SHA256-ĥaŝo estas ne-valida.
+msgbox_verify_fail_title,Verado malsukcesa
+msgbox_verify_fail_body,SHA256-kontrolo malsukcesis! La dosiero povas esti difektita.
+progress_verifying,Kontrolante kontrolsumon...
+combo_image_other,Iu ajn instalo (DD-reĝimo)
+lbl_expected_hash,Atendita SHA256:
+msgbox_confirm_flash_title,Avertado
+msgbox_confirm_flash_body,AVERTADO: Ĉiuj datenoj sur {device} estos detruitaj!
+
+Ĉu vi certas ke vi volas daŭrigi?
+msgbox_confirm_no,Ne, nuligi

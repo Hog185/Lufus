@@ -42,3 +42,6 @@ AppDir
 *.spec
 site/
 .desloppify/
+
+
+.briefcase/

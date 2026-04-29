@@ -1,0 +1,32 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["pyqt6", "pyqt"],
+      "groupName": "PyQt6",
+      "groupSlug": "pyqt6"
+    },
+    {
+      "matchPackagePatterns": ["psutil", "pyudev", "packaging", "platformdirs", "requests"],
+      "groupName": "core dependencies",
+      "groupSlug": "core-deps"
+    },
+    {
+      "matchDepTypes": ["pip"],
+      "matchPackagePatterns": ["*"],
+      "groupName": "all Python dependencies",
+      "groupSlug": "all-python-deps"
+    }
+  ],
+  "pip": {
+    "groupName": "Python dependencies",
+    "stabilityDays": 3,
+    "prCreation": "pr-not-ready"
+  },
+  "schedule": ["every monday"],
+  "autoMerge": true,
+  "autoMergeMethod": "merge"
+}
