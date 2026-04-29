@@ -384,6 +384,7 @@ def test_unmount_issues_umount_command(monkeypatch) -> None:
     mount = "/media/testuser/USB"
     drive = "/dev/sdb1"
     monkeypatch.setattr(formatting, "_get_mount_and_drive", lambda: (mount, drive, {}))
+    monkeypatch.setattr(formatting.glob, "glob", lambda pattern: [drive])
     calls = []
     monkeypatch.setattr(formatting.subprocess, "run", lambda cmd, *a, **kw: calls.append(cmd))
     formatting.unmount()

@@ -24,6 +24,7 @@ class AppState:
     # Runtime state
     iso_path: str = ""
     device_node: str = ""
+    theme: str = ""
 
     # Verification
     verify_hash: bool = False

@@ -115,13 +115,13 @@ class lufus(QMainWindow):
         # restore theme from env when relaunched as root via pkexec :3
         env_theme = os.environ.get("LUFUS_THEME", "")
         if env_theme:
-            states.theme = env_theme
+            state.theme = env_theme
 
         # load persisted theme from config when not set via env :3
-        if not getattr(states, "theme", ""):
+        if not getattr(state, "theme", ""):
             try:
                 _theme_cfg = Path(user_config_dir("Lufus")) / "active_theme"
-                states.theme = _theme_cfg.read_text(encoding="utf-8").strip()
+                state.theme = _theme_cfg.read_text(encoding="utf-8").strip()
             except Exception:
                 pass
 
@@ -235,7 +235,7 @@ class lufus(QMainWindow):
         user_config_dir_path = Path(user_config_dir(APP_NAME, roaming=True))
 
         # resolve which theme folder to use :3
-        theme_name = getattr(states, "theme", "") or "default"
+        theme_name = getattr(state, "theme", "") or "default"
         user_themes_dir = user_config_dir_path / "themes"
         builtin_json = theme_dir / theme_name / f'{theme_name}_theme.json'
         user_json = user_themes_dir / theme_name / f'{theme_name}_theme.json'
@@ -1154,7 +1154,7 @@ class lufus(QMainWindow):
         builtin_json = THEME_DIR / theme_name / f'{theme_name}_theme.json'
         user_json = user_config_dir_path / "themes" / theme_name / f'{theme_name}_theme.json'
         if builtin_json.exists() or user_json.exists():
-            states.theme = theme_name
+            state.theme = theme_name
             # persist so it survives restarts without needing the env var :3
             try:
                 _theme_cfg = user_config_dir_path / "active_theme"
@@ -1411,7 +1411,7 @@ class lufus(QMainWindow):
                 "XDG_RUNTIME_DIR":  os.environ.get("XDG_RUNTIME_DIR"),
                 "PATH":             os.environ.get("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"),
                 "PYTHONPATH":       os.environ.get("PYTHONPATH", ""),
-                "LUFUS_THEME":      getattr(states, "theme", ""),
+                "LUFUS_THEME":      getattr(state, "theme", ""),
             }
             env_args = ["env"]
             for key, value in gui_env.items():

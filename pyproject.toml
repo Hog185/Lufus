@@ -8,7 +8,7 @@ version = "1.0.1b1"  # keep synced with [tool.briefcase] version
 description = "A rufus clone written in Python and designed to work with Linux."
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "psutil>=7.2",
     "pyqt6>=6.8.0",
@@ -163,22 +163,6 @@ supported = false
 variant = "Alpha Testing 'FOV' Fork"
 commit_date = 2026-03-26
 is_test = true
-[project]
-name = "lufus"
-# keep version synced with version in [tool.briefcase]
-version = "1.0.0b1"
-description = "Physical drive imaging and formatting utility written in Python"
-readme = "README.md"
-license = {text = "MIT"}
-requires-python = ">=3.11"
-dependencies = [
-    "psutil>=7.2.2",
-    "pyqt6>=6.10.2",
-    "pyudev>=0.24.4",
-    "requests",
-    "packaging",
-    "platformdirs>=4.9.4"
-]
 
 [tool.ruff]
 line-length = 120
