@@ -48,21 +48,24 @@ def find_usb() -> dict[str, str]:
             continue
         mount_path = part.mountpoint
         device_node = part.device
-        if device_node:
-            try:
-                label = subprocess.check_output(
-                    ["lsblk", "-d", "-n", "-o", "LABEL", device_node],
-                    text=True,
-                    timeout=5,
-                ).strip()
-                if not label:
-                    label = os.path.basename(mount_path)
-                usbdict[mount_path] = label
-                log.info("Found USB: %s -> %s", mount_path, label)
-            except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-                label = os.path.basename(mount_path)
-                usbdict[mount_path] = label
-                log.info("Found USB: %s -> %s", mount_path, label)
+        if not device_node:
+            continue
+
+        label = None
+        try:
+            label = subprocess.check_output(
+                ["lsblk", "-d", "-n", "-o", "LABEL", device_node],
+                text=True,
+                timeout=5,
+            ).strip()
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            pass
+
+        if not label:
+            label = os.path.basename(mount_path)
+
+        usbdict[mount_path] = label
+        log.info("Found USB: %s -> %s", mount_path, label)
 
     return usbdict
 
