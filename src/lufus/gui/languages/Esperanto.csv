@@ -1,5 +1,4 @@
 key,value
-key,value
 window_title,lufus
 log_window_title,lufus Protokolo
 about_window_title,Pri
@@ -82,22 +81,26 @@ msgbox_no_device_body,Unue elektu USB aparaton.
 msgbox_usb_found_title,Nova USB aparatro trovita
 msgbox_usb_found_body,USB aparato trovita
 msgbox_no_devices_title,Neniaj aparatoj
-msgbox_no_devices_body,"Neniu USB drives trovita.
+msgbox_no_devices_body,"No USB drives were found.
+Please connect a drive and try again."
 msgbox_scan_error_title,Serĉeraro
 msgbox_scan_error_body,Malsukcesas serĉi USBajn aparatojn:
 no_usb_found,Neniu USBaj aparatoj trovita
 dlg_select_image_title,Elekti diskobildon
-dlg_select_image_filter,"Diskobildoj (*.iso *.dmg *.img *.bin *.raw);;Ĉiuj dosieroj (*)"
-about_content,"Lufus estas diskobilda skribilo verkita en Python por Linux.
+dlg_select_image_filter,Diskobildoj (*.iso *.dmg *.img *.bin *.raw);;Ĉiuj dosieroj (*)
+about_content,"Lufus is a disk image writer written in Python for Linux.
+Inspired by the original Rufus tool for Windows.
+Version: v1.0.0b1
+GitHub: github.com/hog185/lufus"
 about_subtitle,USB-flashilo
 btn_close,Fermi
 btn_ok,OK
 combo_boot_default,instalmedio.iso
 tooltip_website,TTT-ejo
 settings_label_theme,Temo
+input_hash_placeholder,Enigi atenditan SHA256-hash-on ĉi tie...
 combo_badblocks_2pass,2 pasadoj
 combo_badblocks_3pass,3 pasadoj
-input_hash_placeholder,Enigi atenditan SHA256-hash-on ĉi tie...
 status_unmounting_all,Malekipigante ĉiujn partitionojn sur {device}...
 status_unmounting,Malekipigante {part}...
 status_format_starting,Startante formatoperacion...
@@ -113,7 +116,7 @@ acc_boot,Ŝargobildselektilo
 acc_boot_desc,Montras la aktuale elektitan bilddosieron
 acc_select,Serĉi bilddosieron
 acc_image_option,Bildoptio-selektilo
-acc_image_option_desc,Elektu la tipon de bildo por skribi: Vindozo, Linukso, Alia, aŭ Nur Formati
+acc_image_option_desc,"Elektu la tipon de bildo por skribi: Vindozo, Linukso, Alia, aŭ Nur Formati"
 acc_volume_label,Volumena etikedenda enigo
 acc_volume_label_desc,Enigu nomon por la USB volumeno
 acc_filesystem,Dossistemselektilo
@@ -133,26 +136,8 @@ acc_website,Malfermi Lufus retpaĝon
 acc_about,Pri Lufus
 acc_settings,Malfermi agordojn
 acc_log,Malfermi protokolofenestron
-msgbox_confirm_flash_title,Avertado
-msgbox_confirm_flash_body,"AVERTADO: Ĉiuj datenoj sur {device} estos detruitaj!
-
-Ĉu vi certas ke vi volas daŭrigi?"
-msgbox_confirm_yes,Jes, daŭrigi
-msgbox_confirm_no,Ne, nuligi
-msgbox_invalid_hash_title,Ne-valida Ĥaŝo
-msgbox_invalid_hash_body,La provizita SHA256-ĥaŝo estas ne-valida.
-msgbox_verify_fail_title,Verado malsukcesa
-msgbox_verify_fail_body,SHA256-kontrolo malsukcesis! La dosiero povas esti difektita.
-progress_verifying,Kontrolante kontrolsumon...
-combo_image_other,Iu ajn instalo (DD-reĝimo)
-lbl_expected_hash,Atendita SHA256:
-msgbox_confirm_flash_title,Avertado
-msgbox_confirm_flash_body,AVERTADO: Ĉiuj datenoj sur {device} estos detruitaj!
-
-Ĉu vi certas ke vi volas daŭrigi?
-msgbox_confirm_no,Ne, nuligi
 msgbox_flash_warning_title,DATA LOSS WARNING
-msgbox_flash_warning_body,This operation will PERMANENTLY DELETE all data on the selected USB drive.
+msgbox_flash_warning_body,"This operation will PERMANENTLY DELETE all data on the selected USB drive.
 
 This includes:
 - All partitions will be wiped
@@ -160,14 +145,13 @@ This includes:
 
 DO NOT proceed unless you are certain you want to erase this drive.
 
-Are you sure you want to continue?
-msgbox_flash_warning_title,DATA LOSS WARNING
-msgbox_flash_warning_body,This operation will PERMANENTLY DELETE all data on the selected USB drive.
+Are you sure you want to continue?"
+msgbox_confirm_flash_body,"WARNING: All data on {device} will be destroyed!
 
-This includes:
-- All partitions will be wiped
-- All files will be permanently deleted
+Device: {device}
+Image: {image}
+File System: {filesystem}
 
-DO NOT proceed unless you are certain you want to erase this drive.
-
-Are you sure you want to continue?
+Continue?"
+msgbox_confirm_flash_title,Avertado
+status_remounting,Remounting {part}...

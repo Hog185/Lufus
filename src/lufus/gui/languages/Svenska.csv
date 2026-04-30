@@ -87,7 +87,7 @@ msgbox_scan_error_title,Fel vid Skanning
 msgbox_scan_error_body,Misslyckades med att söka efter USB-enheter:
 no_usb_found,Inga USB-enheter hittade.
 dlg_select_image_title,Välj enhetsavbildning
-dlg_select_image_filter,"Enhetsavbildningar (*.iso *.dmg *.img *.bin *.raw);;Alla filer (*)"
+dlg_select_image_filter,Enhetsavbildningar (*.iso *.dmg *.img *.bin *.raw);;Alla filer (*)
 about_content,"Lufus är ett verktyg för att skriva diskavbildningar, skrivet i Python för Linux.
 Inspirerat av det ursprungliga Rufus-verktyget för Windows.
 Version: v1.0.0b1
@@ -116,7 +116,7 @@ acc_boot,Startavbildningsväljare
 acc_boot_desc,Visar den akutellt valda avbildningsfilen
 acc_select,Bläddra efter avbildningsfil
 acc_image_option,Avbildningsval
-acc_image_option_desc,Välj vilken typ av avbildning som ska skrivas: Windows, Linux, Annat eller endast formatering
+acc_image_option_desc,"Välj vilken typ av avbildning som ska skrivas: Windows, Linux, Annat eller endast formatering"
 acc_volume_label,Volymetikettinmatning
 acc_volume_label_desc,Ange ett namn för USB-volymen
 acc_filesystem,Filsystemväljare
@@ -137,7 +137,7 @@ acc_about,Om Lufus
 acc_settings,Öppna inställningar
 acc_log,Öppna loggfönster
 msgbox_flash_warning_title,DATA LOSS WARNING
-msgbox_flash_warning_body,This operation will PERMANENTLY DELETE all data on the selected USB drive.
+msgbox_flash_warning_body,"This operation will PERMANENTLY DELETE all data on the selected USB drive.
 
 This includes:
 - All partitions will be wiped
@@ -145,14 +145,13 @@ This includes:
 
 DO NOT proceed unless you are certain you want to erase this drive.
 
-Are you sure you want to continue?
-msgbox_flash_warning_title,DATA LOSS WARNING
-msgbox_flash_warning_body,This operation will PERMANENTLY DELETE all data on the selected USB drive.
+Are you sure you want to continue?"
+msgbox_confirm_flash_body,"WARNING: All data on {device} will be destroyed!
 
-This includes:
-- All partitions will be wiped
-- All files will be permanently deleted
+Device: {device}
+Image: {image}
+File System: {filesystem}
 
-DO NOT proceed unless you are certain you want to erase this drive.
-
-Are you sure you want to continue?
+Continue?"
+msgbox_confirm_flash_title,Warning
+status_remounting,Remounting {part}...

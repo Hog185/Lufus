@@ -1427,13 +1427,18 @@ class LufusWindow(QMainWindow):
             return False
 
         fs_name = getattr(state, "filesystem_name", None) or "Unknown"
-        body = self._T.get(
+        body_template = self._T.get(
             "msgbox_confirm_flash_body",
             f"WARNING: All data on {device_name} will be destroyed!\n\n"
             f"Device: {device_name}\n"
             f"Image: {Path(state.iso_path).name if state.iso_path else 'None'}\n"
             f"File System: {fs_name}\n\n"
             f"Continue?",
+        )
+        body = body_template.format(
+            device=device_name,
+            image=Path(state.iso_path).name if state.iso_path else "None",
+            filesystem=fs_name,
         )
         reply = QMessageBox.question(
             self,

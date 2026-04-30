@@ -87,7 +87,7 @@ msgbox_scan_error_title,Scan Error
 msgbox_scan_error_body,Failed to scan for USB devices:
 no_usb_found,No USB devices found
 dlg_select_image_title,Select Disk Image
-dlg_select_image_filter,"Disk Images (*.iso *.dmg *.img *.bin *.raw);;All Files (*)"
+dlg_select_image_filter,Disk Images (*.iso *.dmg *.img *.bin *.raw);;All Files (*)
 about_content,"Lufus is a disk image writer written in Python for Linux.
 Inspired by the original Rufus tool for Windows.
 Version: v1.0.0b1
@@ -116,7 +116,7 @@ acc_boot,Boot image selector
 acc_boot_desc,Shows the currently selected image file
 acc_select,Browse for image file
 acc_image_option,Image option selector
-acc_image_option_desc,Choose the type of image to write: Windows, Linux, Other, or Format Only
+acc_image_option_desc,"Choose the type of image to write: Windows, Linux, Other, or Format Only"
 acc_volume_label,Volume label input
 acc_volume_label_desc,Enter a name for the USB volume
 acc_filesystem,File system selector
@@ -137,7 +137,7 @@ acc_about,About Lufus
 acc_settings,Open settings
 acc_log,Open log window
 msgbox_flash_warning_title,DATA LOSS WARNING
-msgbox_flash_warning_body,This operation will PERMANENTLY DELETE all data on the selected USB drive.
+msgbox_flash_warning_body,"This operation will PERMANENTLY DELETE all data on the selected USB drive.
 
 This includes:
 - All partitions will be wiped
@@ -145,14 +145,13 @@ This includes:
 
 DO NOT proceed unless you are certain you want to erase this drive.
 
-Are you sure you want to continue?
-msgbox_flash_warning_title,DATA LOSS WARNING
-msgbox_flash_warning_body,This operation will PERMANENTLY DELETE all data on the selected USB drive.
+Are you sure you want to continue?"
+msgbox_confirm_flash_body,"WARNING: All data on {device} will be destroyed!
 
-This includes:
-- All partitions will be wiped
-- All files will be permanently deleted
+Device: {device}
+Image: {image}
+File System: {filesystem}
 
-DO NOT proceed unless you are certain you want to erase this drive.
-
-Are you sure you want to continue?
+Continue?"
+msgbox_confirm_flash_title,Warning
+status_remounting,Remounting {part}...

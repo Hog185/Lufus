@@ -24,6 +24,7 @@ lbl_flash_option,Opciones de flasheo
 lbl_cluster_size,Tamaño del cluster
 combo_image_windows,Instalación estandar de Windows
 combo_image_linux,Instalación de Linux
+combo_image_other,Any Install (DD mode)
 combo_image_format,Solo formateo
 combo_partition_gpt,GPT
 combo_partition_mbr,MBR
@@ -32,14 +33,21 @@ combo_target_bios,BIOS (o UEFI-CSM)
 combo_cluster_4096,4096 bytes (Por defecto)
 combo_cluster_8192,8192 bytes
 combo_badblocks_1pass,1 pasada
+chk_quick_format,Formateo rápido
+chk_extended_label,Crear etiquetas extendidas y archivos de íconos
+chk_bad_blocks,Detectar bad blocks
+chk_verify_hash,Verificar suma SHA256
+lbl_expected_hash,Expected SHA256:
+progress_verifying,Verifying Checksum...
+msgbox_verify_fail_title,Verification Failed
+msgbox_verify_fail_body,SHA256 checksum mismatch! The file may be corrupted.
+msgbox_invalid_hash_title,Invalid Hash
+msgbox_invalid_hash_body,The provided SHA256 hash is invalid.
 combo_flash_iso,Modo iso
 combo_flash_woe,Woe USB
 combo_flash_ventoy,Ventoy
 combo_flash_dd,DD
 combo_flash_none,Ninguno
-chk_quick_format,Formateo rápido
-chk_extended_label,Crear etiquetas extendidas y archivos de íconos
-chk_bad_blocks,Detectar bad blocks
 btn_select,Seleccionar
 btn_start,Empezar
 btn_cancel,Cancelar
@@ -86,18 +94,15 @@ about_content,"Lufus es una utilidad de escritura de discos para Linux hecha en 
 Inspirado por la herramienta original Rufus para Windows. 
 Version: v1.0.0b1
 GitHub: github.com/hog185/lufus"
-Traducción por/translation by: saber_03  :3 
-
-combo_badblocks_2pass,2 pasadas
-combo_badblocks_3pass,3 pasadas
-chk_verify_hash,Verificar suma SHA256
-input_hash_placeholder,Ingresa el hash SHA256 esperado aquí...
 about_subtitle,Herramienta de flash USB
 btn_close,Cerrar
 btn_ok,OK
 combo_boot_default,medios_de_instalación.iso
 tooltip_website,Sitio web
 settings_label_theme,Tema
+input_hash_placeholder,Ingresa el hash SHA256 esperado aquí...
+combo_badblocks_2pass,2 pasadas
+combo_badblocks_3pass,3 pasadas
 status_unmounting_all,Desmontando todas las particiones en {device}...
 status_unmounting,Desmontando {part}...
 status_format_starting,Iniciando operación de formateo...
@@ -113,7 +118,7 @@ acc_boot,Selector de imagen de arranque
 acc_boot_desc,Muestra el archivo de imagen seleccionado actualmente
 acc_select,Buscar archivo de imagen
 acc_image_option,Selector de tipo de imagen
-acc_image_option_desc,Elija el tipo de imagen a escribir: Windows, Linux, Otro, o Solo Formatear
+acc_image_option_desc,"Elija el tipo de imagen a escribir: Windows, Linux, Otro, o Solo Formatear"
 acc_volume_label,Campo de etiqueta de volumen
 acc_volume_label_desc,Introduzca un nombre para el volumen USB
 acc_filesystem,Selector de sistema de archivos
@@ -134,7 +139,7 @@ acc_about,Acerca de Lufus
 acc_settings,Abrir configuración
 acc_log,Abrir ventana de registro
 msgbox_flash_warning_title,DATA LOSS WARNING
-msgbox_flash_warning_body,This operation will PERMANENTLY DELETE all data on the selected USB drive.
+msgbox_flash_warning_body,"This operation will PERMANENTLY DELETE all data on the selected USB drive.
 
 This includes:
 - All partitions will be wiped
@@ -142,14 +147,13 @@ This includes:
 
 DO NOT proceed unless you are certain you want to erase this drive.
 
-Are you sure you want to continue?
-msgbox_flash_warning_title,DATA LOSS WARNING
-msgbox_flash_warning_body,This operation will PERMANENTLY DELETE all data on the selected USB drive.
+Are you sure you want to continue?"
+msgbox_confirm_flash_body,"WARNING: All data on {device} will be destroyed!
 
-This includes:
-- All partitions will be wiped
-- All files will be permanently deleted
+Device: {device}
+Image: {image}
+File System: {filesystem}
 
-DO NOT proceed unless you are certain you want to erase this drive.
-
-Are you sure you want to continue?
+Continue?"
+msgbox_confirm_flash_title,Warning
+status_remounting,Remounting {part}...

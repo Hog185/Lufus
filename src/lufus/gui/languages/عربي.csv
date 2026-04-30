@@ -87,7 +87,7 @@ msgbox_scan_error_title,حدث خطأ أثناء الفحص
 msgbox_scan_error_body,:فشل الفحص بحثاً عن أجهزة الـ USB
 no_usb_found,لم يتم العثور علي أجهزة الـ USB
 dlg_select_image_title,اختار ملف الصورة
-dlg_select_image_filter,"Disk Images (*.iso *.dmg *.img *.bin *.raw);;كل الملفات (*)"
+dlg_select_image_filter,Disk Images (*.iso *.dmg *.img *.bin *.raw);;كل الملفات (*)
 about_content,"لوفس (lufus) هو برنامج مصنوع بلغة بايثون لنظام تشغيل لينيكس.
 مستوحى من برنامج روفس (rufus) الأصلي لنظام تشغيل ويندوز.
 الإصدار: 1.0.0b1
@@ -137,7 +137,7 @@ acc_about,عن Lufus
 acc_settings,فتح الإعدادات
 acc_log,فتح نافذة السجل
 msgbox_flash_warning_title,DATA LOSS WARNING
-msgbox_flash_warning_body,This operation will PERMANENTLY DELETE all data on the selected USB drive.
+msgbox_flash_warning_body,"This operation will PERMANENTLY DELETE all data on the selected USB drive.
 
 This includes:
 - All partitions will be wiped
@@ -145,14 +145,13 @@ This includes:
 
 DO NOT proceed unless you are certain you want to erase this drive.
 
-Are you sure you want to continue?
-msgbox_flash_warning_title,DATA LOSS WARNING
-msgbox_flash_warning_body,This operation will PERMANENTLY DELETE all data on the selected USB drive.
+Are you sure you want to continue?"
+msgbox_confirm_flash_body,"WARNING: All data on {device} will be destroyed!
 
-This includes:
-- All partitions will be wiped
-- All files will be permanently deleted
+Device: {device}
+Image: {image}
+File System: {filesystem}
 
-DO NOT proceed unless you are certain you want to erase this drive.
-
-Are you sure you want to continue?
+Continue?"
+msgbox_confirm_flash_title,Warning
+status_remounting,Remounting {part}...
