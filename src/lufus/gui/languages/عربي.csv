@@ -136,3 +136,23 @@ acc_website,فتح موقع Lufus
 acc_about,عن Lufus
 acc_settings,فتح الإعدادات
 acc_log,فتح نافذة السجل
+msgbox_flash_warning_title,DATA LOSS WARNING
+msgbox_flash_warning_body,This operation will PERMANENTLY DELETE all data on the selected USB drive.
+
+This includes:
+- All partitions will be wiped
+- All files will be permanently deleted
+
+DO NOT proceed unless you are certain you want to erase this drive.
+
+Are you sure you want to continue?
+msgbox_flash_warning_title,DATA LOSS WARNING
+msgbox_flash_warning_body,This operation will PERMANENTLY DELETE all data on the selected USB drive.
+
+This includes:
+- All partitions will be wiped
+- All files will be permanently deleted
+
+DO NOT proceed unless you are certain you want to erase this drive.
+
+Are you sure you want to continue?

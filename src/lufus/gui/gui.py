@@ -1378,8 +1378,48 @@ class lufus(QMainWindow):
             self.progress_bar.setFormat("")
             self._clear_speed_eta()
 
+    def _confirm_flash(self, device_node: str) -> bool:
+        device_name = Path(device_node).name if device_node else "Unknown"
+        
+        warning_body = self._T.get("msgbox_flash_warning_body",
+            "This operation will PERMANENTLY DELETE all data on the selected USB drive.\n\n"
+            "This includes:\n"
+            "- All partitions will be wiped\n"
+            "- All files will be permanently deleted\n\n"
+            "DO NOT proceed unless you are certain you want to erase this drive.\n\n"
+            "Are you sure you want to continue?")
+        warning_reply = QMessageBox.warning(
+            self,
+            self._T.get("msgbox_flash_warning_title", "DATA LOSS WARNING"),
+            warning_body,
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if warning_reply != QMessageBox.StandardButton.Yes:
+            return False
+        
+        fs_options = ["NTFS", "FAT32", "exFAT", "ext4", "UDF", "HFS+", "ext2", "ext3", "Btrfs", "XFS", "ZFS"]
+        fs_name = fs_options[state.filesystem_index] if state.filesystem_index < len(fs_options) else "Unknown"
+        body = self._T.get("msgbox_confirm_flash_body",
+            f"WARNING: All data on {device_name} will be destroyed!\n\n"
+            f"Device: {device_name}\n"
+            f"Image: {Path(state.iso_path).name if state.iso_path else 'None'}\n"
+            f"File System: {fs_name}\n\n"
+            f"Continue?")
+        reply = QMessageBox.question(
+            self,
+            self._T.get("msgbox_confirm_flash_title", "Warning"),
+            body,
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        return reply == QMessageBox.StandardButton.Yes
+
     def perform_flash(self):
         # perform actual flash operation :D
+        device_node = self.get_selected_mount_path()
+        if not self._confirm_flash(device_node):
+            self.log_message("Flash cancelled by user")
+            return
+
         options = {
             "iso_path": state.iso_path,
             "device": self.get_selected_mount_path(),

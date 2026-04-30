@@ -151,3 +151,23 @@ msgbox_confirm_flash_body,AVERTADO: Ĉiuj datenoj sur {device} estos detruitaj!
 
 Ĉu vi certas ke vi volas daŭrigi?
 msgbox_confirm_no,Ne, nuligi
+msgbox_flash_warning_title,DATA LOSS WARNING
+msgbox_flash_warning_body,This operation will PERMANENTLY DELETE all data on the selected USB drive.
+
+This includes:
+- All partitions will be wiped
+- All files will be permanently deleted
+
+DO NOT proceed unless you are certain you want to erase this drive.
+
+Are you sure you want to continue?
+msgbox_flash_warning_title,DATA LOSS WARNING
+msgbox_flash_warning_body,This operation will PERMANENTLY DELETE all data on the selected USB drive.
+
+This includes:
+- All partitions will be wiped
+- All files will be permanently deleted
+
+DO NOT proceed unless you are certain you want to erase this drive.
+
+Are you sure you want to continue?
