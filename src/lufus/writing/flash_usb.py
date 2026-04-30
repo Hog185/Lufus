@@ -67,8 +67,8 @@ def flash_usb(
 
         dd_args = [
             "dd",
-            f"if={shlex.escape(iso_path)}",
-            f"of={shlex.escape(device)}",
+            f"if={shlex.quote(iso_path)}",
+            f"of={shlex.quote(device)}",
             "bs=4M",
             "status=progress",
             "conv=fsync",
