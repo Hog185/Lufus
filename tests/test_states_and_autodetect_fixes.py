@@ -194,3 +194,11 @@ class TestHandleEventChangedFlag:
         mon.devices["/dev/sdc"] = "DRIVE"
         mon._handle_event(_device(action="remove", node="/dev/sdc"))
         assert "/dev/sdc" not in mon.devices
+
+def test_flashworker_pkexec_root_bypass():
+    """Verify FlashWorker skips pkexec when already root."""
+    import inspect
+    from lufus.gui import workers
+    src = inspect.getsource(workers.FlashWorker.run)
+    assert "if os.geteuid() == 0:" in src
+    assert "cmd = [sys.executable, str(worker_script), options_path]" in src

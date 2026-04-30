@@ -119,12 +119,6 @@ def volume_custom_label(target_partition: str = None) -> bool:
         log.error("No drive node found. Cannot relabel.")
         return False
 
-    # Sanitize label: strip characters that could be misinterpreted.
-    # Since commands are passed as lists (shell=False), shell injection is not
-    # possible, but we still quote each argument defensively.
-    safe_drive = shlex.quote(drive)
-    safe_label = shlex.quote(newlabel)
-
     # 0 -> NTFS, 1 -> FAT32, 2 -> exFAT, 3 -> ext4, 4 -> UDF
     fs_type = state.filesystem_index
     cmd_map = {

@@ -10,6 +10,7 @@ import os
 import sys
 import subprocess
 import tempfile
+import hashlib
 from pathlib import Path
 from unittest.mock import MagicMock, patch, call
 
@@ -346,3 +347,62 @@ class TestInstallGrubMountCleanup:
         assert "finally:" in src, "install_grub must use a finally block for cleanup"
         assert "efi_mounted" in src, "efi_mounted flag must exist to guard conditional unmount"
         assert "data_mounted" in src, "data_mounted flag must exist to guard conditional unmount"
+
+class TestVulnFixes:
+    def test_run_cmd_sudo_handling(self, monkeypatch):
+        """Verify run_cmd strips sudo when running as root."""
+        calls = []
+        def fake_run(cmd, **kwargs):
+            calls.append(cmd)
+            return subprocess.CompletedProcess(cmd, 0)
+
+        monkeypatch.setattr(fw_module.subprocess, "run", fake_run)
+        
+        # Case 1: Running as root (euid=0)
+        monkeypatch.setattr(fw_module.os, "geteuid", lambda: 0)
+        fw_module.run_cmd(["sudo", "ls", "/"])
+        assert calls[-1] == ["ls", "/"]
+        
+        # Case 2: Running as normal user (euid=1000)
+        monkeypatch.setattr(fw_module.os, "geteuid", lambda: 1000)
+        fw_module.run_cmd(["sudo", "ls", "/"])
+        assert calls[-1] == ["sudo", "ls", "/"]
+
+    def test_check_hash(self, tmp_path):
+        """Verify _check_hash function."""
+        f = tmp_path / "test.bin"
+        content = b"hello world"
+        f.write_bytes(content)
+        expected = hashlib.sha256(content).hexdigest()
+        
+        assert fw_module._check_hash(str(f), expected) is True
+        assert fw_module._check_hash(str(f), "wrong") is False
+
+    def test_find_uefi_ntfs_img_hash_verification(self, monkeypatch, tmp_path):
+        """Verify find_uefi_ntfs_img performs hash verification."""
+        img_path = tmp_path / "uefi-ntfs.img"
+        monkeypatch.setattr(fw_module, "__file__", str(img_path))
+        
+        monkeypatch.setattr(fw_module.os.path, "join", lambda *args: str(img_path) if "uefi-ntfs.img" in args else "/".join(args))
+        monkeypatch.setattr(fw_module.os.path, "dirname", lambda p: str(tmp_path))
+
+        expected_hash = "d34dfa6117d1f572f115e0f85f87f6c26b65462347d011e4eb1fa03ae2b70a64"
+        
+        img_path.write_bytes(b"dummy content")
+        monkeypatch.setattr(fw_module, "_check_hash", lambda p, h: h == expected_hash)
+        
+        assert fw_module.find_uefi_ntfs_img() == str(img_path)
+
+        monkeypatch.setattr(fw_module.os.path, "exists", lambda p: False)
+        
+        class FakeResponse:
+            def __enter__(self): return self
+            def __exit__(self, *args): pass
+            def read(self): return b"downloaded content"
+
+        def fake_urlopen(url, timeout=None):
+            return FakeResponse()
+
+        with patch("urllib.request.urlopen", side_effect=fake_urlopen):
+            monkeypatch.setattr(fw_module, "_check_hash", lambda p, h: h == expected_hash)
+            assert fw_module.find_uefi_ntfs_img() == str(img_path)

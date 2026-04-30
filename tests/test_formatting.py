@@ -527,3 +527,12 @@ def test_disk_format_requires_root(monkeypatch):
     monkeypatch.setattr(formatting.subprocess, "run", lambda *a, **kw: calls.append(a))
     assert formatting.disk_format() is False
     assert len(calls) == 0
+
+def test_volume_custom_label_no_shlex_quote():
+    """Verify shlex.quote is no longer used in volume_custom_label."""
+    import inspect
+    from lufus.drives import formatting
+    src = inspect.getsource(formatting.volume_custom_label)
+    assert "shlex.quote" not in src
+    assert "safe_drive" not in src
+    assert "safe_label" not in src

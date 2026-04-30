@@ -88,6 +88,7 @@ def main():
             log.info(_pmsg)
             fo.unmount(part)
 
+        success = False
         if image_option == 4:  # Ventoy
             from lufus.writing.install_ventoy import install_grub
 
@@ -126,6 +127,8 @@ def main():
             )
 
         log.info("flash_worker exiting, success=%s", success)
+        print(f"STATUS:success={success}")
+        sys.stdout.flush()
         sys.exit(0 if success else 1)
     finally:
         # Remove the PID file when done

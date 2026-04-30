@@ -46,103 +46,102 @@ class VerifyWorker(QThread):
             self.flash_done.emit(False)
 
 
+import sys
+import json
+import os
+import subprocess
+import tempfile
+import shutil
+from pathlib import Path
+from PyQt6.QtCore import QThread, pyqtSignal
+from lufus.writing.partition_scheme import PartitionScheme
+
 class FlashWorker(QThread):
-    # worker thread for usb flashing operation meow
+    # worker thread for usb flashing operation via pkexec helper
     progress = pyqtSignal(int)
     status = pyqtSignal(str)
     flash_done = pyqtSignal(bool)
 
     def __init__(self, options: dict, t: dict):
         super().__init__()
-        # store options for flashing
         self.options = options
         self._T = t
+        self.process = None
 
     def run(self):
-        # run flash operation in background thread
-        _saved_stdout = sys.stdout
-        sys.stdout = sys.__stdout__
+        # Create a temporary file for options
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(self.options, f)
+            options_path = f.name
+
         try:
-            from lufus import state as states
-            from lufus.drives import formatting as fo
-            from lufus.writing.flash_usb import flash_usb
-            import glob
-
-            options = self.options
-            # apply options to states :3
-            for key, value in options.items():
-                setattr(states, key, value)
-
-            device_node = options["device"]
-            states.DN = device_node
-            iso_path = options.get("iso_path", "")
-            flash_mode = options["flash_mode"]
-            image_option = options["image_option"]
-
-            # unmount all partitions before flashing :D
-            self.status.emit(
-                self._T.get("status_unmounting_all", "Unmounting all partitions on {device}...").format(
-                    device=device_node
-                )
-            )
-            partitions = glob.glob(f"{device_node}*")
-            for part in partitions:
-                if part != device_node:  # don't unmount the device itself
-                    self.status.emit(self._T.get("status_unmounting", "Unmounting {part}...").format(part=part))
-                    fo.unmount(part)
-
-            # perform operation based on image option
-            if image_option == 3:  # Format Only
-                self.status.emit(self._T.get("status_format_starting", "Starting format operation..."))
-                self.progress.emit(10)
-                self.status.emit(self._T.get("status_format_in_progress", "Formatting drive..."))
-                self.progress.emit(50)
-                success = fo.disk_format(status_cb=self.status.emit)
-                if success:
-                    self.progress.emit(80)
-                    self.status.emit(self._T.get("status_remounting", "Remounting {part}...").format(part=part))
-                    fo.remount(part)
-                    self.progress.emit(100)
-                    self.status.emit(self._T.get("status_format_complete", "Format complete!"))
-                else:
-                    self.status.emit(
-                        self._T.get("status_format_failed", "Format FAILED. Check the log above for the exact error.")
-                    )
-
-            elif image_option == 0:  # Windows
-                if flash_mode == 0:
-                    fs_name = options.get("filesystem_name", states.filesystem_name)
-                    scheme_map = {
-                        "NTFS": PartitionScheme.WINDOWS_NTFS,
-                        "FAT32": PartitionScheme.SIMPLE_FAT32,
-                        "exFAT": PartitionScheme.WINDOWS_EXFAT,
-                    }
-                    scheme = scheme_map.get(fs_name, PartitionScheme.SIMPLE_FAT32)
-                    success = flash_usb(
-                        device_node,
-                        iso_path,
-                        scheme,
-                        progress_cb=self.progress.emit,
-                        status_cb=self.status.emit,
-                        image_option=image_option,
-                    )
-                else:
-                    success = False
+            # Find the flash_worker.py script
+            import lufus.writing.flash_worker as fw
+            worker_script = Path(fw.__file__).resolve()
+            
+            # Prepare the command
+            if os.geteuid() == 0:
+                cmd = [sys.executable, str(worker_script), options_path]
             else:
-                # other flash modes (Linux, Other)
-                success = flash_usb(
-                    device_node,
-                    iso_path,
-                    PartitionScheme.SIMPLE_FAT32,
-                    progress_cb=self.progress.emit,
-                    status_cb=self.status.emit,
-                    image_option=image_option,
-                )
+                pkexec_path = shutil.which("pkexec")
+                if not pkexec_path:
+                    self.status.emit("Error: pkexec not found. Cannot acquire root privileges.")
+                    self.flash_done.emit(False)
+                    return
+                # Determine how to run the script (python vs executable)
+                cmd = [pkexec_path, sys.executable, str(worker_script), options_path]
+            
+            # Start the process
+            self.process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                universal_newlines=True
+            )
 
-            self.flash_done.emit(bool(success))
+            success = False
+            for line in self.process.stdout:
+                line = line.strip()
+                if line.startswith("PROGRESS:"):
+                    try:
+                        pct = int(line.split(":", 1)[1])
+                        self.progress.emit(pct)
+                    except ValueError:
+                        pass
+                elif line.startswith("STATUS:"):
+                    msg = line.split(":", 1)[1]
+                    self.status.emit(msg)
+                elif "success=True" in line:
+                    success = True
+                elif "success=False" in line:
+                    success = False
+
+            self.process.wait()
+            # If dd or other tools exited with success but we didn't catch the final log
+            if self.process.returncode == 0:
+                success = True
+            
+            self.flash_done.emit(success)
+
         except Exception as e:
-            self.status.emit(self._T.get("status_flash_error", "Flash error: {error}").format(error=e))
+            self.status.emit(f"Flash error: {str(e)}")
             self.flash_done.emit(False)
         finally:
-            # restore stdout :D
-            sys.stdout = _saved_stdout
+            if os.path.exists(options_path):
+                try:
+                    os.unlink(options_path)
+                except OSError:
+                    pass
+
+    def terminate(self):
+        if self.process:
+            try:
+                # Try to kill the process group if we had one, 
+                # but pkexec might make this tricky.
+                self.process.terminate()
+            except Exception:
+                pass
+        super().terminate()
+

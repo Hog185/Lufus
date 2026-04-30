@@ -854,7 +854,7 @@ class LufusWindow(QMainWindow):
         self.combo_fs.blockSignals(True)
         if state.image_option == 1:  # linux
             self.combo_fs.clear()
-            self.combo_fs.addItems([fs for fs in self.all_fs_options if fs not in ("HFS+", "ZFS")])
+            self.combo_fs.addItems([fs for fs in self.all_fs_options if fs not in ("NTFS", "HFS+", "ZFS")])
             self.combo_fs.setCurrentText("ext4")
         elif state.image_option == 0:  # windows
             self.combo_fs.clear()
@@ -906,7 +906,7 @@ class LufusWindow(QMainWindow):
 
     def _open_url(self):
         # open github url in browser :D
-        url = "http://www.github.com/hog185/lufus"
+        url = "https://www.github.com/hog185/lufus"
         pkexec_uid = os.environ.get("PKEXEC_UID")
         if pkexec_uid and os.geteuid() == 0:
             # when running as root via pkexec open as original user :3

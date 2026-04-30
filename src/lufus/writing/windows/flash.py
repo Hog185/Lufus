@@ -22,6 +22,8 @@ class PartitionInfo(TypedDict):
 
 def run_cmd(cmd):
     """Wrapper for subprocess.run with logging and error checking."""
+    if os.geteuid() == 0 and cmd[0] == "sudo":
+        cmd = cmd[1:]
     log.debug("run: %s", cmd)
     subprocess.run(cmd, check=True)
 
@@ -571,24 +573,46 @@ def _get_disk_size_sectors(drive: str) -> int:
 UEFI_NTFS_URL = "https://github.com/pbatard/rufus/raw/master/res/uefi/uefi-ntfs.img"
 
 
+def _check_hash(file_path: str, expected_hash: str) -> bool:
+    """Check SHA256 hash of a file."""
+    import hashlib
+    sha256 = hashlib.sha256()
+    try:
+        with open(file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(1024 * 1024), b""):
+                sha256.update(chunk)
+        return sha256.hexdigest() == expected_hash
+    except Exception:
+        return False
+
+
 def find_uefi_ntfs_img(status_cb=None) -> str:
     """Find uefi-ntfs.img next to this script, or download it if missing."""
     candidate = os.path.join(os.path.dirname(__file__), "uefi-ntfs.img")
+    expected_hash = "d34dfa6117d1f572f115e0f85f87f6c26b65462347d011e4eb1fa03ae2b70a64"
+
     if os.path.exists(candidate):
-        return candidate
+        if _check_hash(candidate, expected_hash):
+            return candidate
+        log.warning("uefi-ntfs.img found but hash mismatch, re-downloading...")
 
     if status_cb:
-        status_cb(f"uefi-ntfs.img not found, downloading from {UEFI_NTFS_URL}...")
+        status_cb(f"Downloading uefi-ntfs.img from {UEFI_NTFS_URL}...")
 
     try:
         import urllib.request
+        with urllib.request.urlopen(UEFI_NTFS_URL, timeout=30) as response:
+            with open(candidate, "wb") as f:
+                f.write(response.read())
 
-        urllib.request.urlretrieve(UEFI_NTFS_URL, candidate)
+        if not _check_hash(candidate, expected_hash):
+            raise ValueError("Downloaded uefi-ntfs.img failed hash verification!")
+
         if status_cb:
-            status_cb(f"Downloaded uefi-ntfs.img to {candidate}")
+            status_cb(f"Downloaded and verified uefi-ntfs.img")
         return candidate
     except Exception as e:
         raise FileNotFoundError(
-            f"uefi-ntfs.img not found and download failed: {e}\n"
+            f"uefi-ntfs.img download/verification failed: {e}\n"
             f"Download manually from {UEFI_NTFS_URL} and place it next to this script."
         )
