@@ -10,6 +10,7 @@ log = get_logger(__name__)
 def launch_gui_with_usb_data() -> None:
     if os.geteuid() != 0:
         import shutil
+
         pkexec_path = shutil.which("pkexec") or "/usr/bin/pkexec"
         if os.path.isfile(pkexec_path) and "LUFUS_RELAUNCHED" not in os.environ:
             env_args = ["env"]

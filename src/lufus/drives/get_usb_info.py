@@ -36,13 +36,9 @@ def get_usb_info(usb_path: str) -> USBDeviceInfo | None:
             log.warning("Could not parse device size: %r", size_output)
 
         if usb_size > 32 * 1024**3:
-            log.warning(
-                "USB device is large (%d bytes); confirm before flashing.", usb_size
-            )
+            log.warning("USB device is large (%d bytes); confirm before flashing.", usb_size)
 
-        label = subprocess.check_output(
-            ["lsblk", "-d", "-n", "-o", "LABEL", device_node], text=True, timeout=5
-        ).strip()
+        label = subprocess.check_output(["lsblk", "-d", "-n", "-o", "LABEL", device_node], text=True, timeout=5).strip()
         if not label:
             label = os.path.basename(usb_path)
 

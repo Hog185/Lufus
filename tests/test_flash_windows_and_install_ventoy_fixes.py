@@ -3,6 +3,7 @@
 Each test is named after the bug it reproduces and verifies the fix.
 All tests are deterministic and isolated — no real partitions or downloads.
 """
+
 from __future__ import annotations
 
 import os
@@ -22,17 +23,18 @@ from lufus.writing.windows.flash import _get_wim_size, _find_path_case_insensiti
 import lufus.writing.install_ventoy as iv_module
 from lufus.writing.install_ventoy import download_wimboot, install_grub
 
+
 class TestFlashWindowsImports:
     def test_optional_callable_not_imported(self):
         """Optional and Callable were imported but never used — removed."""
         import importlib, types
-        spec = importlib.util.spec_from_file_location(
-            "fw_check", str(SRC / "lufus/writing/windows/flash.py")
-        )
+
+        spec = importlib.util.spec_from_file_location("fw_check", str(SRC / "lufus/writing/windows/flash.py"))
         mod = importlib.util.module_from_spec(spec)
         # If Optional/Callable were still imported they'd be attributes
         assert not hasattr(mod, "Optional"), "Optional should not be imported"
         assert not hasattr(mod, "Callable"), "Callable should not be imported"
+
 
 class TestRunOutRemoved:
     def test_run_out_no_longer_present(self):
@@ -53,6 +55,7 @@ class TestFlashWindowsOsErrorOnMissingIso:
     def test_returns_false_when_iso_is_a_directory(self, tmp_path):
         result = fw_module.flash_windows("/dev/sdb", str(tmp_path), fw_module.PartitionScheme.SIMPLE_FAT32)
         assert result is False
+
 
 class TestGetWimSizeCaseInsensitive:
     """Before the fix, glob patterns were hardcoded as 'install.wim' and
@@ -93,20 +96,21 @@ class TestGetWimSizeCaseInsensitive:
         sources.mkdir()
         assert _get_wim_size(str(tmp_path)) == 0
 
+
 class TestBootmgrLoopVariableRenamed:
     """The loop variable was named 'f' (shadows built-in). It must be 'fname'."""
 
     def test_loop_uses_fname_variable(self):
         import ast, inspect
+
         src = inspect.getsource(fw_module.flash_windows)
         tree = ast.parse(src)
         for node in ast.walk(tree):
             if isinstance(node, ast.For):
                 if isinstance(node.target, ast.Name):
                     # There must be no bare 'f' loop target in flash_windows
-                    assert node.target.id != "f", (
-                        "Loop variable 'f' still present — should be renamed to 'fname'"
-                    )
+                    assert node.target.id != "f", "Loop variable 'f' still present — should be renamed to 'fname'"
+
 
 class TestDownloadWimbootTimeout:
     """Before the fix, urlretrieve had no timeout. After the fix, URLError
@@ -128,9 +132,7 @@ class TestDownloadWimbootTimeout:
             def read(self):
                 return b"WIMBOOTDATA"
 
-        monkeypatch.setattr(
-            iv_module.urllib.request, "urlopen", lambda *a, **kw: FakeResponse()
-        )
+        monkeypatch.setattr(iv_module.urllib.request, "urlopen", lambda *a, **kw: FakeResponse())
         dest = tmp_path / "wimboot"
         result = download_wimboot(str(dest))
         assert result is True
@@ -141,22 +143,23 @@ class TestDownloadWimbootTimeout:
         assert hasattr(iv_module, "WIMBOOT_TIMEOUT")
         assert iv_module.WIMBOOT_TIMEOUT > 0
 
+
 class TestInstallGrubUsesTempDirs:
     """install_grub must use unique temp directories, not /tmp/efi_prepare."""
 
     def test_hardcoded_tmp_paths_removed(self):
         import inspect
+
         src = inspect.getsource(install_grub)
         # Strip annotation comments before checking so the old path names
         # mentioned inside # [ANNOTATION] strings don't cause false positives.
         code = "\n".join(
-            line.split("# [ANNOTATION]")[0]
-            for line in src.splitlines()
-            if not line.strip().startswith("#")
+            line.split("# [ANNOTATION]")[0] for line in src.splitlines() if not line.strip().startswith("#")
         )
         assert "/tmp/efi_prepare" not in code, "Hardcoded /tmp/efi_prepare still present in code"
         assert "/tmp/data_prepare" not in code, "Hardcoded /tmp/data_prepare still present in code"
         assert "mkdtemp" in code, "mkdtemp must be used instead of hardcoded /tmp paths"
+
 
 class TestInstallGrubBroadExcept:
     """The except clause must be broad enough to catch non-subprocess errors."""
@@ -189,6 +192,7 @@ class TestInstallGrubBroadExcept:
         result = install_grub("/dev/mmcblk0")
         assert result is False
 
+
 class TestInstallGrubMmcblkSeparator:
     """The partition separator 'p' was only added for NVMe, not mmcblk.
     The mmcblk guard now prevents reaching that code, but the separator
@@ -197,11 +201,11 @@ class TestInstallGrubMmcblkSeparator:
 
     def test_separator_logic_includes_mmcblk(self):
         import inspect, ast
+
         src = inspect.getsource(install_grub)
         # The sep assignment must reference 'mmcblk'
-        assert "mmcblk" in src.split("sep =")[1].split("\n")[0], (
-            "separator assignment must include 'mmcblk' check"
-        )
+        assert "mmcblk" in src.split("sep =")[1].split("\n")[0], "separator assignment must include 'mmcblk' check"
+
 
 class TestInstallGrubMountCleanup:
     """Before the fix, returning False early after mounting left the EFI
@@ -213,6 +217,7 @@ class TestInstallGrubMountCleanup:
         and verify umount is still called for the efi partition.
         """
         import inspect
+
         src = inspect.getsource(install_grub)
         # Verify the function uses a finally block (structural test)
         assert "finally:" in src, "install_grub must use a finally block for cleanup"

@@ -1,4 +1,5 @@
 """Global application state for Lufus."""
+
 from dataclasses import dataclass
 
 
@@ -10,16 +11,17 @@ class AppState:
     version: str = "v1.0.1b1"
 
     # Format options
-    filesystem_index: int = 0       # 0=NTFS, 1=FAT32, 2=exFAT, 3=ext4, 4=UDF
-    image_option: int = 0           # 0=Windows, 1=Linux, 2=Other, 3=Format Only, 4=Ventoy
-    partition_scheme: int = 0       # 0=GPT, 1=MBR
-    target_system: int = 0          # 0=UEFI, 1=BIOS
-    cluster_size: int = 0           # 0=4096, 1=8192
-    quick_format: int = 0           # 0=quick, 1=full
+    filesystem_index: int = 0  # 0=NTFS, 1=FAT32, 2=exFAT, 3=ext4, 4=UDF
+    filesystem_name: str = "NTFS"
+    image_option: int = 0  # 0=Windows, 1=Linux, 2=Other, 3=Format Only, 4=Ventoy
+    partition_scheme: int = 0  # 0=GPT, 1=MBR
+    target_system: int = 0  # 0=UEFI, 1=BIOS
+    cluster_size: int = 0  # 0=4096, 1=8192
+    quick_format: int = 0  # 0=quick, 1=full
     create_extended: int = 0
-    check_bad: int = 0              # 0=1 pass, 1=2 passes
+    check_bad: int = 0  # 0=1 pass, 1=2 passes
     new_label: str = "USB_DRIVE"
-    flash_mode: int = 0             # 0=ISO, 1=DD
+    flash_mode: int = 0  # 0=ISO, 1=DD
 
     # Runtime state
     iso_path: str = ""

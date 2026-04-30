@@ -31,6 +31,7 @@ def _setup_common_monkeypatch(monkeypatch) -> None:
 # strip_partition_suffix
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize(
     ("partition", "expected_raw"),
     [
@@ -52,6 +53,7 @@ def test_strip_partition_suffix(partition: str, expected_raw: str) -> None:
 # ---------------------------------------------------------------------------
 # disk_format
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.parametrize(
     ("fs_type", "expected_tool"),
@@ -106,6 +108,7 @@ def test_dskformat_calls_unexpected_for_unknown_fs(monkeypatch) -> None:
 # get_format_geometry()
 # ---------------------------------------------------------------------------
 
+
 def test_cluster_returns_tuple_even_without_usb(monkeypatch) -> None:
     """cluster() must never crash — it must always return a valid 3-tuple."""
     monkeypatch.setattr(formatting.fu, "find_usb", lambda: {})
@@ -139,6 +142,7 @@ def test_cluster_respects_cluster_size_state(monkeypatch) -> None:
 # _apply_partition_scheme
 # ---------------------------------------------------------------------------
 
+
 def test_apply_partition_scheme_gpt(monkeypatch) -> None:
     calls = []
     monkeypatch.setattr(formatting.subprocess, "run", lambda cmd, check=True, **kw: calls.append(cmd))
@@ -168,14 +172,13 @@ def test_apply_partition_scheme_uses_raw_device_for_nvme(monkeypatch) -> None:
     formatting._apply_partition_scheme("/dev/nvme0n1p1")
 
     raw_devices_used = [c[2] for c in calls if len(c) > 2]
-    assert all(d == "/dev/nvme0n1" for d in raw_devices_used), (
-        f"Expected /dev/nvme0n1 but got: {raw_devices_used}"
-    )
+    assert all(d == "/dev/nvme0n1" for d in raw_devices_used), f"Expected /dev/nvme0n1 but got: {raw_devices_used}"
 
 
 # ---------------------------------------------------------------------------
 # check_device_bad_blocks
 # ---------------------------------------------------------------------------
+
 
 def test_checkdevicebadblock_returns_false_when_no_drive(monkeypatch) -> None:
     monkeypatch.setattr(formatting.fu, "find_usb", lambda: {})
@@ -234,10 +237,12 @@ def test_checkdevicebadblock_returns_false_when_badblocks_not_found(monkeypatch)
         call_count[0] += 1
         # First call is blockdev probe — let it succeed; second is badblocks — raise
         if call_count[0] == 1:
+
             class R:
                 returncode = 0
                 stdout = "512"
                 stderr = ""
+
             return R()
         raise FileNotFoundError("badblocks not found")
 
@@ -248,6 +253,7 @@ def test_checkdevicebadblock_returns_false_when_badblocks_not_found(monkeypatch)
 # ---------------------------------------------------------------------------
 # volume_custom_label
 # ---------------------------------------------------------------------------
+
 
 def test_volumecustomlabel_no_drive_does_not_crash(monkeypatch) -> None:
     """volume_custom_label() should gracefully handle missing drive node."""
@@ -317,8 +323,9 @@ def test_volumecustomlabel_handles_called_process_error(monkeypatch) -> None:
     monkeypatch.setattr(formatting.state, "device_node", device)
     monkeypatch.setattr(formatting.state, "filesystem_index", 0)
     monkeypatch.setattr(formatting.state, "new_label", "TESTLABEL")
-    monkeypatch.setattr(formatting.subprocess, "run",
-                        lambda cmd, *a, **kw: (_ for _ in ()).throw(CalledProcessError(1, cmd)))
+    monkeypatch.setattr(
+        formatting.subprocess, "run", lambda cmd, *a, **kw: (_ for _ in ()).throw(CalledProcessError(1, cmd))
+    )
 
     called = {"format_fail": False}
     monkeypatch.setattr(formatting, "format_fail", lambda: called.update({"format_fail": True}))
@@ -330,6 +337,7 @@ def test_volumecustomlabel_handles_called_process_error(monkeypatch) -> None:
 # ---------------------------------------------------------------------------
 # _get_mount_and_drive
 # ---------------------------------------------------------------------------
+
 
 def test_get_mount_and_drive_prefers_states_dn(monkeypatch) -> None:
     find_dn_called = {"called": False}
@@ -359,6 +367,7 @@ def test_get_mount_and_drive_falls_back_to_find_dn(monkeypatch) -> None:
 # ---------------------------------------------------------------------------
 # unmount / remount
 # ---------------------------------------------------------------------------
+
 
 def test_unmount_skips_subprocess_when_no_drive(monkeypatch) -> None:
     monkeypatch.setattr(formatting, "_get_mount_and_drive", lambda: (None, None, {}))
@@ -399,7 +408,6 @@ def test_remount_issues_mount_command(monkeypatch) -> None:
     monkeypatch.setattr(formatting.subprocess, "run", lambda cmd, *a, **kw: calls.append(cmd))
     formatting.remount()
     assert calls and calls[0][0] == "mount" and drive in calls[0] and mount in calls[0]
-
 
 
 @pytest.mark.parametrize(

@@ -35,7 +35,7 @@ def test_find_usb_returns_mount_to_label_mapping(monkeypatch) -> None:
     monkeypatch.setattr(
         find_usb_module.psutil,
         "disk_partitions",
-        lambda*args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device="/dev/sdb1")],
+        lambda *args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device="/dev/sdb1")],
     )
     monkeypatch.setattr(
         find_usb_module.subprocess,
@@ -70,7 +70,7 @@ def test_find_usb_falls_back_to_dir_name_when_lsblk_fails(monkeypatch) -> None:
     monkeypatch.setattr(
         find_usb_module.psutil,
         "disk_partitions",
-        lambda*args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device="/dev/sdc1")],
+        lambda *args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device="/dev/sdc1")],
     )
 
     def raise_lsblk_error(*args, **kwargs):
@@ -105,7 +105,7 @@ def test_find_dn_returns_matching_device_node(monkeypatch) -> None:
     monkeypatch.setattr(
         find_usb_module.psutil,
         "disk_partitions",
-        lambda*args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device="/dev/sdd1")],
+        lambda *args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device="/dev/sdd1")],
     )
 
     assert find_usb_module.find_device_node() == "/dev/sdd1"

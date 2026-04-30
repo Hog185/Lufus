@@ -3,6 +3,7 @@
 Each test is named after the bug it reproduces and verifies the fix.
 Tests use monkeypatching so no real hardware, dd, or network is needed.
 """
+
 from __future__ import annotations
 
 import subprocess
@@ -25,6 +26,7 @@ from lufus.drives.find_usb import _media_directories
 # ---------------------------------------------------------------------------
 # strip_partition_suffix — BUG: re.sub(r"[0-9]+$") mangled NVMe names
 # ---------------------------------------------------------------------------
+
 
 class TestStripPartitionSuffix:
     """Before the fix, `re.sub(r'[0-9]+$', '', '/dev/nvme0n1p1')` produced
@@ -65,6 +67,7 @@ class TestStripPartitionSuffix:
 # flash_usb — BUG: OSError from os.path.getsize propagated instead of False
 # ---------------------------------------------------------------------------
 
+
 class Testflash_usbOsError:
     """Before the fix, calling flash_usb with a non-existent iso_path raised
     OSError (from os.path.getsize). Callers expect a bool return value.
@@ -83,6 +86,7 @@ class Testflash_usbOsError:
 # ---------------------------------------------------------------------------
 # flash_usb — BUG: FileNotFoundError from Popen propagated instead of False
 # ---------------------------------------------------------------------------
+
 
 class Testflash_usbDdNotFound:
     """Before the fix, if dd was absent, Popen raised FileNotFoundError
@@ -116,6 +120,7 @@ class Testflash_usbDdNotFound:
 # ---------------------------------------------------------------------------
 # flash_usb — device stripping uses correct helper (NVMe regression guard)
 # ---------------------------------------------------------------------------
+
 
 class Testflash_usbNvmeDeviceStrip:
     """Ensure flash_usb forwards the correctly stripped NVMe device to dd."""
@@ -156,6 +161,7 @@ class Testflash_usbNvmeDeviceStrip:
 # find_usb / find_device_node — BUG: duplicated path-scan logic (DRY violation)
 # ---------------------------------------------------------------------------
 
+
 class TestMediaDirectories:
     """_media_directories() must deduplicate entries — before the fix
     the two scan passes could yield duplicate entries for the same path.
@@ -175,9 +181,9 @@ class TestMediaDirectories:
 
         def fake_listdir(p):
             if p == "/media":
-                return [user]           # yields /media/testuser
+                return [user]  # yields /media/testuser
             if p == f"/media/{user}":
-                return ["USB"]          # yields /media/testuser/USB
+                return ["USB"]  # yields /media/testuser/USB
             return []
 
         monkeypatch.setattr(find_usb_module.os.path, "exists", fake_exists)
@@ -192,6 +198,7 @@ class TestMediaDirectories:
 # ---------------------------------------------------------------------------
 # find_usb — BUG: psutil.disk_partitions() called without all=True
 # ---------------------------------------------------------------------------
+
 
 class TestFindUsbUsesAllPartitions:
     """find_usb must call disk_partitions(all=True) so bind-mounted USB
@@ -233,6 +240,7 @@ class TestFindUsbUsesAllPartitions:
 # find_device_node — BUG: empty device_node would overwrite states.DN with ""
 # ---------------------------------------------------------------------------
 
+
 class TestFindDNGuardsEmptyDevice:
     """find_device_node must not write an empty string to states.DN."""
 
@@ -243,21 +251,25 @@ class TestFindDNGuardsEmptyDevice:
         mount_path = f"/media/{user}/USB"
         monkeypatch.setattr(find_usb_module.getpass, "getuser", lambda: user)
         monkeypatch.setattr(
-            find_usb_module.os.path, "exists",
+            find_usb_module.os.path,
+            "exists",
             lambda p: p in {"/media", f"/media/{user}", mount_path},
         )
         monkeypatch.setattr(
-            find_usb_module.os.path, "isdir",
+            find_usb_module.os.path,
+            "isdir",
             lambda p: p in {"/media", f"/media/{user}", mount_path},
         )
         monkeypatch.setattr(
-            find_usb_module.os, "listdir",
+            find_usb_module.os,
+            "listdir",
             lambda p: ["USB"] if p == f"/media/{user}" else [],
         )
         # Partition with empty device string
         monkeypatch.setattr(
-            find_usb_module.psutil, "disk_partitions",
-            lambda*args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device="")],
+            find_usb_module.psutil,
+            "disk_partitions",
+            lambda *args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device="")],
         )
 
         state_mod.device_node = "/dev/sdb1"  # set a valid value first
@@ -271,6 +283,7 @@ class TestFindDNGuardsEmptyDevice:
 # Existing-behaviour smoke tests (ensure refactor didn't break happy paths)
 # ---------------------------------------------------------------------------
 
+
 class TestFindUsbHappyPath:
     def test_find_usb_returns_label_from_lsblk(self, monkeypatch):
         user = "testuser"
@@ -278,23 +291,28 @@ class TestFindUsbHappyPath:
 
         monkeypatch.setattr(find_usb_module.getpass, "getuser", lambda: user)
         monkeypatch.setattr(
-            find_usb_module.os.path, "exists",
+            find_usb_module.os.path,
+            "exists",
             lambda p: p in {"/media", f"/media/{user}", mount_path},
         )
         monkeypatch.setattr(
-            find_usb_module.os.path, "isdir",
+            find_usb_module.os.path,
+            "isdir",
             lambda p: p in {"/media", f"/media/{user}", mount_path},
         )
         monkeypatch.setattr(
-            find_usb_module.os, "listdir",
+            find_usb_module.os,
+            "listdir",
             lambda p: ["MY_USB"] if p == f"/media/{user}" else [],
         )
         monkeypatch.setattr(
-            find_usb_module.psutil, "disk_partitions",
-            lambda*args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device="/dev/sdb1")],
+            find_usb_module.psutil,
+            "disk_partitions",
+            lambda *args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device="/dev/sdb1")],
         )
         monkeypatch.setattr(
-            find_usb_module.subprocess, "check_output",
+            find_usb_module.subprocess,
+            "check_output",
             lambda *a, **kw: "MY_LABEL\n",
         )
 
@@ -307,20 +325,24 @@ class TestFindUsbHappyPath:
 
         monkeypatch.setattr(find_usb_module.getpass, "getuser", lambda: user)
         monkeypatch.setattr(
-            find_usb_module.os.path, "exists",
+            find_usb_module.os.path,
+            "exists",
             lambda p: p in {"/media", f"/media/{user}", mount_path},
         )
         monkeypatch.setattr(
-            find_usb_module.os.path, "isdir",
+            find_usb_module.os.path,
+            "isdir",
             lambda p: p in {"/media", f"/media/{user}", mount_path},
         )
         monkeypatch.setattr(
-            find_usb_module.os, "listdir",
+            find_usb_module.os,
+            "listdir",
             lambda p: ["FLASH"] if p == f"/media/{user}" else [],
         )
         monkeypatch.setattr(
-            find_usb_module.psutil, "disk_partitions",
-            lambda*args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device="/dev/sdd1")],
+            find_usb_module.psutil,
+            "disk_partitions",
+            lambda *args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device="/dev/sdd1")],
         )
 
         assert find_usb_module.find_device_node() == "/dev/sdd1"

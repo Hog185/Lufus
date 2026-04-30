@@ -24,6 +24,7 @@ def _fake_check_output(size="1000000000", label="MY_USB"):
         if "SIZE" in cmd:
             return size + "\n"
         return label + "\n"
+
     return impl
 
 
@@ -34,21 +35,18 @@ class Testget_usb_infoNormalisedMountPath:
     """
 
     def test_trailing_slash_is_stripped(self, monkeypatch):
-        monkeypatch.setattr(gui_module.psutil, "disk_partitions",
-                            _fake_partitions("/media/u/USB/", "/dev/sdb1"))
-        monkeypatch.setattr(gui_module.subprocess, "check_output",
-                            _fake_check_output())
+        monkeypatch.setattr(gui_module.psutil, "disk_partitions", _fake_partitions("/media/u/USB/", "/dev/sdb1"))
+        monkeypatch.setattr(gui_module.subprocess, "check_output", _fake_check_output())
         result = get_usb_info("/media/u/USB/")
         assert result["mount_path"] == "/media/u/USB"
 
     def test_normalised_path_matches_normpath(self, monkeypatch, tmp_path):
         mount = str(tmp_path)
-        monkeypatch.setattr(gui_module.psutil, "disk_partitions",
-                            _fake_partitions(mount, "/dev/sdc1"))
-        monkeypatch.setattr(gui_module.subprocess, "check_output",
-                            _fake_check_output())
+        monkeypatch.setattr(gui_module.psutil, "disk_partitions", _fake_partitions(mount, "/dev/sdc1"))
+        monkeypatch.setattr(gui_module.subprocess, "check_output", _fake_check_output())
         result = get_usb_info(mount)
         import os
+
         assert result["mount_path"] == os.path.normpath(mount)
 
 
@@ -75,8 +73,7 @@ class Testget_usb_infoTimeoutExpired:
     """
 
     def test_returns_empty_dict_on_timeout(self, monkeypatch):
-        monkeypatch.setattr(gui_module.psutil, "disk_partitions",
-                            _fake_partitions("/media/u/USB", "/dev/sdb1"))
+        monkeypatch.setattr(gui_module.psutil, "disk_partitions", _fake_partitions("/media/u/USB", "/dev/sdb1"))
 
         def raise_timeout(*args, **kwargs):
             raise subprocess.TimeoutExpired(cmd="lsblk", timeout=5)
@@ -87,6 +84,7 @@ class Testget_usb_infoTimeoutExpired:
 
     def test_timeout_handler_is_explicit(self):
         import inspect
+
         src = inspect.getsource(get_usb_info)
         assert "TimeoutExpired" in src
 
@@ -95,8 +93,7 @@ class Testget_usb_infoForElse:
     """When no partition matches the mount path, get_usb_info must return {}."""
 
     def test_returns_empty_when_no_match(self, monkeypatch):
-        monkeypatch.setattr(gui_module.psutil, "disk_partitions",
-                            lambda*args, **kwargs: [])
+        monkeypatch.setattr(gui_module.psutil, "disk_partitions", lambda *args, **kwargs: [])
         result = get_usb_info("/no/match")
         assert result is None
 
@@ -113,10 +110,8 @@ class TestLabelIsWindowsDeadBranch:
 
     def test_dead_branch_removed_from_source(self):
         import inspect
-        code = "\n".join(
-            line.split("# [ANNOTATION]")[0]
-            for line in inspect.getsource(_label_is_windows).splitlines()
-        )
+
+        code = "\n".join(line.split("# [ANNOTATION]")[0] for line in inspect.getsource(_label_is_windows).splitlines())
         assert 'startswith("WINDOWS")' not in code
         assert "startswith('WINDOWS')" not in code
 
@@ -139,10 +134,8 @@ class TestReadIsoLabelOsError:
 
     def test_uses_oserror_not_bare_exception(self):
         import inspect
-        code = "\n".join(
-            line.split("# [ANNOTATION]")[0]
-            for line in inspect.getsource(_read_iso_label).splitlines()
-        )
+
+        code = "\n".join(line.split("# [ANNOTATION]")[0] for line in inspect.getsource(_read_iso_label).splitlines())
         assert "except Exception" not in code
         assert "except OSError" in code
 

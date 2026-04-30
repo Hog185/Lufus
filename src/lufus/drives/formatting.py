@@ -27,7 +27,6 @@ def _find_tool(name: str) -> str:
     return name
 
 
-
 #######
 
 
@@ -44,16 +43,14 @@ def format_fail() -> None:
 
 
 def unmount_fail() -> None:
-    log.error(
-        "Unmounting failed. Perhaps either the drive was already unmounted or is in use."
-    )
+    log.error("Unmounting failed. Perhaps either the drive was already unmounted or is in use.")
 
 
 def log_unexpected_error() -> None:
     log.error("An unexpected error occurred")
 
 
-#unmountain
+# unmountain
 def unmount(drive: str = None) -> bool:
     if not drive:
         _, drive, _ = _get_mount_and_drive()
@@ -78,8 +75,9 @@ def unmount(drive: str = None) -> bool:
     time.sleep(0.5)
     return True
 
-#mountain
-def remount(drive: str=None) -> bool:
+
+# mountain
+def remount(drive: str = None) -> bool:
     if not drive:
         mount, drive, _ = _get_mount_and_drive()
     if not drive:
@@ -102,12 +100,13 @@ def remount(drive: str=None) -> bool:
         return False
 
 
-#disk formatting
+# disk formatting
 def volume_custom_label(target_partition: str = None) -> bool:
     newlabel = state.new_label
     # Sanitize label: allow only alphanumeric, spaces, hyphens, and underscores
     import re
-    newlabel = re.sub(r'[^a-zA-Z0-9 \-_]', '', newlabel).strip()
+
+    newlabel = re.sub(r"[^a-zA-Z0-9 \-_]", "", newlabel).strip()
     if not newlabel:
         newlabel = "USB_DRIVE"
 
@@ -172,7 +171,12 @@ def get_format_geometry() -> tuple[int, int, int]:
     sector_size = 512
 
     sectors_per_cluster = block_size // sector_size
-    log.debug("get_format_geometry(): block_size=%d, sector_size=%d, sectors_per_cluster=%d", block_size, sector_size, sectors_per_cluster)
+    log.debug(
+        "get_format_geometry(): block_size=%d, sector_size=%d, sectors_per_cluster=%d",
+        block_size,
+        sector_size,
+        sectors_per_cluster,
+    )
     return block_size, sector_size, sectors_per_cluster
 
 
@@ -216,17 +220,17 @@ def check_device_bad_blocks() -> bool:
             else:
                 log.warning(
                     "Unexpected blockdev output for %r: %r. Using default block size.",
-                    drive, probed,
+                    drive,
+                    probed,
                 )
         else:
             log.warning(
                 "blockdev failed for %s (exit %d). Using default block size.",
-                drive, probe.returncode,
+                drive,
+                probe.returncode,
             )
     except Exception as exc:
-        log.warning(
-            "Could not probe sector size for %s: %s. Using default block size.", drive, exc
-        )
+        log.warning("Could not probe sector size for %s: %s. Using default block size.", drive, exc)
 
     # -s = show progress, -v = verbose output
     # -n = non-destructive read-write test (safe default)
@@ -237,7 +241,9 @@ def check_device_bad_blocks() -> bool:
 
     log.info(
         "Checking %s for bad blocks (%d pass(es), block size %d)...",
-        drive, passes, logical_block_size,
+        drive,
+        passes,
+        logical_block_size,
     )
     try:
         result = subprocess.run(args, capture_output=True, text=True)
@@ -269,6 +275,7 @@ def disk_format(status_cb=None) -> bool:
     """Format the drive. Returns True on success, False on failure.
     Accepts an optional status_cb(str) to emit progress messages to the GUI.
     """
+
     def _status(msg: str) -> None:
         log.info(msg)
         if status_cb:
@@ -290,13 +297,20 @@ def disk_format(status_cb=None) -> bool:
     fs_type = state.filesystem_index
 
     # Check if quick format is enabled (state.quick_format: 0 = quick, 1 = full)
-    is_quick_format = (state.quick_format == 0)
+    is_quick_format = state.quick_format == 0
 
-    _status(f"Starting format: device={raw_device}, fs_type={fs_type}, clusters={block_size}, sectors={sectors_per_cluster}, quick={is_quick_format}")
+    _status(
+        f"Starting format: device={raw_device}, fs_type={fs_type}, clusters={block_size}, sectors={sectors_per_cluster}, quick={is_quick_format}"
+    )
 
     # Filesystem tool configurations: (tool_name, args_builder, fs_label, install_hint)
     fs_configs = {
-        0: ("mkfs.ntfs", lambda: ["-c", str(block_size), "-F"] + (["-Q"] if is_quick_format else []) + [raw_device], "NTFS", "ntfs-3g"),
+        0: (
+            "mkfs.ntfs",
+            lambda: ["-c", str(block_size), "-F"] + (["-Q"] if is_quick_format else []) + [raw_device],
+            "NTFS",
+            "ntfs-3g",
+        ),
         1: ("mkfs.vfat", lambda: ["-I", "-s", str(sectors_per_cluster), "-F", "32", raw_device], "FAT32", "dosfstools"),
         2: ("mkfs.exfat", lambda: ["-b", str(block_size), raw_device], "exFAT", "exfatprogs or exfat-utils"),
         3: ("mkfs.ext4", lambda: ["-b", str(block_size), raw_device], "ext4", "e2fsprogs"),
@@ -383,5 +397,3 @@ def drive_repair() -> None:
         log.info("Successfully repaired drive %s (FAT32).", drive)
     except Exception as e:
         log.error("Could not repair drive %s: %s: %s", drive, type(e).__name__, e)
-
-

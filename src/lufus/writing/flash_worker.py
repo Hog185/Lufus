@@ -49,7 +49,7 @@ def main():
 
         options_file = sys.argv[1]
         try:
-            with open(options_file, 'r') as f:
+            with open(options_file, "r") as f:
                 options = json.load(f)
         except Exception as e:
             _err = f"Failed to read options file: {e}"
@@ -89,6 +89,7 @@ def main():
 
         if image_option == 4:  # Ventoy
             from lufus.writing.install_ventoy import install_grub
+
             status_cb("Installing Ventoy bootloader...")
             progress_cb(10)
             success = install_grub(device_node)
@@ -99,8 +100,7 @@ def main():
                 status_cb("Ventoy installation failed")
                 log.error("Ventoy installation failed for device %s", device_node)
         else:  # Windows / Linux / Other / Format Only
-            success = flash_usb(device_node, iso_path,
-                               progress_cb=progress_cb, status_cb=status_cb)
+            success = flash_usb(device_node, iso_path, progress_cb=progress_cb, status_cb=status_cb)
 
         log.info("flash_worker exiting, success=%s", success)
         sys.exit(0 if success else 1)

@@ -36,9 +36,7 @@ def is_windows_iso(iso_path: str) -> bool:
 
     try:
         log.info("Windows detection: running 7z to list ISO contents...")
-        result = subprocess.run(
-            ["7z", "l", iso_path], capture_output=True, text=True, timeout=30
-        )
+        result = subprocess.run(["7z", "l", iso_path], capture_output=True, text=True, timeout=30)
         log.info("Windows detection: 7z exited with code %d", result.returncode)
         if result.returncode == 0:
             files = result.stdout.lower()
@@ -63,9 +61,7 @@ def is_windows_iso(iso_path: str) -> bool:
         else:
             log.warning("Windows detection: 7z stderr: %s", result.stderr.strip()[:200])
     except FileNotFoundError:
-        log.warning(
-            "Windows detection: 7z not found - install p7zip-full: sudo apt install p7zip-full"
-        )
+        log.warning("Windows detection: 7z not found - install p7zip-full: sudo apt install p7zip-full")
     except subprocess.TimeoutExpired:
         log.warning("Windows detection: 7z timed out listing ISO after 30s")
     except Exception as e:
@@ -82,12 +78,11 @@ def is_windows_iso(iso_path: str) -> bool:
         blkid_label = result.stdout.strip()
         log.info(
             "Windows detection: blkid returned label=%r (exit code %d)",
-            blkid_label, result.returncode,
+            blkid_label,
+            result.returncode,
         )
         if _label_is_windows(blkid_label):
-            log.info(
-                "Windows detection: Windows label match -> Windows ISO confirmed via blkid"
-            )
+            log.info("Windows detection: Windows label match -> Windows ISO confirmed via blkid")
             return True
         log.info("Windows detection: label does not match Windows patterns")
     except Exception as e:

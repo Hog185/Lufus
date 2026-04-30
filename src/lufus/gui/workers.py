@@ -20,6 +20,7 @@ class VerifyWorker(QThread):
         # run verification in background thread :3
         try:
             import hashlib
+
             p = Path(self.iso_path)
             if not p.is_file():
                 self.progress.emit(f"Verification error: file not found: {self.iso_path}")
@@ -79,7 +80,11 @@ class FlashWorker(QThread):
             image_option = options["image_option"]
 
             # unmount all partitions before flashing :D
-            self.status.emit(self._T.get("status_unmounting_all", "Unmounting all partitions on {device}...").format(device=device_node))
+            self.status.emit(
+                self._T.get("status_unmounting_all", "Unmounting all partitions on {device}...").format(
+                    device=device_node
+                )
+            )
             partitions = glob.glob(f"{device_node}*")
             for part in partitions:
                 if part != device_node:  # don't unmount the device itself
@@ -100,33 +105,37 @@ class FlashWorker(QThread):
                     self.progress.emit(100)
                     self.status.emit(self._T.get("status_format_complete", "Format complete!"))
                 else:
-                    self.status.emit(self._T.get("status_format_failed", "Format FAILED. Check the log above for the exact error."))
+                    self.status.emit(
+                        self._T.get("status_format_failed", "Format FAILED. Check the log above for the exact error.")
+                    )
 
             elif image_option == 0:  # Windows
                 if flash_mode == 0:
                     # iso mode for microslop windows
                     # passing user selected filesystem
-                    #if states.currentFS == 0:
+                    # if states.currentFS == 0:
                     #  scheme=PartitionScheme.WINDOWS_NTFS
-                    #elif states.currentFS == 1:
+                    # elif states.currentFS == 1:
                     #  scheme=PartitionScheme.SIMPLE_FAT32
-                    #elif states.currentFS == 2:
+                    # elif states.currentFS == 2:
                     #  scheme=PartitionScheme.WINDOWS_EXFAT
-                    #else:
+                    # else:
                     #  scheme=PartitionScheme.LINUX
-                    scheme=PartitionScheme.SIMPLE_FAT32
-                    success = FlashUSB(iso_path, device_node,
-                                       scheme,
-                                       progress_cb=self.progress.emit,
-                                       status_cb=self.status.emit)
+                    scheme = PartitionScheme.SIMPLE_FAT32
+                    success = FlashUSB(
+                        iso_path, device_node, scheme, progress_cb=self.progress.emit, status_cb=self.status.emit
+                    )
                 else:
                     success = False
             else:
                 # other flash modes (Linux, Other)
-                success = FlashUSB(iso_path, device_node,
-                                   PartitionScheme.LINUX,
-                                   progress_cb=self.progress.emit,
-                                   status_cb=self.status.emit)
+                success = FlashUSB(
+                    iso_path,
+                    device_node,
+                    PartitionScheme.LINUX,
+                    progress_cb=self.progress.emit,
+                    status_cb=self.status.emit,
+                )
 
             self.flash_done.emit(bool(success))
         except Exception as e:
@@ -135,4 +144,3 @@ class FlashWorker(QThread):
         finally:
             # restore stdout :D
             sys.stdout = _saved_stdout
-

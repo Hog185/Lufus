@@ -77,7 +77,7 @@ def install_grub(target_device: str) -> bool:
     # Cleanup to avoid "Device Busy"
     print(f"--- Cleaning up {target_device} ---")
     for partition in glob.glob(f"{target_device}*"):
-        subprocess.run(['umount', partition], check=False)
+        subprocess.run(["umount", partition], check=False)
 
     # Partitioning Definition
     sfdisk_input = f"""
@@ -98,10 +98,10 @@ unit: sectors
 
     try:
         print(f"--- Partitioning {target_device} ---")
-        subprocess.run(['sfdisk', target_device], input=sfdisk_input.encode(), check=True)
+        subprocess.run(["sfdisk", target_device], input=sfdisk_input.encode(), check=True)
 
         # Determine partition names (handles /dev/sdaX vs /dev/nvme0n1pX and /dev/mmcblkXpY)
-        sep = 'p' if 'nvme' in target_device or 'mmcblk' in target_device else ''
+        sep = "p" if "nvme" in target_device or "mmcblk" in target_device else ""
         efi_part = f"{target_device}{sep}2"
         data_part = f"{target_device}{sep}3"
 
@@ -122,16 +122,27 @@ unit: sectors
 
         # Formatting
         print(f"--- Formatting {efi_part} and {data_part} ---")
-        subprocess.run(['mkfs.vfat', '-F', '32', '-n', 'EFI', efi_part], check=True)
-        subprocess.run(['mkfs.exfat', '-L', 'OS_PART', data_part], check=True)
+        subprocess.run(["mkfs.vfat", "-F", "32", "-n", "EFI", efi_part], check=True)
+        subprocess.run(["mkfs.exfat", "-L", "OS_PART", data_part], check=True)
 
         # GRUB Installation
-        subprocess.run(['mount', efi_part, efi_mount], check=True)
+        subprocess.run(["mount", efi_part, efi_mount], check=True)
         efi_mounted = True
 
         print("--- Installing GRUB (Legacy + UEFI) ---")
-        subprocess.run(['grub-install', '--target=i386-pc', f'--boot-directory={efi_mount}/boot', target_device], check=True)
-        subprocess.run(['grub-install', '--target=x86_64-efi', f'--efi-directory={efi_mount}', f'--boot-directory={efi_mount}/boot', '--removable'], check=True)
+        subprocess.run(
+            ["grub-install", "--target=i386-pc", f"--boot-directory={efi_mount}/boot", target_device], check=True
+        )
+        subprocess.run(
+            [
+                "grub-install",
+                "--target=x86_64-efi",
+                f"--efi-directory={efi_mount}",
+                f"--boot-directory={efi_mount}/boot",
+                "--removable",
+            ],
+            check=True,
+        )
 
         # Copy grub.cfg
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -142,7 +153,7 @@ unit: sectors
         shutil.copy(cfg_path, f"{efi_mount}/boot/grub/grub.cfg")
 
         # Download wimboot
-        subprocess.run(['mount', data_part, data_mount], check=True)
+        subprocess.run(["mount", data_part, data_mount], check=True)
         data_mounted = True
         download_wimboot(f"{data_mount}/wimboot")
 
@@ -154,9 +165,9 @@ unit: sectors
         return False
     finally:
         if efi_mounted:
-            subprocess.run(['umount', efi_mount], check=False)
+            subprocess.run(["umount", efi_mount], check=False)
         if data_mounted:
-            subprocess.run(['umount', data_mount], check=False)
+            subprocess.run(["umount", data_mount], check=False)
         # Clean up temp dirs regardless of outcome
         for d in (efi_mount, data_mount):
             try:

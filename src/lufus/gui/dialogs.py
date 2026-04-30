@@ -41,7 +41,9 @@ class LogWindow(QDialog):
         self.log_text.setReadOnly(True)
         font_size = self._S.pt(9) if self._S else 9
         self.log_text.setFont(QFont("Consolas", font_size))
-        self.log_text.setStyleSheet("background-color: palette(base); color: palette(text); border: 1px solid palette(mid);")
+        self.log_text.setStyleSheet(
+            "background-color: palette(base); color: palette(text); border: 1px solid palette(mid);"
+        )
         layout.addWidget(self.log_text)
 
         # add copy and save buttons
@@ -85,7 +87,7 @@ class LogWindow(QDialog):
                 QMessageBox.critical(
                     self,
                     self._T.get("save_failed_title", "Save Failed"),
-                    f'{self._T.get("save_failed_body", "Failed to save log")}\n{e}',
+                    f"{self._T.get('save_failed_body', 'Failed to save log')}\n{e}",
                 )
 
 
@@ -110,15 +112,17 @@ class AboutWindow(QDialog):
         layout.setSpacing(self._S.px(10) if self._S else 10)
 
         # To the person who made this: Fuck you. — Saber.
-        flat = getattr(parent, '_flat_theme', {})
-        tool_pt = flat.get('fonts_tool', self._S.pt(9) if self._S else 9)
-        font_family = flat.get('fonts_family', '')
-        fg_color = flat.get('colors_fg', '')
+        flat = getattr(parent, "_flat_theme", {})
+        tool_pt = flat.get("fonts_tool", self._S.pt(9) if self._S else 9)
+        font_family = flat.get("fonts_family", "")
+        fg_color = flat.get("colors_fg", "")
 
         # main title label fuh u
         lbl_title = QLabel("Lufus")
         lbl_title.setObjectName("aboutTitle")
-        lbl_title.setStyleSheet(f"font-family: {font_family}; font-size: {self._S.pt(20) if self._S else 20}pt; font-weight: bold;")
+        lbl_title.setStyleSheet(
+            f"font-family: {font_family}; font-size: {self._S.pt(20) if self._S else 20}pt; font-weight: bold;"
+        )
         lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl_title)
 
@@ -144,7 +148,7 @@ class AboutWindow(QDialog):
         layout.addWidget(self.about_text, 1)
 
         btn_row = QHBoxLayout()
-        #close button or smth, whatever
+        # close button or smth, whatever
         btn_close = QPushButton(self._T.get("btn_close", "Close"))
         btn_close.setFixedWidth(self._S.px(90) if self._S else 90)
         btn_close.clicked.connect(self.hide)
@@ -236,15 +240,9 @@ class SettingsDialog(QDialog):
     @staticmethod
     def _detect_themes():
         # find builtin themes - each lives in themes/<name>/<name>_theme.json :3
-        builtin = sorted(
-            p.parent.name
-            for p in THEME_DIR.glob('*/*_theme.json')
-        )
+        builtin = sorted(p.parent.name for p in THEME_DIR.glob("*/*_theme.json"))
         user_themes_dir = Path(user_config_dir("Lufus")) / "themes"
         user_themes_dir.mkdir(parents=True, exist_ok=True)
         # user themes follow the same folder structure :D
-        custom = sorted(
-            p.parent.name
-            for p in user_themes_dir.glob('*/*_theme.json')
-        )
+        custom = sorted(p.parent.name for p in user_themes_dir.glob("*/*_theme.json"))
         return builtin, custom

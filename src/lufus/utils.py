@@ -7,6 +7,7 @@ def require_root() -> bool:
     if os.geteuid() == 0:
         return True
     import logging
+
     logging.getLogger("lufus").error("This operation requires root privileges (euid=%d).", os.geteuid())
     return False
 

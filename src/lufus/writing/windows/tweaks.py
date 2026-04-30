@@ -4,6 +4,7 @@ These modify Windows installation media (boot.wim, autounattend.xml)
 to bypass hardware requirements, skip privacy questions, and create
 local accounts.
 """
+
 import subprocess
 import os
 from lufus.utils import get_mount_and_drive
@@ -30,16 +31,22 @@ def win_hardware_bypass():
         "addvalue BypassSecureBootCheck 4 1",
         "addvalue BypassRAMCheck 4 1",
         "save",
-        "exit"
+        "exit",
     ]
     cmd_string = "\n".join(commands) + "\n"
     log.info("win_hardware_bypass: injecting registry keys into boot.wim at %s...", mount)
     try:
-        subprocess.run(['mkdir', '/media/tempwinmnt'], check=True)
-        subprocess.run(['wimmountrw', f'{mount}/sources/boot.wim', '2', '/media/tempwinmnt'], check=True)
-        subprocess.run(['chntpw', 'e', '/media/tempwinmnt/Windows/System32/config/SYSTEM'], input=cmd_string, text=True, capture_output=True, check=True)
-        subprocess.run(['wimunmount', '/media/tempwinmnt', '--commit'], check=True)
-        subprocess.run(['rm', '-rf', '/media/tempwinmnt'], check=True)
+        subprocess.run(["mkdir", "/media/tempwinmnt"], check=True)
+        subprocess.run(["wimmountrw", f"{mount}/sources/boot.wim", "2", "/media/tempwinmnt"], check=True)
+        subprocess.run(
+            ["chntpw", "e", "/media/tempwinmnt/Windows/System32/config/SYSTEM"],
+            input=cmd_string,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        subprocess.run(["wimunmount", "/media/tempwinmnt", "--commit"], check=True)
+        subprocess.run(["rm", "-rf", "/media/tempwinmnt"], check=True)
         log.info("win_hardware_bypass: registry keys injected successfully.")
     except subprocess.CalledProcessError as e:
         log.error("win_hardware_bypass: CalledProcessError: %s", e.stderr)
@@ -50,20 +57,21 @@ def win_local_acc():
     if not mount:
         log.error("win_local_acc: no USB mount found")
         return
-    commands = [
-        "cd Microsoft\\Windows\\CurrentVersion\\OOBE\n"
-        "addvalue BypassNRO 4 1\n"
-        "save\n"
-        "exit\n"
-    ]
+    commands = ["cd Microsoft\\Windows\\CurrentVersion\\OOBE\naddvalue BypassNRO 4 1\nsave\nexit\n"]
     cmd_string = "\n".join(commands) + "\n"
     log.info("win_local_acc: bypassing online account requirement at %s...", mount)
     try:
-        subprocess.run(['mkdir', '/media/tempwinmnt'], check=True)
-        subprocess.run(['wimmountrw', f'{mount}/sources/boot.wim', '2', '/media/tempwinmnt'], check=True)
-        subprocess.run(['chntpw', 'e', '/media/tempwinmnt/Windows/System32/config/SOFTWARE'], input=cmd_string, text=True, capture_output=True, check=True)
-        subprocess.run(['wimunmount', '/media/tempwinmnt', '--commit'], check=True)
-        subprocess.run(['rm', '-rf', '/media/tempwinmnt'], check=True)
+        subprocess.run(["mkdir", "/media/tempwinmnt"], check=True)
+        subprocess.run(["wimmountrw", f"{mount}/sources/boot.wim", "2", "/media/tempwinmnt"], check=True)
+        subprocess.run(
+            ["chntpw", "e", "/media/tempwinmnt/Windows/System32/config/SOFTWARE"],
+            input=cmd_string,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        subprocess.run(["wimunmount", "/media/tempwinmnt", "--commit"], check=True)
+        subprocess.run(["rm", "-rf", "/media/tempwinmnt"], check=True)
         log.info("win_local_acc: online account bypass applied successfully.")
     except subprocess.CalledProcessError as e:
         log.error("win_local_acc: CalledProcessError: %s", e.stderr)

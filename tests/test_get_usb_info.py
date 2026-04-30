@@ -16,7 +16,7 @@ def test_get_usb_info_returns_empty_when_mount_not_found(monkeypatch) -> None:
     monkeypatch.setattr(
         get_usb_info_module.psutil,
         "disk_partitions",
-        lambda*args, **kwargs: [SimpleNamespace(mountpoint="/mnt/other", device="/dev/sdb1")],
+        lambda *args, **kwargs: [SimpleNamespace(mountpoint="/mnt/other", device="/dev/sdb1")],
     )
 
     assert get_usb_info_module.get_usb_info("/media/testuser/USB") is None
@@ -29,7 +29,7 @@ def test_get_usb_info_returns_expected_dictionary(monkeypatch) -> None:
     monkeypatch.setattr(
         get_usb_info_module.psutil,
         "disk_partitions",
-        lambda*args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device=device_node)],
+        lambda *args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device=device_node)],
     )
 
     def fake_check_output(cmd, text=True, timeout=5):
@@ -56,7 +56,7 @@ def test_get_usb_info_uses_mount_basename_when_label_is_empty(monkeypatch) -> No
     monkeypatch.setattr(
         get_usb_info_module.psutil,
         "disk_partitions",
-        lambda*args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device=device_node)],
+        lambda *args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device=device_node)],
     )
 
     def fake_check_output(cmd, text=True, timeout=5):
@@ -79,7 +79,7 @@ def test_get_usb_info_returns_empty_when_lsblk_fails(monkeypatch) -> None:
     monkeypatch.setattr(
         get_usb_info_module.psutil,
         "disk_partitions",
-        lambda*args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device=device_node)],
+        lambda *args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device=device_node)],
     )
 
     def raise_lsblk_error(*args, **kwargs):

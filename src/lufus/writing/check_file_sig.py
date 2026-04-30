@@ -36,8 +36,7 @@ def check_iso_signature(file_path: str) -> bool:
             data = f.read(7)
             if len(data) < 7:
                 log.error(
-                    "ISO signature check: file too small to contain a PVD "
-                    "(read %d bytes at offset 32768, need 7)",
+                    "ISO signature check: file too small to contain a PVD (read %d bytes at offset 32768, need 7)",
                     len(data),
                 )
                 return False
@@ -45,7 +44,9 @@ def check_iso_signature(file_path: str) -> bool:
             vd_type, ident, version = data[0], data[1:6], data[6]
             log.info(
                 "ISO signature check: PVD bytes -> type=0x%02X, ident=%s, version=0x%02X",
-                vd_type, ident, version,
+                vd_type,
+                ident,
+                version,
             )
 
             if vd_type == 0x01 and ident == b"CD001" and version == 0x01:
@@ -55,7 +56,9 @@ def check_iso_signature(file_path: str) -> bool:
                 log.error(
                     "ISO signature check: FAILED - expected type=0x01/ident=CD001/version=0x01, "
                     "got type=0x%02X/ident=%s/version=0x%02X",
-                    vd_type, ident, version,
+                    vd_type,
+                    ident,
+                    version,
                 )
                 return False
     except OSError as err:
@@ -86,7 +89,9 @@ def _resolve_device_node(usb_mount_path: str) -> str | None:
             result = _parent_block_device(part.device) or part.device
             log.info(
                 "Resolved %s -> device=%s, raw block device=%s",
-                normalized, part.device, result,
+                normalized,
+                part.device,
+                result,
             )
             return result
     log.warning("Could not resolve device node for: %s", normalized)

@@ -6,7 +6,7 @@ import atexit
 
 LOG_FILE = os.path.join(os.path.expanduser("~"), ".local", "share", "lufus", "lufus.log")
 
-_FMT     = "%(asctime)s [%(levelname)-8s] %(name)s: %(message)s"
+_FMT = "%(asctime)s [%(levelname)-8s] %(name)s: %(message)s"
 _DATEFMT = "%Y-%m-%d %H:%M:%S"
 
 _setup_done = False

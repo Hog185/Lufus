@@ -42,9 +42,12 @@ class UsbMonitor(QObject):
                 serial = device.get("ID_SERIAL_SHORT") or "no serial"
                 self.devices[node] = label
                 log.info(
-                    "UsbMonitor: found existing USB device: %s label=%r "
-                    "vendor=%r model=%r serial=%r",
-                    node, label, vendor, model, serial,
+                    "UsbMonitor: found existing USB device: %s label=%r vendor=%r model=%r serial=%r",
+                    node,
+                    label,
+                    vendor,
+                    model,
+                    serial,
                 )
                 found += 1
         log.info("UsbMonitor: initial scan complete, %d USB block device(s) found", found)
@@ -64,9 +67,7 @@ class UsbMonitor(QObject):
 
         node = device.device_node
         if not node:
-            log.warning(
-                "UsbMonitor: ignoring event with no device_node (action=%s)", device.action
-            )
+            log.warning("UsbMonitor: ignoring event with no device_node (action=%s)", device.action)
             return
 
         action = device.action
@@ -76,7 +77,11 @@ class UsbMonitor(QObject):
 
         log.info(
             "UsbMonitor: udev event -> action=%s, node=%s, label=%r, vendor=%r, model=%r",
-            action, node, label, vendor, model,
+            action,
+            node,
+            label,
+            vendor,
+            model,
         )
 
         changed = False
@@ -88,9 +93,7 @@ class UsbMonitor(QObject):
         elif action == "remove":
             if node in self.devices:
                 removed_label = self.devices.pop(node)
-                log.info(
-                    "UsbMonitor: device removed: %s (was labeled %r)", node, removed_label
-                )
+                log.info("UsbMonitor: device removed: %s (was labeled %r)", node, removed_label)
                 self.device_removed.emit(node)
                 changed = True
             else:

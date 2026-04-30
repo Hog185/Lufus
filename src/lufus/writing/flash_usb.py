@@ -22,9 +22,9 @@ log = get_logger(__name__)
 #     log.error("An unexpected error occurred")
 
 
-
-
-def flash_usb(device: str, iso_path: str, scheme: PartitionScheme = PartitionScheme.SIMPLE_FAT32, progress_cb=None, status_cb=None) -> bool:
+def flash_usb(
+    device: str, iso_path: str, scheme: PartitionScheme = PartitionScheme.SIMPLE_FAT32, progress_cb=None, status_cb=None
+) -> bool:
     def _status(msg: str) -> None:
         log.info(msg)
         if status_cb:
@@ -75,14 +75,10 @@ def flash_usb(device: str, iso_path: str, scheme: PartitionScheme = PartitionSch
         ]
 
         _status(f"Spawning dd: {' '.join(dd_args)}")
-        _status(
-            f"Writing {iso_size:,} bytes to {device}, this may take several minutes..."
-        )
+        _status(f"Writing {iso_size:,} bytes to {device}, this may take several minutes...")
 
         try:
-            process = subprocess.Popen(
-                dd_args, stderr=subprocess.PIPE, stdout=subprocess.DEVNULL
-            )
+            process = subprocess.Popen(dd_args, stderr=subprocess.PIPE, stdout=subprocess.DEVNULL)
         except FileNotFoundError:
             log.error("Flash failed: 'dd' utility not found. Install coreutils.")
             _status("Flash failed: 'dd' utility not found. Install coreutils.")
@@ -108,9 +104,7 @@ def flash_usb(device: str, iso_path: str, scheme: PartitionScheme = PartitionSch
                     bytes_done = int(m.group(1))
                     pct = min(int(bytes_done * 100 / iso_size), 99)
                     if pct != last_pct:
-                        _status(
-                            f"dd progress: {bytes_done:,} / {iso_size:,} bytes ({pct}%)"
-                        )
+                        _status(f"dd progress: {bytes_done:,} / {iso_size:,} bytes ({pct}%)")
                         last_pct = pct
                     if progress_cb:
                         progress_cb(pct)
@@ -133,9 +127,8 @@ def flash_usb(device: str, iso_path: str, scheme: PartitionScheme = PartitionSch
     except subprocess.CalledProcessError as e:
         log.error(
             "Flash failed with CalledProcessError: returncode=%d, cmd=%s",
-            e.returncode, e.cmd,
+            e.returncode,
+            e.cmd,
         )
-        _status(
-            f"Flash failed with CalledProcessError: returncode={e.returncode}, cmd={e.cmd}"
-        )
+        _status(f"Flash failed with CalledProcessError: returncode={e.returncode}, cmd={e.cmd}")
         return False

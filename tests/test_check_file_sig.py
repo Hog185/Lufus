@@ -101,6 +101,3 @@ def test_check_iso_signature_returns_false_for_invalid_pvd(tmp_path: Path) -> No
     iso_file.write_bytes(bytes(payload))
 
     assert check_iso_signature(str(iso_file)) is False
-
-
-

@@ -14,6 +14,7 @@ from lufus import state
 def _make_monitor():
     """Return a UsbMonitor-like object without importing PyQt6/pyudev."""
     import types
+
     mon = types.SimpleNamespace(
         devices={},
         device_added=MagicMock(),
@@ -49,14 +50,16 @@ def _make_monitor():
     return mon
 
 
-def _device(devtype="disk", bus="usb", node="/dev/sdb", action="add",
-            label="MY_USB", model="MyDrive"):
+def _device(devtype="disk", bus="usb", node="/dev/sdb", action="add", label="MY_USB", model="MyDrive"):
     d = MagicMock()
     d.device_node = node
     d.action = action
+
     def _get(key):
-        return {"DEVTYPE": devtype, "ID_BUS": bus, "ID_FS_LABEL": label,
-                "ID_MODEL": model, "ID_VENDOR": "Acme"}.get(key)
+        return {"DEVTYPE": devtype, "ID_BUS": bus, "ID_FS_LABEL": label, "ID_MODEL": model, "ID_VENDOR": "Acme"}.get(
+            key
+        )
+
     d.get = _get
     return d
 
@@ -68,20 +71,31 @@ class TestStatesTypeAnnotations:
 
     def test_all_int_fields_annotated(self):
         import inspect
+
         src = inspect.getsource(type(state))
-        for name in ("filesystem_index", "image_option", "partition_scheme",
-                     "target_system", "cluster_size", "quick_format",
-                     "create_extended", "check_bad", "flash_mode"):
+        for name in (
+            "filesystem_index",
+            "image_option",
+            "partition_scheme",
+            "target_system",
+            "cluster_size",
+            "quick_format",
+            "create_extended",
+            "check_bad",
+            "flash_mode",
+        ):
             assert f"{name}: int" in src, f"{name} missing int annotation"
 
     def test_all_str_fields_annotated(self):
         import inspect
+
         src = inspect.getsource(type(state))
         for name in ("new_label", "iso_path", "device_node", "language", "expected_hash"):
             assert f"{name}: str" in src, f"{name} missing str annotation"
 
     def test_bool_fields_annotated(self):
         import inspect
+
         src = inspect.getsource(type(state))
         assert "verify_hash: bool" in src
 
@@ -99,8 +113,7 @@ class TestStatesNewLabelLength:
 
     def test_default_new_label_fits_fat32(self):
         assert len(state.new_label) <= 11, (
-            f"new_label default {state.new_label!r} is {len(state.new_label)} chars; "
-            f"FAT32 limit is 11"
+            f"new_label default {state.new_label!r} is {len(state.new_label)} chars; FAT32 limit is 11"
         )
 
     def test_default_new_label_is_not_old_value(self):
