@@ -117,6 +117,65 @@ class Testflash_usbDdNotFound:
         assert result is False
 
 
+class TestFlashUsbImageOptionRouting:
+    def test_windows_mode_rejects_non_windows_iso(self, tmp_path, monkeypatch):
+        iso = tmp_path / "linux.iso"
+        iso.write_bytes(b"\x00" * 100)
+
+        monkeypatch.setattr(flash_usb_module, "check_iso_signature", lambda p: True)
+        monkeypatch.setattr(flash_usb_module, "is_windows_iso", lambda p: False)
+        monkeypatch.setattr(
+            flash_usb_module.subprocess,
+            "Popen",
+            lambda *a, **kw: (_ for _ in ()).throw(AssertionError("dd should not run")),
+        )
+
+        assert flash_usb("/dev/sdb", str(iso), image_option=0) is False
+
+    def test_linux_mode_rejects_windows_iso(self, tmp_path, monkeypatch):
+        iso = tmp_path / "windows.iso"
+        iso.write_bytes(b"\x00" * 100)
+
+        monkeypatch.setattr(flash_usb_module, "check_iso_signature", lambda p: True)
+        monkeypatch.setattr(flash_usb_module, "is_windows_iso", lambda p: True)
+        monkeypatch.setattr(
+            flash_usb_module.subprocess,
+            "Popen",
+            lambda *a, **kw: (_ for _ in ()).throw(AssertionError("dd should not run")),
+        )
+
+        assert flash_usb("/dev/sdb", str(iso), image_option=1) is False
+
+    def test_linux_mode_non_windows_image_uses_dd(self, tmp_path, monkeypatch):
+        image = tmp_path / "linux.img"
+        image.write_bytes(b"\x00" * 100)
+
+        monkeypatch.setattr(flash_usb_module, "is_windows_iso", lambda p: False)
+        popen_calls = {}
+
+        class FakeProcess:
+            pid = 12345
+            returncode = 0
+
+            def __init__(self, args, **kwargs):
+                popen_calls["args"] = args
+                popen_calls["kwargs"] = kwargs
+                self.stderr = FakePipe()
+
+            def wait(self):
+                pass
+
+        class FakePipe:
+            def readline(self):
+                return b""
+
+        monkeypatch.setattr(flash_usb_module.subprocess, "Popen", FakeProcess)
+
+        assert flash_usb("/dev/sdb", str(image), image_option=1) is True
+        assert popen_calls["args"][0] == "dd"
+        assert popen_calls["kwargs"]["shell"] is False
+
+
 # ---------------------------------------------------------------------------
 # flash_usb — device stripping uses correct helper (NVMe regression guard)
 # ---------------------------------------------------------------------------

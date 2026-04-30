@@ -1,5 +1,6 @@
 import os
 import re
+import shlex
 import subprocess
 from lufus.utils import strip_partition_suffix
 from lufus.writing.check_file_sig import check_iso_signature
@@ -23,7 +24,12 @@ log = get_logger(__name__)
 
 
 def flash_usb(
-    device: str, iso_path: str, scheme: PartitionScheme = PartitionScheme.SIMPLE_FAT32, progress_cb=None, status_cb=None
+    device: str,
+    iso_path: str,
+    scheme: PartitionScheme = PartitionScheme.SIMPLE_FAT32,
+    progress_cb=None,
+    status_cb=None,
+    image_option: int | None = None,
 ) -> bool:
     def _status(msg: str) -> None:
         log.info(msg)
@@ -51,8 +57,28 @@ def flash_usb(
         else:
             _status(f"Not an ISO file ({os.path.basename(iso_path)}), skipping ISO signature check")
 
-        _status("Checking if image contains installation markers...")
-        if is_windows_iso(iso_path):
+        _status("Checking image type...")
+        is_iso = iso_path.lower().endswith(".iso")
+        windows_iso = is_iso and is_windows_iso(iso_path)
+
+        if image_option == 0:
+            if not windows_iso:
+                _status("Selected Windows mode, but the image does not look like a Windows ISO.")
+                return False
+            _status("Windows installation media detected, routing to flash_windows (ISO mode)")
+            return flash_windows(
+                device,
+                iso_path,
+                scheme,
+                progress_cb=progress_cb,
+                status_cb=status_cb,
+            )
+
+        if image_option == 1 and windows_iso:
+            _status("Selected Linux mode, but the image looks like a Windows ISO.")
+            return False
+
+        if image_option is None and windows_iso:
             _status("OS Installation media detected, routing to flash_windows (ISO mode)")
             return flash_windows(
                 device,
@@ -61,8 +87,18 @@ def flash_usb(
                 progress_cb=progress_cb,
                 status_cb=status_cb,
             )
+
+        if image_option == 1:
+            _status("Linux image selected, using raw DD mode.")
+        elif image_option == 2:
+            _status("Other image selected, using raw DD mode.")
         else:
             _status("Not a Windows ISO, will use dd for flashing")
+
+        if not re.match(r"^/dev/(sd[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+)$", device):
+            log.error("Refusing to run dd against invalid block device path: %s", device)
+            _status(f"Invalid target device path: {device}")
+            return False
 
         dd_args = [
             "dd",
@@ -74,11 +110,14 @@ def flash_usb(
             "oflag=direct",
         ]
 
-        _status(f"Spawning dd: {' '.join(dd_args)}")
+        _status(f"Spawning dd: {shlex.join(dd_args)}")
         _status(f"Writing {iso_size:,} bytes to {device}, this may take several minutes...")
 
         try:
-            process = subprocess.Popen(dd_args, stderr=subprocess.PIPE, stdout=subprocess.DEVNULL)
+            # dd_args is a fixed argv vector with a validated device path; shell stays disabled.
+            process = subprocess.Popen(  # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-audit
+                dd_args, stderr=subprocess.PIPE, stdout=subprocess.DEVNULL, shell=False
+            )
         except FileNotFoundError:
             log.error("Flash failed: 'dd' utility not found. Install coreutils.")
             _status("Flash failed: 'dd' utility not found. Install coreutils.")

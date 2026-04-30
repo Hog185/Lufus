@@ -8,6 +8,7 @@ from lufus.lufus_logging import get_logger, setup_logging
 from lufus import state
 from lufus.drives import formatting as fo
 from lufus.writing.flash_usb import flash_usb
+from lufus.writing.partition_scheme import PartitionScheme
 
 setup_logging()
 log = get_logger(__name__)
@@ -99,8 +100,30 @@ def main():
             else:
                 status_cb("Ventoy installation failed")
                 log.error("Ventoy installation failed for device %s", device_node)
-        else:  # Windows / Linux / Other / Format Only
-            success = flash_usb(device_node, iso_path, progress_cb=progress_cb, status_cb=status_cb)
+        elif image_option == 3:  # Format Only
+            status_cb("Starting format operation...")
+            progress_cb(10)
+            success = fo.disk_format(status_cb=status_cb)
+            if success:
+                progress_cb(100)
+                status_cb("Format complete")
+            else:
+                status_cb("Format failed")
+        else:  # Windows / Linux / Other
+            fs_name = options.get("filesystem_name", state.filesystem_name)
+            scheme_map = {
+                "NTFS": PartitionScheme.WINDOWS_NTFS,
+                "FAT32": PartitionScheme.SIMPLE_FAT32,
+                "exFAT": PartitionScheme.WINDOWS_EXFAT,
+            }
+            success = flash_usb(
+                device_node,
+                iso_path,
+                scheme_map.get(fs_name, PartitionScheme.SIMPLE_FAT32),
+                progress_cb=progress_cb,
+                status_cb=status_cb,
+                image_option=image_option,
+            )
 
         log.info("flash_worker exiting, success=%s", success)
         sys.exit(0 if success else 1)

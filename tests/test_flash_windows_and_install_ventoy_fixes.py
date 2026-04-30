@@ -13,6 +13,8 @@ import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch, call
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 if str(SRC) not in sys.path:
@@ -110,6 +112,127 @@ class TestBootmgrLoopVariableRenamed:
                 if isinstance(node.target, ast.Name):
                     # There must be no bare 'f' loop target in flash_windows
                     assert node.target.id != "f", "Loop variable 'f' still present — should be renamed to 'fname'"
+
+
+class TestMountIso:
+    def test_mount_iso_success_uses_unique_temp_mount(self, monkeypatch, tmp_path):
+        iso = tmp_path / "image.iso"
+        iso.write_bytes(b"iso")
+        mount_dir = tmp_path / "lufus-iso-test"
+        calls = {}
+
+        def fake_mkdtemp(prefix, dir=None):
+            calls["mkdtemp"] = (prefix, dir)
+            mount_dir.mkdir()
+            return str(mount_dir)
+
+        def fake_run(cmd, **kwargs):
+            calls["cmd"] = cmd
+            calls["kwargs"] = kwargs
+            return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+        monkeypatch.setattr(fw_module.tempfile, "mkdtemp", fake_mkdtemp)
+        monkeypatch.setattr(fw_module.subprocess, "run", fake_run)
+        monkeypatch.setattr(fw_module.os.path, "ismount", lambda path: path == str(mount_dir))
+
+        result = fw_module.mount_iso(str(iso))
+
+        assert result == str(mount_dir)
+        assert calls["mkdtemp"][0] == "lufus-iso-"
+        assert calls["cmd"] == ["sudo", "mount", "-o", "loop", str(iso), str(mount_dir)]
+        assert calls["kwargs"] == {"capture_output": True, "text": True}
+
+    def test_mount_iso_failure_returns_none_and_removes_temp_dir(self, monkeypatch, tmp_path):
+        iso = tmp_path / "image.iso"
+        iso.write_bytes(b"iso")
+        mount_dir = tmp_path / "lufus-iso-test"
+        removed = {}
+        original_rmdir = os.rmdir
+
+        def fake_mkdtemp(prefix, dir=None):
+            mount_dir.mkdir()
+            return str(mount_dir)
+
+        def fake_run(cmd, **kwargs):
+            return subprocess.CompletedProcess(cmd, 1, stdout="out", stderr="err")
+
+        def fake_rmdir(path):
+            removed["path"] = path
+            original_rmdir(path)
+
+        monkeypatch.setattr(fw_module.tempfile, "mkdtemp", fake_mkdtemp)
+        monkeypatch.setattr(fw_module.subprocess, "run", fake_run)
+        monkeypatch.setattr(fw_module.os, "rmdir", fake_rmdir)
+
+        result = fw_module.mount_iso(str(iso))
+
+        assert result is None
+        assert removed["path"] == str(mount_dir)
+
+    def test_mount_iso_missing_iso_returns_none_before_mount(self, monkeypatch, tmp_path):
+        def fail_run(*args, **kwargs):
+            raise AssertionError("mount should not be attempted for a missing ISO")
+
+        monkeypatch.setattr(fw_module.subprocess, "run", fail_run)
+
+        assert fw_module.mount_iso(str(tmp_path / "missing.iso")) is None
+
+
+class TestCreatePartitions:
+    def _capture_partitioning(self, monkeypatch):
+        calls = []
+
+        def fake_run(cmd, **kwargs):
+            calls.append((cmd, kwargs))
+            return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+        monkeypatch.setattr(fw_module, "_get_disk_size_sectors", lambda drive: 16 * 1024 * 1024)
+        monkeypatch.setattr(fw_module.subprocess, "run", fake_run)
+        monkeypatch.setattr(fw_module.time, "sleep", lambda seconds: None)
+        return calls
+
+    def test_create_partitions_simple_fat32(self, monkeypatch):
+        calls = self._capture_partitioning(monkeypatch)
+
+        parts = fw_module.create_partitions("/dev/sdx", fw_module.PartitionScheme.SIMPLE_FAT32)
+
+        assert [p["role"] for p in parts] == ["data"]
+        sfdisk_cmd, sfdisk_kwargs = calls[0]
+        assert sfdisk_cmd == ["sudo", "sfdisk", "--label", "gpt", "/dev/sdx"]
+        assert "type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7" in sfdisk_kwargs["input"]
+        assert "C12A7328-F81F-11D2-BA4B-00A0C93EC93B" not in sfdisk_kwargs["input"]
+        assert sfdisk_kwargs["text"] is True
+        assert sfdisk_kwargs["check"] is True
+
+    def test_create_partitions_windows_ntfs(self, monkeypatch):
+        calls = self._capture_partitioning(monkeypatch)
+
+        parts = fw_module.create_partitions("/dev/sdx", fw_module.PartitionScheme.WINDOWS_NTFS)
+
+        assert [p["role"] for p in parts] == ["data", "efi"]
+        script = calls[0][1]["input"]
+        assert "type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7" in script
+        assert "type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B" in script
+
+    def test_create_partitions_windows_exfat_nvme_separator(self, monkeypatch):
+        calls = self._capture_partitioning(monkeypatch)
+
+        parts = fw_module.create_partitions("/dev/nvme0n1", fw_module.PartitionScheme.WINDOWS_EXFAT)
+
+        assert parts == [
+            {"role": "data", "path": "/dev/nvme0n1p1"},
+            {"role": "efi", "path": "/dev/nvme0n1p2"},
+        ]
+        assert "type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B" in calls[0][1]["input"]
+        assert calls[1][0] == ["sudo", "partprobe", "/dev/nvme0n1"]
+        assert calls[1][1]["check"] is True
+
+
+class TestFlashWindowsValidation:
+    @pytest.mark.parametrize("device", ["/dev/loop0", "not-a-device", "/tmp/fake-disk"])
+    def test_rejects_invalid_device_paths(self, device, tmp_path):
+        with pytest.raises(ValueError):
+            fw_module.flash_windows(device, str(tmp_path / "image.iso"), fw_module.PartitionScheme.SIMPLE_FAT32)
 
 
 class TestDownloadWimbootTimeout:

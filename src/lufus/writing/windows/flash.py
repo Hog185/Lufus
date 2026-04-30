@@ -433,13 +433,14 @@ def flash_windows(device: str, iso: str, scheme: PartitionScheme, progress_cb=No
         if iso_mount and os.path.ismount(iso_mount):
             _status(f"Unmounting ISO from {iso_mount}...")
             subprocess.run(["sudo", "umount", iso_mount], capture_output=True)
+        if iso_mount:
+            with contextlib.suppress(OSError):
+                os.rmdir(iso_mount)
 
 
 # ---new---
 def mount_iso(iso_path: str) -> str | None:
-    """This function mounts an iso file at /mnt/iso/ and returns the location if mount is successfull
-
-    command:`sudo mount -o loop iso_path /mnt/iso/{iso name without extension}
+    """Mount an ISO in a unique temporary directory and return the mount path.
 
     Args:
         iso_path (str): The location of the iso file
@@ -448,27 +449,63 @@ def mount_iso(iso_path: str) -> str | None:
         str: the path where it's mounted
         None: if mounting fails return None
     """
-    mount_base = "/mnt/iso"
-    basename = os.path.basename(iso_path)
-    iso_name_without_extension = os.path.splitext(basename)[0]
-    iso_mount_location = os.path.join(mount_base, iso_name_without_extension)
+    if not os.path.isfile(iso_path):
+        log.error("ISO path does not exist or is not a file: %s", iso_path)
+        return None
+
+    base_dirs: list[str | None] = []
+    if os.path.isdir("/run") and os.access("/run", os.W_OK | os.X_OK):
+        base_dirs.append("/run")
+    base_dirs.append(None)
+
+    iso_mount_location = None
+    for base_dir in base_dirs:
+        try:
+            iso_mount_location = tempfile.mkdtemp(prefix="lufus-iso-", dir=base_dir)
+            if not os.access(iso_mount_location, os.W_OK | os.X_OK):
+                log.warning("Temporary mount directory not writable, discarding: %s", iso_mount_location)
+                with contextlib.suppress(OSError):
+                    os.rmdir(iso_mount_location)
+                iso_mount_location = None
+                continue
+            break
+        except Exception:
+            log.debug("Failed to create temporary ISO mount directory under %r", base_dir, exc_info=True)
+            iso_mount_location = None
+
+    if iso_mount_location is None:
+        log.error("Unable to create a temporary directory for ISO mount; aborting mount")
+        return None
 
     try:
-        os.makedirs(iso_mount_location, exist_ok=True)
-        _status_print(f"Mounting {iso_path} in {iso_mount_location}")
+        _status_print(f"Mounting ISO '{iso_path}' to '{iso_mount_location}'...")
         result = subprocess.run(
             ["sudo", "mount", "-o", "loop", iso_path, iso_mount_location], capture_output=True, text=True
         )
 
         if result.returncode == 0:
-            _status_print(f"Success: Mounted {iso_path} to {iso_mount_location} successfully!")
+            if not os.path.ismount(iso_mount_location):
+                log.error("Mount command completed but '%s' is not a mountpoint", iso_mount_location)
+                with contextlib.suppress(OSError):
+                    os.rmdir(iso_mount_location)
+                return None
+            _status_print(f"Success: Mounted {iso_path} to {iso_mount_location} successfully")
             return iso_mount_location
-        else:
-            _status_print(f"Failed: Failed to mount {iso_path} to {iso_mount_location} successfully!")
 
-            return None
+        _status_print(f"Failed: Failed to mount {iso_path} to {iso_mount_location}")
+        log.error(
+            "Failed to mount ISO.\nCommand: %s\nstdout: %s\nstderr: %s",
+            result.args,
+            result.stdout,
+            result.stderr,
+        )
+        with contextlib.suppress(OSError):
+            os.rmdir(iso_mount_location)
+        return None
     except Exception as e:
         _status_print(f"An error occured during mounting iso: {e}")
+        with contextlib.suppress(OSError):
+            os.rmdir(iso_mount_location)
         return None
 
 

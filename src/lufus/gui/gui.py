@@ -98,7 +98,7 @@ class BackgroundWidget(QWidget):
             super().paintEvent(event)
 
 
-class lufus(QMainWindow):
+class LufusWindow(QMainWindow):
     def __init__(self, usb_devices=None, scale: Scale = None):
         super().__init__()
         # main window initialization :3
@@ -828,8 +828,11 @@ class lufus(QMainWindow):
 
     def updateFS(self):
         # update filesystem selection in states :D
-        state.filesystem_index = self.combo_fs.currentIndex()
-        state.filesystem_name = self.combo_fs.currentText()
+        filesystem_name = self.combo_fs.currentText()
+        state.filesystem_name = filesystem_name
+        state.filesystem_index = (
+            self.all_fs_options.index(filesystem_name) if filesystem_name in self.all_fs_options else 1
+        )
         self.log_message(f"File system changed to: {state.filesystem_name} (index={state.filesystem_index})")
 
     def updateflash(self):
@@ -851,7 +854,7 @@ class lufus(QMainWindow):
         self.combo_fs.blockSignals(True)
         if state.image_option == 1:  # linux
             self.combo_fs.clear()
-            self.combo_fs.addItems(["ext4", "UDF"])
+            self.combo_fs.addItems([fs for fs in self.all_fs_options if fs not in ("HFS+", "ZFS")])
             self.combo_fs.setCurrentText("ext4")
         elif state.image_option == 0:  # windows
             self.combo_fs.clear()
@@ -1518,7 +1521,7 @@ class lufus(QMainWindow):
             self._flash_start_time = time.monotonic()
             self._flash_total_bytes = os.path.getsize(iso_path) if iso_path and Path(iso_path).exists() else 0
             self.log_message(
-                f"Starting flash thread: image_option={options['image_option']}, flash_mode={options['currentflash']}, device={options['device']}"
+                f"Starting flash thread: image_option={options['image_option']}, flash_mode={options['flash_mode']}, device={options['device']}"
             )
             self.flash_worker = FlashWorker(options, self._T)
             self.flash_worker.progress.connect(self._on_progress, Qt.ConnectionType.QueuedConnection)
@@ -1773,6 +1776,9 @@ class lufus(QMainWindow):
             self.log_message(f"download later button clicked", level="DEBUG")
 
 
+lufus = LufusWindow
+
+
 if __name__ == "__main__":
     # setup high dpi scaling :3
     QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
@@ -1791,6 +1797,6 @@ if __name__ == "__main__":
             print(f"Error parsing USB devices: {e}")
 
     # create and show main window :D
-    window = lufus(usb_devices)
+    window = LufusWindow(usb_devices)
     window.show()
     sys.exit(app.exec())  # oink meow meow meow :3
