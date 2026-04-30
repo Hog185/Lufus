@@ -881,7 +881,7 @@ class LufusWindow(QMainWindow):
             self.combo_flash.addItems([self._T.get("combo_flash_iso", "ISO")])
             self.combo_flash.setCurrentText(self._T.get("combo_flash_iso", "ISO"))
         elif state.image_option == 1:  # linux
-            self.combo_flash.addItems([self._T.get("combo_flash_dd", "DD")])
+            self.combo_flash.addItems([self._T.get("combo_flash_iso", "ISO"), self._T.get("combo_flash_dd", "DD")])
             self.combo_flash.setCurrentText(self._T.get("combo_flash_dd", "DD"))
         elif state.image_option == 2:  # other
             self.combo_flash.addItems([self._T.get("combo_flash_dd", "DD")])
