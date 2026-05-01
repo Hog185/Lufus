@@ -4,4 +4,5 @@
 * Fix FS options
 * Fix flashing logic
 * Fix pkexec/sudo
+* Fix ISO detection (Windows vs Linux vs ...)
 * 
