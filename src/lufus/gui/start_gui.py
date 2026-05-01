@@ -13,7 +13,7 @@ def launch_gui_with_usb_data() -> None:
 
     from PyQt6.QtWidgets import QApplication
     from PyQt6.QtCore import QTimer
-    from lufus.gui.gui import lufus as LufusWindow
+    from lufus.gui.gui import LufusWindow
 
     app = QApplication(sys.argv)
     app.setStyle("Fusion")

@@ -65,7 +65,7 @@ class FlashWorker(QThread):
         try:
             from lufus import state as states
             from lufus.drives import formatting as fo
-            from lufus.writing.flash_usb import FlashUSB
+            from lufus.writing.flash_usb import flash_usb
             import glob
 
             options = self.options
@@ -74,7 +74,7 @@ class FlashWorker(QThread):
                 setattr(states, key, value)
 
             device_node = options["device"]
-            states.DN = device_node
+            states.device_node = device_node
             iso_path = options.get("iso_path", "")
             flash_mode = options["currentflash"]
             image_option = options["image_option"]
@@ -97,7 +97,7 @@ class FlashWorker(QThread):
                 self.progress.emit(10)
                 self.status.emit(self._T.get("status_format_in_progress", "Formatting drive..."))
                 self.progress.emit(50)
-                success = fo.dskformat(status_cb=self.status.emit)
+                success = fo.disk_format(status_cb=self.status.emit)
                 if success:
                     self.progress.emit(80)
                     self.status.emit(self._T.get("status_remounting", "Remounting {part}...").format(part=part))
@@ -122,16 +122,16 @@ class FlashWorker(QThread):
                     # else:
                     #  scheme=PartitionScheme.LINUX
                     scheme = PartitionScheme.SIMPLE_FAT32
-                    success = FlashUSB(
-                        iso_path, device_node, scheme, progress_cb=self.progress.emit, status_cb=self.status.emit
+                    success = flash_usb(
+                        device_node, iso_path, scheme, progress_cb=self.progress.emit, status_cb=self.status.emit
                     )
                 else:
                     success = False
             else:
                 # other flash modes (Linux, Other)
-                success = FlashUSB(
-                    iso_path,
+                success = flash_usb(
                     device_node,
+                    iso_path,
                     PartitionScheme.LINUX,
                     progress_cb=self.progress.emit,
                     status_cb=self.status.emit,
