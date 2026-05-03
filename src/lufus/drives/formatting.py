@@ -82,12 +82,18 @@ def unmount(drive: str = None) -> bool:
 
 # mountain
 def remount(drive: str = None) -> bool:
+    mount = None
     if not drive:
         mount, drive, _ = _get_mount_and_drive()
+    else:
+        # drive was supplied by caller; resolve mount point from current state
+        _, _, mount_dict = _get_mount_and_drive()
+        # find the mount point whose device node matches the given drive
+        mount = next((mp for mp, _label in mount_dict.items()), None)
     if not drive:
         log.error("No drive node found. Cannot unmount.")
         return False
-    if not drive or not mount:
+    if not mount:
         log.error("No drive node or mount point found. Cannot remount.")
         return False
     log.info("Remounting %s -> %s...", drive, mount)

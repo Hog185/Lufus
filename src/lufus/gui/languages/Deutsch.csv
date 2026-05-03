@@ -20,7 +20,7 @@ lbl_partition_scheme,Partitionsschema
 lbl_target_system,Zielsystem
 lbl_volume_label,Laufwerksbezeichnung
 lbl_file_system,Dateisystem
-lbl_flash_option,Flash-Option
+lbl_flash_option,Schreibmethode
 lbl_cluster_size,Größe der Zuordnungseinheiten
 combo_image_windows,Standard-Windows-Installation
 combo_image_linux,Standard-Linux-Installation
@@ -59,7 +59,7 @@ tooltip_log,Protokoll
 status_ready,Bereit
 status_scanning,Suche nach USB-Geräten...
 status_scan_failed,Suche fehlgeschlagen
-status_flashing,Flashing...
+status_flashing,Wird geschrieben...
 progress_preparing,Vorbereitung...
 progress_complete,Abgeschlossen! 100%
 progress_failed,Fehlgeschlagen
@@ -69,11 +69,11 @@ progress_formatted,Laufwerk formatiert.. 60%
 progress_label_changed,Bezeichnung geändert.. 80%
 progress_mount_done,Einhängen fertig.. Abgeschlossen! 100%
 msgbox_cancel_title,Abbrechen
-msgbox_cancel_body,Sind Sie sicher, dass Sie abbrechen möchten?
+msgbox_cancel_body,Sind Sie sicher
 msgbox_success_title,Erfolg
-msgbox_success_body,USB-Laufwerk erfolgreich geflasht!
+msgbox_success_body,USB-Laufwerk erfolgreich beschrieben!
 msgbox_error_title,Fehler
-msgbox_error_body,Fehler beim Flashen des USB-Laufwerks.
+msgbox_error_body,Fehler beim Schreiben auf das USB-Laufwerk.
 msgbox_no_image_title,Kein Abbild
 msgbox_no_image_body,Bitte wählen Sie zuerst eine gültige Installationsdatei aus.
 msgbox_no_device_title,Kein Gerät
@@ -87,7 +87,7 @@ msgbox_scan_error_title,Suchfehler
 msgbox_scan_error_body,Suche nach USB-Geräten fehlgeschlagen:
 no_usb_found,Keine USB-Geräte gefunden
 dlg_select_image_title,Abbild auswählen
-dlg_select_image_filter,"Abbilder (*.iso *.dmg *.img *.bin *.raw);;Alle Dateien (*)"
+dlg_select_image_filter,Abbilder (*.iso *.dmg *.img *.bin *.raw);;Alle Dateien (*)
 about_content,"lufus ist ein in Python geschriebener USB-Image-Writer für Linux.
 Inspiriert vom originalen lufus-Tool für Windows.
 Version: v1.0.0b1
@@ -103,25 +103,26 @@ combo_badblocks_2pass,2 Durchgänge
 combo_badblocks_3pass,3 Durchgänge
 status_unmounting_all,Alle Partitionen auf {device} werden ausgehängt...
 status_unmounting,{part} wird ausgehängt...
+status_remounting,Wird wieder eingehängt {part}...
 status_format_starting,Formatierungsvorgang wird gestartet...
 status_format_in_progress,Laufwerk wird formatiert...
 status_format_complete,Formatierung abgeschlossen!
 status_format_failed,Formatierung FEHLGESCHLAGEN. Prüfen Sie das obige Protokoll für den genauen Fehler.
-status_flash_error,Flash-Fehler: {error}
+status_flash_error,Schreibfehler: {error}
 acc_device,Geräteauswahl
-acc_device_desc,Wählen Sie das USB-Gerät, das Sie verwenden möchten
+acc_device_desc,Wählen Sie das USB-Gerät
 acc_refresh,Geräte aktualisieren
 acc_refresh_desc,Nach verbundenen USB-Geräten suchen
 acc_boot,Auswahl des Start-Images
 acc_boot_desc,Zeigt die aktuell ausgewählte Image-Datei
 acc_select,Nach Image-Datei suchen
 acc_image_option,Auswahl der Image-Option
-acc_image_option_desc,Wählen Sie den Typ des zu schreibenden Images: Windows, Linux, Sonstige oder Nur Formatieren
+acc_image_option_desc,Wählen Sie den Typ des zu schreibenden Images: Windows
 acc_volume_label,Eingabe der Volumenbezeichnung
 acc_volume_label_desc,Geben Sie einen Namen für das USB-Volumen ein
 acc_filesystem,Auswahl des Dateisystems
 acc_cluster,Auswahl der Clustergröße
-acc_flash_option,Auswahl der Flash-Methode
+acc_flash_option,Auswahl der Schreibmethode
 acc_quick_format,Checkbox für Schnellformatierung
 acc_extended_label,Checkbox für erweiterte Bezeichnung
 acc_bad_blocks,Checkbox zur Prüfung auf defekte Blöcke

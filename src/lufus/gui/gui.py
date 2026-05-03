@@ -6,7 +6,7 @@ import os
 import platform
 import getpass
 import time
-import requests
+import ssl
 import urllib.parse
 import urllib.request
 import webbrowser
@@ -662,6 +662,8 @@ class LufusWindow(QMainWindow):
         # sha256 verification checkbox and input :D
         self.chk_verify = QCheckBox(self._T.get("chk_verify_hash", "Verify SHA256 Checksum"))
         self.chk_verify.stateChanged.connect(self.update_verify_hash)
+        self.lbl_expected_hash = QLabel(self._T.get("lbl_expected_hash", "Expected SHA256:"))
+        self.lbl_expected_hash.setVisible(False)
         self.input_hash = QLineEdit()
         self.input_hash.setPlaceholderText(self._T.get("input_hash_placeholder", "Enter expected SHA256 hash here..."))
         self.input_hash.setEnabled(False)
@@ -677,6 +679,7 @@ class LufusWindow(QMainWindow):
         chk_layout.addWidget(self.chk_badblocks)
         chk_layout.addWidget(self.combo_badblocks)
         chk_layout.addWidget(self.chk_verify)
+        chk_layout.addWidget(self.lbl_expected_hash)
         chk_layout.addWidget(self.input_hash)
 
         main_layout.addLayout(chk_layout)
@@ -978,6 +981,8 @@ class LufusWindow(QMainWindow):
         # update sha256 verification setting :D
         state.verify_hash = self.chk_verify.isChecked()
         self.input_hash.setEnabled(state.verify_hash)
+        if hasattr(self, "lbl_expected_hash"):
+            self.lbl_expected_hash.setVisible(state.verify_hash)
         self._animate_widget(self.input_hash, state.verify_hash, "_anim_hash")
         self.log_message(f"SHA256 verification: {'enabled' if state.verify_hash else 'disabled'}")
 
@@ -1098,7 +1103,10 @@ class LufusWindow(QMainWindow):
         """Automatically detect ISO type and update UI selectors."""
         from lufus.writing.windows.detect import detect_iso_type, IsoType
 
+        # Non-ISO raw images (.img, .bin, .raw, .dmg) are always "Other / DD mode"
         if not iso_path.lower().endswith(".iso"):
+            self.log_message(f"Non-ISO image ({Path(iso_path).suffix or 'no ext'}), defaulting to Other/DD mode")
+            self.combo_image_option.setCurrentIndex(2)  # Other
             return
 
         self.log_message(f"Detecting ISO type for: {iso_path}...")
@@ -1230,6 +1238,13 @@ class LufusWindow(QMainWindow):
         self.btn_cancel.setText(self._T.get("btn_cancel", "Cancel"))
         self.statusBar.showMessage(self._T.get("status_ready", "Ready"), 0)
 
+        # update toolbar button tooltips :3
+        self.btn_refresh.setToolTip(self._T.get("tooltip_refresh", "Refresh USB devices (Ctrl+R)"))
+        self.btn_icon1.setToolTip(self._T.get("tooltip_website", "Website"))
+        self.btn_icon2.setToolTip(self._T.get("tooltip_about", "About"))
+        self.btn_icon3.setToolTip(self._T.get("tooltip_settings", "Settings"))
+        self.btn_icon4.setToolTip(self._T.get("tooltip_log", "Log"))
+
         # update image option combo :D
         current_img_idx = self.combo_image_option.currentIndex()
         self.combo_image_option.blockSignals(True)
@@ -1263,6 +1278,7 @@ class LufusWindow(QMainWindow):
 
         # update verification controls :D
         self.chk_verify.setText(self._T.get("chk_verify_hash", "Verify SHA256 Checksum"))
+        self.lbl_expected_hash.setText(self._T.get("lbl_expected_hash", "Expected SHA256:"))
         self.input_hash.setPlaceholderText(self._T.get("input_hash_placeholder", "Enter expected SHA256 hash here..."))
         self.input_label.setPlaceholderText(self._T.get("lbl_volume_label", "Volume Label"))
 
@@ -1336,6 +1352,7 @@ class LufusWindow(QMainWindow):
                     self.log_message(f"Failed to reset terminal: {e}")
 
             # reset ui state :D
+            self.progress_bar.setRange(0, 100)  # exit indeterminate mode
             self.progress_bar.setValue(0)
             self.progress_bar.setFormat("")
             self.btn_start.setEnabled(True)
@@ -1672,7 +1689,8 @@ class LufusWindow(QMainWindow):
         url = f"https://api.github.com/repos/{owner}/{repo}/releases/latest"
         current_version = state.version
         try:
-            req = urllib.request.urlopen(url, timeout=5)
+            ssl_ctx = ssl.create_default_context()
+            req = urllib.request.urlopen(url, timeout=5, context=ssl_ctx)
             if req.status == 200:
                 data = json.loads(req.read().decode())
                 tag_name = data.get("tag_name", "")

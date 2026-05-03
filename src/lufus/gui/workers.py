@@ -113,16 +113,12 @@ class FlashWorker(QThread):
                     )
 
             elif image_option == 0:  # Windows
-                if flash_mode == 0:
-                    # ISO mode for Windows (uses specialized flash_windows)
-                    # For Windows, we currently default to SIMPLE_FAT32 partition scheme
-                    # which handles splitting install.wim if necessary.
-                    scheme = PartitionScheme.SIMPLE_FAT32
-                    success = flash_usb(
-                        device_node, iso_path, scheme, progress_cb=self.progress.emit, status_cb=self.status.emit
-                    )
-                else:
-                    success = False
+                # ISO mode (flash_mode 0) uses the specialised flash_windows path.
+                # Any other mode (e.g. DD) uses the generic flash_usb path.
+                scheme = PartitionScheme.SIMPLE_FAT32
+                success = flash_usb(
+                    device_node, iso_path, scheme, progress_cb=self.progress.emit, status_cb=self.status.emit
+                )
             else:
                 # Other flash modes (Linux, Other)
                 fs_text = options.get("fs_text", "ext4")

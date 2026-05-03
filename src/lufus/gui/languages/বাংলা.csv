@@ -87,7 +87,7 @@ msgbox_scan_error_title,স্ক্যান ত্রুটি
 msgbox_scan_error_body,USB ডিভাইস স্ক্যান করতে ব্যর্থ:
 no_usb_found,কোনো USB ডিভাইস পাওয়া যায়নি
 dlg_select_image_title,ডিস্ক ইমেজ নির্বাচন করুন
-dlg_select_image_filter,"ডিস্ক ইমেজ (*.iso *.dmg *.img *.bin *.raw);;সব ফাইল (*)"
+dlg_select_image_filter,ডিস্ক ইমেজ (*.iso *.dmg *.img *.bin *.raw);;সব ফাইল (*)
 about_content,"লুফাস একটি ডিস্ক ইমেজ লেখার টুল যা লিনাক্সের জন্য Python দিয়ে তৈরি।
 উইন্ডোজের মূল Rufus টুল থেকে অনুপ্রাণিত।
 ভার্সন: v1.0.0b1
@@ -103,6 +103,7 @@ combo_badblocks_2pass,২ বার
 combo_badblocks_3pass,৩ বার
 status_unmounting_all,{device}-এ সব পার্টিশন আনমাউন্ট করা হচ্ছে...
 status_unmounting,{part} আনমাউন্ট করা হচ্ছে...
+status_remounting,পুনরায় মাউন্ট করা হচ্ছে {part}...
 status_format_starting,ফরম্যাট অপারেশন শুরু হচ্ছে...
 status_format_in_progress,ড্রাইভ ফরম্যাট করা হচ্ছে...
 status_format_complete,ফরম্যাট সম্পন্ন!
@@ -116,7 +117,7 @@ acc_boot,বুট ইমেজ সিলেক্টর
 acc_boot_desc,বর্তমানে নির্বাচিত ইমেজ ফাইল দেখায়
 acc_select,ইমেজ ফাইলের জন্য ব্রাউজ করুন
 acc_image_option,ইমেজ অপশন সিলেক্টর
-acc_image_option_desc,লেখার জন্য ইমেজের ধরন নির্বাচন করুন: উইন্ডোজ, লিনাক্স, অন্যান্য, বা শুধু ফরম্যাট
+acc_image_option_desc,লেখার জন্য ইমেজের ধরন নির্বাচন করুন: উইন্ডোজ
 acc_volume_label,ভলিউম লেবেল ইনপুট
 acc_volume_label_desc,USB ভলিউমের জন্য একটি নাম লিখুন
 acc_filesystem,ফাইল সিস্টেম সিলেক্টর

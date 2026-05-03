@@ -33,16 +33,21 @@ combo_target_bios,BIOS (або UEFI-CSM)
 combo_cluster_4096,4096 байтів (за замовчуванням)
 combo_cluster_8192,8192 байтів
 combo_badblocks_1pass,1 прохід
-combo_flash_iso,Режим Iso
-combo_flash_woe,Woe USB
-combo_flash_ventoy,Ventoy
-combo_flash_dd,DD
-combo_flash_none,Нічого
 chk_quick_format,Швидке форматування
 chk_extended_label,Створити розширену мітку та файли піктограм
 chk_bad_blocks,Перевірити пристрій на наявність пошкоджених блоків
 chk_verify_hash,Перевірити контрольну суму SHA256
 lbl_expected_hash,Очікуваний SHA256:
+progress_verifying,Перевірка контрольної суми...
+msgbox_verify_fail_title,Перевірка не вдалася
+msgbox_verify_fail_body,Контрольна сума SHA256 не збігається! Файл може бути пошкоджений.
+msgbox_invalid_hash_title,Невірний хеш
+msgbox_invalid_hash_body,Наданий хеш SHA256 є недійсним.
+combo_flash_iso,Режим Iso
+combo_flash_woe,Woe USB
+combo_flash_ventoy,Ventoy
+combo_flash_dd,DD
+combo_flash_none,Нічого
 btn_select,ВИБРАТИ
 btn_start,ПОЧАТИ
 btn_cancel,СКАСУВАТИ
@@ -55,7 +60,6 @@ status_ready,Готовий
 status_scanning,Сканування USB-пристроїв...
 status_scan_failed,Помилка ск
 status_flashing,Прошивка...
-progress_verifying,Перевірка контрольної суми...
 progress_preparing,Підготовка...
 progress_complete,Готово! 100%
 progress_failed,Помилка
@@ -70,10 +74,6 @@ msgbox_success_title,Успішно
 msgbox_success_body,USB-диск успішно прошито!
 msgbox_error_title,Помилка
 msgbox_error_body,Не вдалося прошити USB-диск.
-msgbox_verify_fail_title,Перевірка не вдалася
-msgbox_verify_fail_body,Контрольна сума SHA256 не збігається! Файл може бути пошкоджений.
-msgbox_invalid_hash_title,Невірний хеш
-msgbox_invalid_hash_body,Наданий хеш SHA256 є недійсним.
 msgbox_no_image_title,Немає образу
 msgbox_no_image_body,Будь ласка спочатку виберіть дійсний файл установки.
 msgbox_no_device_title,Немає пристрою
@@ -88,9 +88,6 @@ no_usb_found,USB-пристроїв не знайдено
 dlg_select_image_title,Вибрати образ диска
 dlg_select_image_filter,ISO-образи (*.iso);;Усі файли (*)
 about_content,lufus — це інструмент запису образів дисків написаний на Python для Linux.
-Натхненний оригінальним інструментом lufus для Windows.
-Версія: v1.0.0b1
-GitHub: github.com/hog185/lufus
 about_subtitle,Інструмент запису USB
 btn_close,Закрити
 btn_ok,OK
@@ -102,20 +99,21 @@ combo_badblocks_2pass,2 проходи
 combo_badblocks_3pass,3 проходи
 status_unmounting_all,Демонтування всіх розділів на {device}...
 status_unmounting,Демонтування {part}...
+status_remounting,Перемонтування {part}...
 status_format_starting,Запуск операції форматування...
 status_format_in_progress,Форматування диска...
 status_format_complete,Форматування завершено!
 status_format_failed,Форматування НЕ ВДАЛОСЯ. Перевірте журнал вище для точної помилки.
 status_flash_error,Помилка запису: {error}
 acc_device,Вибір пристрою
-acc_device_desc,Виберіть USB-пристрій, який хочете використати
+acc_device_desc,Виберіть USB-пристрій
 acc_refresh,Оновити пристрої
 acc_refresh_desc,Сканувати підключені USB-пристрої
 acc_boot,Вибір завантажувального образу
 acc_boot_desc,Показує поточно вибраний файл образу
 acc_select,Огляд файлів образу
 acc_image_option,Вибір параметра образу
-acc_image_option_desc,Виберіть тип образу для запису: Windows, Linux, Інше або Тільки форматування
+acc_image_option_desc,Виберіть тип образу для запису: Windows
 acc_volume_label,Поле введення мітки тому
 acc_volume_label_desc,Введіть ім'я для USB-тому
 acc_filesystem,Вибір файлової системи

@@ -20,7 +20,7 @@ lbl_partition_scheme,Partitionsschema
 lbl_target_system,Målsystem
 lbl_volume_label,Volymetikett
 lbl_file_system,Filsystem
-lbl_flash_option,Flashalternativ
+lbl_flash_option,Skrivmetod
 lbl_cluster_size,Klusterstorlek
 combo_image_windows,Standardinstallation av Windows
 combo_image_linux,Standardinstallation av Linux
@@ -59,7 +59,7 @@ tooltip_log,Logg
 status_ready,Redo
 status_scanning,Skannar efter USB-enheter...
 status_scan_failed,Skanning misslyckades
-status_flashing,Flashing...
+status_flashing,Skriver...
 progress_preparing,Förbereder...
 progress_complete,Färdig! 100%
 progress_failed,Misslyckades
@@ -71,9 +71,9 @@ progress_mount_done,Montering Klar... Slutförd! 100%
 msgbox_cancel_title,Avbryt
 msgbox_cancel_body,Är du säker på att du vill avbryta?
 msgbox_success_title,Lyckades
-msgbox_success_body,USB-flashning lyckades!
+msgbox_success_body,USB-enheten skrevs framgångsrikt!
 msgbox_error_title,Fel uppstod
-msgbox_error_body,Misslyckades med att flasha USB-enheten.
+msgbox_error_body,Misslyckades med att skriva till USB-enheten.
 msgbox_no_image_title,Ingen Avbildning
 msgbox_no_image_body,Vänligen välj en giltig installationsfil först.
 msgbox_no_device_title,Ingen Enhet
@@ -87,12 +87,12 @@ msgbox_scan_error_title,Fel vid Skanning
 msgbox_scan_error_body,Misslyckades med att söka efter USB-enheter:
 no_usb_found,Inga USB-enheter hittade.
 dlg_select_image_title,Välj enhetsavbildning
-dlg_select_image_filter,"Enhetsavbildningar (*.iso *.dmg *.img *.bin *.raw);;Alla filer (*)"
+dlg_select_image_filter,Enhetsavbildningar (*.iso *.dmg *.img *.bin *.raw);;Alla filer (*)
 about_content,"Lufus är ett verktyg för att skriva diskavbildningar, skrivet i Python för Linux.
 Inspirerat av det ursprungliga Rufus-verktyget för Windows.
 Version: v1.0.0b1
 GitHub: github.com/hog185/lufus"
-about_subtitle,USB-flashnings verktyg
+about_subtitle,USB-skrivningsverktyg
 btn_close,Stäng
 btn_ok,OK
 combo_boot_default,installations_media.iso
@@ -103,11 +103,12 @@ combo_badblocks_2pass,2 Pass
 combo_badblocks_3pass,3 Pass
 status_unmounting_all,Avmonterar alla partitioner på {device}...
 status_unmounting,Avmonterar {part}...
+status_remounting,Monterar om {part}...
 status_format_starting,Börjar formatering...
 status_format_in_progress,Formaterar enhet...
 status_format_complete,Formatering slutförd!
 status_format_failed,Formatering MISSLYCKADES. Kolla på loggen ovan för att se det exakta felmeddelandet.
-status_flash_error,Fel uppstod vid flashning: {error}
+status_flash_error,Skrivfel: {error}
 acc_device,Enhetsväljare
 acc_device_desc,Välj USB-enheten du vill använda
 acc_refresh,Uppdatera enheter
@@ -116,12 +117,12 @@ acc_boot,Startavbildningsväljare
 acc_boot_desc,Visar den akutellt valda avbildningsfilen
 acc_select,Bläddra efter avbildningsfil
 acc_image_option,Avbildningsval
-acc_image_option_desc,Välj vilken typ av avbildning som ska skrivas: Windows, Linux, Annat eller endast formatering
+acc_image_option_desc,Välj vilken typ av avbildning som ska skrivas: Windows
 acc_volume_label,Volymetikettinmatning
 acc_volume_label_desc,Ange ett namn för USB-volymen
 acc_filesystem,Filsystemväljare
 acc_cluster,Klusterstorlekväljare
-acc_flash_option,Flashningmetodsväljare
+acc_flash_option,Väljare för skrivmetod
 acc_quick_format,Snabbformateringsruta
 acc_extended_label,Kryssruta för utökad etikett
 acc_bad_blocks,Kyrssruta för kontroll av dåliga block

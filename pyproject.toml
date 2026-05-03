@@ -50,7 +50,6 @@ requires = [
     "psutil>=7.2",
     "pyqt6>=6.8.0",
     "pyudev>=0.24.4",
-    "requests",
     "packaging",
     "platformdirs>=4.2"
 ]

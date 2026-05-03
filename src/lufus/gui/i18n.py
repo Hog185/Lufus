@@ -11,8 +11,12 @@ def load_translations(language="English"):
         return t
     lang_file = lang_dir / f"{language}.csv"
     if lang_file.exists():
-        # read translations from csv :3
-        with open(lang_file, encoding="utf-8", newline="") as f:
+        # utf-8-sig strips BOM that some editors insert before the first byte.
+        # Graceful row handling: skip malformed rows (no key column, empty key).
+        with open(lang_file, encoding="utf-8-sig", newline="") as f:
             for row in csv.DictReader(f):
-                t[row["key"]] = row["value"]
+                key = row.get("key", "").strip()
+                value = row.get("value", "")
+                if key:
+                    t[key] = value
     return t

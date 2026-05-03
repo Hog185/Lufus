@@ -87,7 +87,7 @@ msgbox_scan_error_title,Scan Error
 msgbox_scan_error_body,Failed to scan for USB devices:
 no_usb_found,No USB devices found
 dlg_select_image_title,Select Disk Image
-dlg_select_image_filter,"Disk Images (*.iso *.dmg *.img *.bin *.raw);;All Files (*)"
+dlg_select_image_filter,Disk Images (*.iso *.dmg *.img *.bin *.raw);;All Files (*)
 about_content,"Lufus is a disk image writer written in Python for Linux.
 Inspired by the original Rufus tool for Windows.
 Version: v1.0.0b1
@@ -103,6 +103,7 @@ combo_badblocks_2pass,2 Pass
 combo_badblocks_3pass,3 Pass
 status_unmounting_all,Unmounting all partitions on {device}...
 status_unmounting,Unmounting {part}...
+status_remounting,Remounting {part}...
 status_format_starting,Starting format operation...
 status_format_in_progress,Formatting drive...
 status_format_complete,Format complete!
@@ -116,7 +117,7 @@ acc_boot,Boot image selector
 acc_boot_desc,Shows the currently selected image file
 acc_select,Browse for image file
 acc_image_option,Image option selector
-acc_image_option_desc,Choose the type of image to write: Windows, Linux, Other, or Format Only
+acc_image_option_desc,Choose the type of image to write: Windows
 acc_volume_label,Volume label input
 acc_volume_label_desc,Enter a name for the USB volume
 acc_filesystem,File system selector

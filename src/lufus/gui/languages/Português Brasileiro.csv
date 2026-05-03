@@ -92,7 +92,6 @@ about_content,"O Lufus é um gravador de imagem escrito em python para o Linux.
 É inspirado no Rufus para o Windows.
 Version: v1.0.0b1
 GitHub: github.com/hog185/lufus"
-#s1oplus was here meow :3
 about_subtitle,Ferramenta de Flash USB
 btn_close,Fechar
 btn_ok,OK
@@ -104,6 +103,7 @@ combo_badblocks_2pass,2 ciclos
 combo_badblocks_3pass,3 ciclos
 status_unmounting_all,Desmontando todas as partições em {device}...
 status_unmounting,Desmontando {part}...
+status_remounting,Remontando {part}...
 status_format_starting,Iniciando operação de formatação...
 status_format_in_progress,Formatando disco...
 status_format_complete,Formatação concluída!
@@ -117,7 +117,7 @@ acc_boot,Seletor de imagem de inicialização
 acc_boot_desc,Mostra o arquivo de imagem atualmente selecionado
 acc_select,Navegar para arquivo de imagem
 acc_image_option,Seletor de opção de imagem
-acc_image_option_desc,Escolha o tipo de imagem a gravar: Windows, Linux, Outro ou Somente Formatar
+acc_image_option_desc,Escolha o tipo de imagem a gravar: Windows
 acc_volume_label,Campo de nome do volume
 acc_volume_label_desc,Digite um nome para o volume USB
 acc_filesystem,Seletor de sistema de arquivos

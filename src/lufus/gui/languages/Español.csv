@@ -20,10 +20,11 @@ lbl_partition_scheme,Esquema de partición
 lbl_target_system,Sistema objetivo
 lbl_volume_label,Etiqueta de volumen
 lbl_file_system,Sistema de archivos
-lbl_flash_option,Opciones de flasheo
+lbl_flash_option,Opción de grabación
 lbl_cluster_size,Tamaño del cluster
 combo_image_windows,Instalación estandar de Windows
 combo_image_linux,Instalación de Linux
+combo_image_other,Cualquier instalación (modo DD)
 combo_image_format,Solo formateo
 combo_partition_gpt,GPT
 combo_partition_mbr,MBR
@@ -32,14 +33,21 @@ combo_target_bios,BIOS (o UEFI-CSM)
 combo_cluster_4096,4096 bytes (Por defecto)
 combo_cluster_8192,8192 bytes
 combo_badblocks_1pass,1 pasada
-combo_flash_iso,Modo iso
+chk_quick_format,Formateo rápido
+chk_extended_label,Crear etiquetas extendidas y archivos de íconos
+chk_bad_blocks,Detectar bad blocks
+chk_verify_hash,Verificar suma SHA256
+lbl_expected_hash,SHA256 esperado:
+progress_verifying,Verificando suma SHA256...
+msgbox_verify_fail_title,Verificación fallida
+msgbox_verify_fail_body,¡La suma SHA256 no coincide! El archivo puede estar corrupto.
+msgbox_invalid_hash_title,Hash inválido
+msgbox_invalid_hash_body,El hash SHA256 proporcionado no es válido.
+combo_flash_iso,Modo ISO
 combo_flash_woe,Woe USB
 combo_flash_ventoy,Ventoy
 combo_flash_dd,DD
 combo_flash_none,Ninguno
-chk_quick_format,Formateo rápido
-chk_extended_label,Crear etiquetas extendidas y archivos de íconos
-chk_bad_blocks,Detectar bad blocks
 btn_select,Seleccionar
 btn_start,Empezar
 btn_cancel,Cancelar
@@ -51,7 +59,7 @@ tooltip_log,Log
 status_ready,Listo
 status_scanning,Escaneando por dispositivos USB...
 status_scan_failed,Escaneo fallido
-status_flashing,Flasheando...
+status_flashing,Grabando...
 progress_preparing,Preparando...
 progress_complete,Completado! 100%
 progress_failed,Fallido
@@ -63,9 +71,9 @@ progress_mount_done,Montado.. Completado! 100%
 msgbox_cancel_title,Cancelar
 msgbox_cancel_body,Estás seguro de que quieres cancelar?
 msgbox_success_title,Éxito
-msgbox_success_body,Dispositivo USB flasheado con éxito!
+msgbox_success_body,¡Dispositivo USB grabado con éxito!
 msgbox_error_title,Error
-msgbox_error_body,Flasheo de dispositivo USB fallido
+msgbox_error_body,Error al grabar en el dispositivo USB.
 msgbox_no_image_title,Sin imagen
 msgbox_no_image_body,Primero selecciona un archivo de instalación válido.
 msgbox_no_device_title,Sin dispositivo
@@ -86,25 +94,23 @@ about_content,"Lufus es una utilidad de escritura de discos para Linux hecha en 
 Inspirado por la herramienta original Rufus para Windows. 
 Version: v1.0.0b1
 GitHub: github.com/hog185/lufus"
-Traducción por/translation by: saber_03  :3 
-
-combo_badblocks_2pass,2 pasadas
-combo_badblocks_3pass,3 pasadas
-chk_verify_hash,Verificar suma SHA256
-input_hash_placeholder,Ingresa el hash SHA256 esperado aquí...
 about_subtitle,Herramienta de flash USB
 btn_close,Cerrar
 btn_ok,OK
 combo_boot_default,medios_de_instalación.iso
 tooltip_website,Sitio web
 settings_label_theme,Tema
+input_hash_placeholder,Ingresa el hash SHA256 esperado aquí...
+combo_badblocks_2pass,2 pasadas
+combo_badblocks_3pass,3 pasadas
 status_unmounting_all,Desmontando todas las particiones en {device}...
 status_unmounting,Desmontando {part}...
+status_remounting,Remontando {part}...
 status_format_starting,Iniciando operación de formateo...
 status_format_in_progress,Formateando disco...
 status_format_complete,¡Formateo completado!
 status_format_failed,Formateo FALLIDO. Comprueba el registro anterior para ver el error exacto.
-status_flash_error,Error de flasheo: {error}
+status_flash_error,Error de grabación: {error}
 acc_device,Selector de dispositivo
 acc_device_desc,Seleccione el dispositivo USB que desea usar
 acc_refresh,Actualizar dispositivos
@@ -113,7 +119,7 @@ acc_boot,Selector de imagen de arranque
 acc_boot_desc,Muestra el archivo de imagen seleccionado actualmente
 acc_select,Buscar archivo de imagen
 acc_image_option,Selector de tipo de imagen
-acc_image_option_desc,Elija el tipo de imagen a escribir: Windows, Linux, Otro, o Solo Formatear
+acc_image_option_desc,Elija el tipo de imagen a escribir: Windows
 acc_volume_label,Campo de etiqueta de volumen
 acc_volume_label_desc,Introduzca un nombre para el volumen USB
 acc_filesystem,Selector de sistema de archivos

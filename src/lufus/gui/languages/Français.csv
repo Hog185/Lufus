@@ -20,11 +20,11 @@ lbl_partition_scheme,Schéma de partition
 lbl_target_system,Système de destination
 lbl_volume_label,Nom du volume
 lbl_file_system,Système de fichiers
-lbl_flash_option,Option de flash
+lbl_flash_option,Option d'écriture
 lbl_cluster_size,Taille d'unité d'allocation
 combo_image_windows,Installation standard de Windows
 combo_image_linux,Installation standard de Linux
-combo_image_other,N'importe-quelle installation (mode DD)
+combo_image_other,N'importe quelle installation (mode DD)
 combo_image_format,Mode formatage uniquement
 combo_partition_gpt,GPT
 combo_partition_mbr,MBR
@@ -59,7 +59,7 @@ tooltip_log,Journal
 status_ready,Prêt
 status_scanning,Recherche de périphériques USB...
 status_scan_failed,Échec de la recherche
-status_flashing,Flashage en cours...
+status_flashing,Écriture en cours...
 progress_preparing,Préparation...
 progress_complete,Terminé ! 100%
 progress_failed,Échec
@@ -71,9 +71,9 @@ progress_mount_done,Montage terminé.. Terminé ! 100%
 msgbox_cancel_title,Annuler
 msgbox_cancel_body,Êtes-vous sûr de vouloir annuler ?
 msgbox_success_title,Succès
-msgbox_success_body,Le lecteur USB a été flashé avec succès !
+msgbox_success_body,Le lecteur USB a été écrit avec succès !
 msgbox_error_title,Erreur
-msgbox_error_body,Échec du flashage du lecteur USB.
+msgbox_error_body,Échec de l'écriture sur le lecteur USB.
 msgbox_no_image_title,Pas d'image
 msgbox_no_image_body,Veuillez d'abord sélectionner un fichier d'installation valide.
 msgbox_no_device_title,Pas de périphérique
@@ -87,7 +87,7 @@ msgbox_scan_error_title,Erreur de recherche
 msgbox_scan_error_body,Échec de la recherche de périphériques USB :
 no_usb_found,Aucun périphérique USB trouvé
 dlg_select_image_title,Sélectionner l'image disque
-dlg_select_image_filter,"Images disque (*.iso *.dmg *.img *.bin *.raw);;Tous les fichiers (*)"
+dlg_select_image_filter,Images disque (*.iso *.dmg *.img *.bin *.raw);;Tous les fichiers (*)
 about_content,"Lufus est un logiciel libre d'écriture d'images disque écrit en Python pour GNU/Linux, 
 inspiré par l'outil original Rufus, disponible uniquement pour Windows.
 Version : v1.0.0b1
@@ -103,6 +103,7 @@ combo_badblocks_2pass,2 Passes
 combo_badblocks_3pass,3 Passes
 status_unmounting_all,Démontage de toutes les partitions sur {device}...
 status_unmounting,Démontage de {part}...
+status_remounting,Remontage de {part}...
 status_format_starting,Démarrage de l'opération de formatage...
 status_format_in_progress,Formatage du lecteur...
 status_format_complete,Formatage terminé !
@@ -116,17 +117,17 @@ acc_boot,Sélecteur d'image de démarrage
 acc_boot_desc,Affiche le fichier image actuellement sélectionné
 acc_select,Parcourir pour trouver un fichier image
 acc_image_option,Sélecteur d'option d'image
-acc_image_option_desc,Choisissez le type d'image à écrire : Windows, Linux, Autre ou Formatage uniquement
+acc_image_option_desc,Choisissez le type d'image à écrire : Windows
 acc_volume_label,Champ de saisie du nom du volume
 acc_volume_label_desc,Entrez un nom pour le volume USB
 acc_filesystem,Sélecteur de système de fichiers
 acc_cluster,Sélecteur de taille de cluster
-acc_flash_option,Sélecteur de méthode de flash
+acc_flash_option,Sélecteur de méthode d'écriture
 acc_quick_format,Case à cocher pour le formatage rapide
-acc_extended_label,Ccase à cocher pour créer une étendue étendue
-acc_bad_blocks,Ccase à cocher pour vérifier les blocs défectueux
+acc_extended_label,Case à cocher pour créer une étiquette étendue
+acc_bad_blocks,Case à cocher pour vérifier les secteurs défectueux
 acc_bad_blocks_passes,Sélecteur du nombre de passes pour la vérification des blocs
-acc_verify_hash,Ccase à cocher pour vérifier la somme de contrôle SHA256
+acc_verify_hash,Case à cocher pour vérifier la somme de contrôle SHA256
 acc_hash_input,Champ de saisie du hachage SHA256 attendu
 acc_hash_input_desc,Collez ici le hachage SHA256 attendu de 64 caractères
 acc_progress,Barre de progression de l'opération

@@ -25,7 +25,7 @@ lbl_cluster_size,Размер кластера
 combo_image_windows,Стандартная установка Windows
 combo_image_linux,Стандартная установка Linux
 combo_image_other,Любая установка (режим DD)
-combo_image_format,Режим "Только форматирование"
+combo_image_format,"Режим ""Только форматирование"""
 combo_partition_gpt,GPT
 combo_partition_mbr,MBR
 combo_target_uefi,UEFI (без CSM)
@@ -69,15 +69,15 @@ progress_formatted,Форматирование устройства.. 60%
 progress_label_changed,Изменение лейбла.. 80%
 progress_mount_done,Монтирование завершено.. Завершено! 100%
 msgbox_cancel_title,ОТМЕНИТЬ
-msgbox_cancel_body,Вы уверены, что хотите отменить процесс?
+msgbox_cancel_body,Вы уверены
 msgbox_success_title,Успешно
 msgbox_success_body,Успешно записаны данные на USB устройство!
 msgbox_error_title,Ошибка
 msgbox_error_body,Не удалось записать данные на USB устройство.
 msgbox_no_image_title,Без образа
-msgbox_no_image_body,Пожалуйста, выберите сначала правильный установочный носитель.
+msgbox_no_image_body,Пожалуйста
 msgbox_no_device_title,Нет устройств
-msgbox_no_device_body,Пожалуйста, выберите сначала USB устройство.
+msgbox_no_device_body,Пожалуйста
 msgbox_usb_found_title,Обнаружено новое USB устройство
 msgbox_usb_found_body,USB устройство найдено
 msgbox_no_devices_title,Нет устройств
@@ -87,7 +87,7 @@ msgbox_scan_error_title,Ошибка сканирования
 msgbox_scan_error_body,Ошибка в ходе сканирования USB устройств:
 no_usb_found,USB устройства не обнаружены.
 dlg_select_image_title,Выберите образ для записи
-dlg_select_image_filter,"Образы дисков (*.iso *.dmg *.img *.bin *.raw);;Все файлы (*)"
+dlg_select_image_filter,Образы дисков (*.iso *.dmg *.img *.bin *.raw);;Все файлы (*)
 about_content,"Lufus - это программа для записи образов дисков, написанная на языке Python для Linux.
 Вдохновлено оригинальным инструментом Rufus для Windows.
 Версия: v1.0.0b1
@@ -103,20 +103,21 @@ combo_badblocks_2pass,2 прохода
 combo_badblocks_3pass,3 прохода
 status_unmounting_all,Размонтирование всех разделов на {device}...
 status_unmounting,Размонтирование {part}...
+status_remounting,Повторное монтирование {part}...
 status_format_starting,Запуск операции форматирования...
 status_format_in_progress,Форматирование устройства...
 status_format_complete,Форматирование завершено!
 status_format_failed,Форматирование ПРОВАЛЕНО. Проверьте журнал выше для получения точной ошибки.
 status_flash_error,Ошибка записи: {error}
 acc_device,Выбор устройства
-acc_device_desc,Выберите USB-устройство, которое хотите использовать
+acc_device_desc,Выберите USB-устройство
 acc_refresh,Обновить устройства
 acc_refresh_desc,Сканировать подключённые USB-устройства
 acc_boot,Выбор загрузочного образа
 acc_boot_desc,Показывает текущий выбранный файл образа
 acc_select,Обзор файла образа
 acc_image_option,Выбор параметра образа
-acc_image_option_desc,Выберите тип образа для записи: Windows, Linux, Другое или Только форматирование
+acc_image_option_desc,Выберите тип образа для записи: Windows
 acc_volume_label,Поле ввода метки тома
 acc_volume_label_desc,Введите имя для USB-тома
 acc_filesystem,Выбор файловой системы

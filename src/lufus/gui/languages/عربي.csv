@@ -87,7 +87,7 @@ msgbox_scan_error_title,حدث خطأ أثناء الفحص
 msgbox_scan_error_body,:فشل الفحص بحثاً عن أجهزة الـ USB
 no_usb_found,لم يتم العثور علي أجهزة الـ USB
 dlg_select_image_title,اختار ملف الصورة
-dlg_select_image_filter,"Disk Images (*.iso *.dmg *.img *.bin *.raw);;كل الملفات (*)"
+dlg_select_image_filter,Disk Images (*.iso *.dmg *.img *.bin *.raw);;كل الملفات (*)
 about_content,"لوفس (lufus) هو برنامج مصنوع بلغة بايثون لنظام تشغيل لينيكس.
 مستوحى من برنامج روفس (rufus) الأصلي لنظام تشغيل ويندوز.
 الإصدار: 1.0.0b1
@@ -103,6 +103,7 @@ combo_badblocks_2pass,دورتان
 combo_badblocks_3pass,ثلاث دورات
 status_unmounting_all,جارٍ فصل جميع الأقسام على {device}...
 status_unmounting,جارٍ فصل {part}...
+status_remounting,إعادة تحميل {part}...
 status_format_starting,جارٍ بدء عملية المحي...
 status_format_in_progress,جارٍ محو وتهيئة القرص...
 status_format_complete,!اكتملت عملية المحي
