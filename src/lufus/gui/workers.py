@@ -3,6 +3,7 @@ from pathlib import Path
 from PyQt6.QtCore import QThread, pyqtSignal
 from lufus.writing.partition_scheme import PartitionScheme
 
+
 class VerifyWorker(QThread):
     # worker thread for sha256 verification >:D
     progress = pyqtSignal(str)
@@ -50,7 +51,8 @@ class FlashWorker(QThread):
     progress = pyqtSignal(int)
     status = pyqtSignal(str)
     flash_done = pyqtSignal(bool)
-	 request_tweaks = pyqtSignal()
+    request_tweaks = pyqtSignal()
+
     def __init__(self, options: dict, t: dict):
         super().__init__()
         # store options for flashing

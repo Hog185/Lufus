@@ -24,6 +24,7 @@ from lufus.gui.constants import THEME_DIR, _find_resource_dir
 from lufus.gui.scale import Scale
 from lufus.lufus_logging import get_logger
 
+
 class LogWindow(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -250,6 +251,7 @@ class SettingsDialog(QDialog):
         custom = sorted(p.parent.name for p in user_themes_dir.glob("*/*_theme.json"))
         return builtin, custom
 
+
 class WinTweaks(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -295,13 +297,13 @@ class WinTweaks(QDialog):
         layout.addWidget(self.data_checkbox)
         layout.addWidget(self.applytweaks_btn)
         layout.addWidget(self.canceltweaks_btn)
-    
+
         self.setLayout(layout)
 
     def log_message(self, msg):
         # delegate logging to parent window if available, otherwise use module logger
         parent = self.parent()
-        if parent is not None and hasattr(parent, 'log_message'):
+        if parent is not None and hasattr(parent, "log_message"):
             parent.log_message(msg)
         else:
             get_logger("wintweaks").info(msg)
@@ -309,23 +311,36 @@ class WinTweaks(QDialog):
     def update_winhardware(self):
         # update winhardware req disable setting
         states.win_hardware_bypass = 1 if self.hardware_checkbox.isChecked() else 0
-        self.log_message(f"Windows hardware requirement disable: {'enabled' if self.hardware_checkbox.isChecked() else 'disabled'}")
+        self.log_message(
+            f"Windows hardware requirement disable: {'enabled' if self.hardware_checkbox.isChecked() else 'disabled'}"
+        )
+
     def update_winmicrosoftacc(self):
         # update microsoft acc disable setting
         states.win_microsoft_acc = 1 if self.microsoft_checkbox.isChecked() else 0
-        self.log_message(f"Microsoft account requirement disable: {'enabled' if self.microsoft_checkbox.isChecked() else 'disabled'}")
+        self.log_message(
+            f"Microsoft account requirement disable: {'enabled' if self.microsoft_checkbox.isChecked() else 'disabled'}"
+        )
+
     def update_winlocalaccchk(self):
         # update local acc setting
         states.win_local_acc_chk = 1 if self.localacc_checkbox.isChecked() else 0
-        self.log_message(f"Windows Local Account Add: {'enabled' if self.localacc_checkbox.isChecked() else 'disabled'}")
+        self.log_message(
+            f"Windows Local Account Add: {'enabled' if self.localacc_checkbox.isChecked() else 'disabled'}"
+        )
+
     def sync_username(self, new_username):
         # changes local username
         states.win_local_acc = new_username
+
     def update_winprivacy(self):
         # update win privacy setting
         states.win_privacy = 1 if self.data_checkbox.isChecked() else 0
-        self.log_message(f"Windows privacy questions disable: {'enabled' if self.data_checkbox.isChecked() else 'disabled'}")
+        self.log_message(
+            f"Windows privacy questions disable: {'enabled' if self.data_checkbox.isChecked() else 'disabled'}"
+        )
         # main tweaks apply logic function
+
     def applywintweaks(self):
-        #closes window
+        # closes window
         self.accept()
