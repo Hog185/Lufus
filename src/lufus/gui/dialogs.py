@@ -22,7 +22,7 @@ from PyQt6.QtGui import QFont, QRegularExpressionValidator
 from lufus import state as states
 from lufus.gui.constants import THEME_DIR, _find_resource_dir
 from lufus.gui.scale import Scale
-
+from lufus.lufus_logging import get_logger
 
 class LogWindow(QDialog):
     def __init__(self, parent=None):
