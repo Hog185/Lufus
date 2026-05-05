@@ -23,7 +23,9 @@ class VerifyWorker(QThread):
 
             p = Path(self.iso_path)
             if not p.is_file():
-                self.progress.emit(f"Verification error: file not found: {self.iso_path}")
+                self.progress.emit(
+                    f"Verification error: file not found: {self.iso_path}"
+                )
                 self.flash_done.emit(False)
                 return
             file_size = p.stat().st_size
@@ -35,11 +37,17 @@ class VerifyWorker(QThread):
                 for chunk in iter(lambda: f.read(1024 * 1024), b""):
                     sha256.update(chunk)
                     bytes_read += len(chunk)
-                    pct = min(int(bytes_read * 100 / file_size), 99) if file_size > 0 else 0
+                    pct = (
+                        min(int(bytes_read * 100 / file_size), 99)
+                        if file_size > 0
+                        else 0
+                    )
                     self.int_progress.emit(pct)
             calculated = sha256.hexdigest()
             if calculated != normalized:
-                self.progress.emit(f"SHA256 mismatch: expected {normalized}, got {calculated}")
+                self.progress.emit(
+                    f"SHA256 mismatch: expected {normalized}, got {calculated}"
+                )
             self.flash_done.emit(calculated == normalized)
         except Exception as e:
             self.progress.emit(f"Verification error: {str(e)}")
@@ -82,35 +90,54 @@ class FlashWorker(QThread):
 
             # unmount all partitions before flashing :D
             self.status.emit(
-                self._T.get("status_unmounting_all", "Unmounting all partitions on {device}...").format(
-                    device=device_node
-                )
+                self._T.get(
+                    "status_unmounting_all", "Unmounting all partitions on {device}..."
+                ).format(device=device_node)
             )
             partitions = glob.glob(f"{device_node}*")
             unmounted_parts = []
             for part in partitions:
                 if part != device_node:  # don't unmount the device itself
-                    self.status.emit(self._T.get("status_unmounting", "Unmounting {part}...").format(part=part))
+                    self.status.emit(
+                        self._T.get("status_unmounting", "Unmounting {part}...").format(
+                            part=part
+                        )
+                    )
                     fo.unmount(part)
                     unmounted_parts.append(part)
 
             # perform operation based on image option
             if image_option == 3:  # Format Only
-                self.status.emit(self._T.get("status_format_starting", "Starting format operation..."))
+                self.status.emit(
+                    self._T.get(
+                        "status_format_starting", "Starting format operation..."
+                    )
+                )
                 self.progress.emit(10)
-                self.status.emit(self._T.get("status_format_in_progress", "Formatting drive..."))
+                self.status.emit(
+                    self._T.get("status_format_in_progress", "Formatting drive...")
+                )
                 self.progress.emit(50)
                 success = fo.disk_format(status_cb=self.status.emit)
                 if success:
                     self.progress.emit(80)
                     for part in unmounted_parts:
-                        self.status.emit(self._T.get("status_remounting", "Remounting {part}...").format(part=part))
+                        self.status.emit(
+                            self._T.get(
+                                "status_remounting", "Remounting {part}..."
+                            ).format(part=part)
+                        )
                         fo.remount(part)
                     self.progress.emit(100)
-                    self.status.emit(self._T.get("status_format_complete", "Format complete!"))
+                    self.status.emit(
+                        self._T.get("status_format_complete", "Format complete!")
+                    )
                 else:
                     self.status.emit(
-                        self._T.get("status_format_failed", "Format FAILED. Check the log above for the exact error.")
+                        self._T.get(
+                            "status_format_failed",
+                            "Format FAILED. Check the log above for the exact error.",
+                        )
                     )
 
             elif image_option == 0:  # Windows
@@ -118,7 +145,11 @@ class FlashWorker(QThread):
                 # Any other mode (e.g. DD) uses the generic flash_usb path.
                 scheme = PartitionScheme.SIMPLE_FAT32
                 success = flash_usb(
-                    device_node, iso_path, scheme, progress_cb=self.progress.emit, status_cb=self.status.emit
+                    device_node,
+                    iso_path,
+                    scheme,
+                    progress_cb=self.progress.emit,
+                    status_cb=self.status.emit,
                 )
             else:
                 # Other flash modes (Linux, Other)
@@ -141,7 +172,11 @@ class FlashWorker(QThread):
 
             self.flash_done.emit(bool(success))
         except Exception as e:
-            self.status.emit(self._T.get("status_flash_error", "Flash error: {error}").format(error=e))
+            self.status.emit(
+                self._T.get("status_flash_error", "Flash error: {error}").format(
+                    error=e
+                )
+            )
             self.flash_done.emit(False)
         finally:
             # restore stdout :D

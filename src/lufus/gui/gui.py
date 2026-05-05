@@ -43,6 +43,7 @@ from PyQt6.QtCore import (
 from PyQt6.QtGui import QIcon
 
 from lufus import state
+from lufus import state as states
 from lufus.drives.autodetect_usb import UsbMonitor
 from lufus.lufus_logging import get_logger
 from lufus.gui.themes.icon_utils import svg_icon
@@ -149,8 +150,6 @@ class LufusWindow(QMainWindow):
         self.log_entries = []
         self._last_clipboard = ""
         self.is_terminal = False
-        self.worker = FlashWorker()
-        self.worker.request_tweaks.connect(self.show_tweak_dialog)
         try:
             self.is_terminal = sys.stdout.isatty()
         except (AttributeError, OSError):
@@ -191,7 +190,9 @@ class LufusWindow(QMainWindow):
             f"Python {sys.version.split()[0]} | {platform.system()} {platform.release()} {platform.machine()}"
         )
         self.log_message(f"Running as user: {getpass.getuser()} (uid={os.getuid()})")
-        self.log_message(f"Startup USB devices passed in: {list((usb_devices or {}).keys()) or 'none'}")
+        self.log_message(
+            f"Startup USB devices passed in: {list((usb_devices or {}).keys()) or 'none'}"
+        )
         self.flash_worker = None
         self.log_message(f"UI scale factor: {self._S.f():.3f}  (base 96 DPI)")
         self._check_latest_download()
@@ -203,7 +204,9 @@ class LufusWindow(QMainWindow):
         if state.iso_path:
             return
         try:
-            result = subprocess.run(["xdg-user-dir", "DOWNLOAD"], capture_output=True, text=True, timeout=2)
+            result = subprocess.run(
+                ["xdg-user-dir", "DOWNLOAD"], capture_output=True, text=True, timeout=2
+            )
             downloads = (
                 Path(result.stdout.strip())
                 if result.returncode == 0 and result.stdout.strip()
@@ -214,7 +217,9 @@ class LufusWindow(QMainWindow):
         if not downloads.is_dir():
             return
         try:
-            isos = sorted(downloads.glob("*.iso"), key=lambda p: p.stat().st_mtime, reverse=True)
+            isos = sorted(
+                downloads.glob("*.iso"), key=lambda p: p.stat().st_mtime, reverse=True
+            )
         except Exception:
             return
         if not isos:
@@ -229,7 +234,9 @@ class LufusWindow(QMainWindow):
         self.combo_boot.setItemText(0, clean_name)
         self.input_label.setText(clean_name.rsplit(".", 1)[0].upper())
         self.log_message(f"Latest download auto-loaded: {latest}")
-        self.log_message(f"Image size: {file_size:,} bytes ({file_size / (1024**3):.2f} GiB)")
+        self.log_message(
+            f"Image size: {file_size:,} bytes ({file_size / (1024**3):.2f} GiB)"
+        )
         self._detect_iso_and_update_ui(str(latest))
 
     def _apply_styles(self) -> None:
@@ -259,7 +266,9 @@ class LufusWindow(QMainWindow):
             with open(theme_json_path, "r", encoding="utf-8") as fr:
                 theme = json.load(fr)
         except FileNotFoundError:
-            print("WARNING: no theme applied, json didn't load up in _apply_styles, gui.py.")
+            print(
+                "WARNING: no theme applied, json didn't load up in _apply_styles, gui.py."
+            )
             return
 
         # check if gradients are enabled :3
@@ -322,7 +331,9 @@ class LufusWindow(QMainWindow):
 
         # scale dimensions :3
         for key, value in theme["dimensions"].items():
-            scaled_theme["dimensions"][key] = value if key in NO_SCALE_KEYS else S.px(value)
+            scaled_theme["dimensions"][key] = (
+                value if key in NO_SCALE_KEYS else S.px(value)
+            )
 
         # flatten theme dict for template substitution
         flat_theme: Dict[str, Any] = {}
@@ -444,7 +455,9 @@ class LufusWindow(QMainWindow):
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)
         line.setFrameShadow(QFrame.Shadow.Sunken)
-        line.setStyleSheet("background-color: palette(mid); min-height: 1px; max-height: 1px;")
+        line.setStyleSheet(
+            "background-color: palette(mid); min-height: 1px; max-height: 1px;"
+        )
         layout.addWidget(label)
         layout.addWidget(line, 1)
         return layout, label
@@ -456,7 +469,9 @@ class LufusWindow(QMainWindow):
 
         if not devices:
             # show no devices message
-            self.combo_device.addItem(self._T.get("no_usb_found", "No USB devices found"), None)
+            self.combo_device.addItem(
+                self._T.get("no_usb_found", "No USB devices found"), None
+            )
             return
 
         # add each device to combo
@@ -525,7 +540,9 @@ class LufusWindow(QMainWindow):
         # boot selection with file browser :D
         self.lbl_boot = QLabel(self._T.get("lbl_boot_selection", "Boot Selection"))
         self.combo_boot = QComboBox()
-        self.combo_boot.addItem(self._T.get("combo_boot_default", "installation_media.iso"))
+        self.combo_boot.addItem(
+            self._T.get("combo_boot_default", "installation_media.iso")
+        )
 
         self.btn_select = QPushButton(self._T.get("btn_select", "Select"))
         self.btn_select.clicked.connect(self.browse_file)
@@ -548,7 +565,9 @@ class LufusWindow(QMainWindow):
         self.combo_image_option.addItem(self._T.get("combo_image_windows", "Windows"))
         self.combo_image_option.addItem(self._T.get("combo_image_linux", "Linux"))
         self.combo_image_option.addItem(self._T.get("combo_image_other", "Other"))
-        self.combo_image_option.addItem(self._T.get("combo_image_format", "Format Only"))
+        self.combo_image_option.addItem(
+            self._T.get("combo_image_format", "Format Only")
+        )
         # self.combo_image_option.addItem(self._T.get("combo_image_ventoy", "Ventoy"))
         self.combo_image_option.currentTextChanged.connect(self.update_image_option)
 
@@ -586,14 +605,18 @@ class LufusWindow(QMainWindow):
         main_layout.addSpacing(S.px(6))
 
         # format options section :3
-        _hdr_fmt, self.lbl_header_format = self.create_header(self._T.get("header_format_options", "Format Options"))
+        _hdr_fmt, self.lbl_header_format = self.create_header(
+            self._T.get("header_format_options", "Format Options")
+        )
         main_layout.addLayout(_hdr_fmt)
         main_layout.addSpacing(S.px(4))
 
         # volume label input field
         self.lbl_vol = QLabel(self._T.get("lbl_volume_label", "Volume Label"))
         self.input_label = QLineEdit()
-        self.input_label.setPlaceholderText(self._T.get("lbl_volume_label", "Volume Label"))
+        self.input_label.setPlaceholderText(
+            self._T.get("lbl_volume_label", "Volume Label")
+        )
         self.input_label.textChanged.connect(self.update_new_label)
 
         vol_layout = QVBoxLayout()
@@ -606,7 +629,19 @@ class LufusWindow(QMainWindow):
         # filesystem cluster and flash option selectors :D
         self.lbl_fs = QLabel(self._T.get("lbl_file_system", "File System"))
         self.combo_fs = QComboBox()
-        self.all_fs_options = ["NTFS", "FAT32", "exFAT", "ext4", "UDF", "HFS+", "ext2", "ext3", "Btrfs", "XFS", "ZFS"]
+        self.all_fs_options = [
+            "NTFS",
+            "FAT32",
+            "exFAT",
+            "ext4",
+            "UDF",
+            "HFS+",
+            "ext2",
+            "ext3",
+            "Btrfs",
+            "XFS",
+            "ZFS",
+        ]
         self.combo_fs.addItems(["NTFS", "FAT32", "exFAT"])
         self.combo_fs.currentTextChanged.connect(self.updateFS)
 
@@ -647,12 +682,16 @@ class LufusWindow(QMainWindow):
         self.chk_quick.setChecked(True)
         self.chk_quick.stateChanged.connect(self.update_QF)
 
-        self.chk_extended = QCheckBox(self._T.get("chk_extended_label", "Create Extended Label"))
+        self.chk_extended = QCheckBox(
+            self._T.get("chk_extended_label", "Create Extended Label")
+        )
         self.chk_extended.setChecked(True)
         self.chk_extended.stateChanged.connect(self.update_create_extended)
 
         # bad blocks check with pass selector :3
-        self.chk_badblocks = QCheckBox(self._T.get("chk_bad_blocks", "Check for Bad Blocks"))
+        self.chk_badblocks = QCheckBox(
+            self._T.get("chk_bad_blocks", "Check for Bad Blocks")
+        )
         self.combo_badblocks = QComboBox()
         self.combo_badblocks.addItem(self._T.get("combo_badblocks_1pass", "1 Pass"))
         self.combo_badblocks.addItem(self._T.get("combo_badblocks_2pass", "2 Pass"))
@@ -663,12 +702,18 @@ class LufusWindow(QMainWindow):
         self.update_check_bad()
 
         # sha256 verification checkbox and input :D
-        self.chk_verify = QCheckBox(self._T.get("chk_verify_hash", "Verify SHA256 Checksum"))
+        self.chk_verify = QCheckBox(
+            self._T.get("chk_verify_hash", "Verify SHA256 Checksum")
+        )
         self.chk_verify.stateChanged.connect(self.update_verify_hash)
-        self.lbl_expected_hash = QLabel(self._T.get("lbl_expected_hash", "Expected SHA256:"))
+        self.lbl_expected_hash = QLabel(
+            self._T.get("lbl_expected_hash", "Expected SHA256:")
+        )
         self.lbl_expected_hash.setVisible(False)
         self.input_hash = QLineEdit()
-        self.input_hash.setPlaceholderText(self._T.get("input_hash_placeholder", "Enter expected SHA256 hash here..."))
+        self.input_hash.setPlaceholderText(
+            self._T.get("input_hash_placeholder", "Enter expected SHA256 hash here...")
+        )
         self.input_hash.setEnabled(False)
         self.input_hash.setMaximumHeight(0)
         self.input_hash.textChanged.connect(self.update_expected_hash)
@@ -690,7 +735,9 @@ class LufusWindow(QMainWindow):
         main_layout.addSpacing(S.px(6))
 
         # status section with progress bar :D
-        _hdr_status, self.lbl_header_status = self.create_header(self._T.get("header_status", "Status"))
+        _hdr_status, self.lbl_header_status = self.create_header(
+            self._T.get("header_status", "Status")
+        )
         main_layout.addLayout(_hdr_status)
         main_layout.addSpacing(S.px(4))
 
@@ -762,7 +809,9 @@ class LufusWindow(QMainWindow):
         self._lbl_speed_eta = QLabel("")
         self._lbl_speed_eta.setObjectName("speedEtaLabel")
         self._lbl_speed_eta.setMinimumWidth(S.px(220))
-        self._lbl_speed_eta.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self._lbl_speed_eta.setAlignment(
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
         self.statusBar.addPermanentWidget(self._lbl_speed_eta)
 
         self.update_image_option()
@@ -791,7 +840,9 @@ class LufusWindow(QMainWindow):
                 self.combo_device.addItem(display, node)
         else:
             # show no devices found message :3
-            self.combo_device.addItem(self._T.get("no_usb_found", "No USB devices found"), None)
+            self.combo_device.addItem(
+                self._T.get("no_usb_found", "No USB devices found"), None
+            )
 
         self.combo_device.blockSignals(False)
 
@@ -801,13 +852,17 @@ class LufusWindow(QMainWindow):
         self.log_message("USB device scan initiated")
         try:
             new_devices = self.monitor.devices
-            self.log_message(f"USB scan result: {len(new_devices)} device(s) found: {list(new_devices.keys())}")
+            self.log_message(
+                f"USB scan result: {len(new_devices)} device(s) found: {list(new_devices.keys())}"
+            )
 
             if new_devices:
                 # update device list with new devices :3
                 self.usb_devices = new_devices
                 self._populate_device_combo()
-                self.log_message(f"Device list updated: {[f'{k} ({v})' for k, v in new_devices.items()]}")
+                self.log_message(
+                    f"Device list updated: {[f'{k} ({v})' for k, v in new_devices.items()]}"
+                )
                 QMessageBox.information(
                     self,
                     self._T.get("msgbox_usb_found_title", "USB Found"),
@@ -825,8 +880,13 @@ class LufusWindow(QMainWindow):
                 )
         except Exception as e:
             # handle scan errors :3
-            self.statusBar.showMessage(self._T.get("status_scan_failed", "Scan Failed"), 3000)
-            self.log_message(f"USB scan raised exception: {type(e).__name__}: {str(e)}", level="ERROR")
+            self.statusBar.showMessage(
+                self._T.get("status_scan_failed", "Scan Failed"), 3000
+            )
+            self.log_message(
+                f"USB scan raised exception: {type(e).__name__}: {str(e)}",
+                level="ERROR",
+            )
             QMessageBox.critical(
                 self,
                 self._T.get("msgbox_scan_error_title", "Scan Error"),
@@ -836,12 +896,16 @@ class LufusWindow(QMainWindow):
     def updateFS(self):
         # update filesystem selection in states :D
         state.filesystem_index = self.combo_fs.currentIndex()
-        self.log_message(f"File system changed to: {self.combo_fs.currentText()} (index={state.filesystem_index})")
+        self.log_message(
+            f"File system changed to: {self.combo_fs.currentText()} (index={state.filesystem_index})"
+        )
 
     def updateflash(self):
         # update flash mode selection in states :3
         state.flash_mode = self.combo_flash.currentIndex()
-        self.log_message(f"Flash option changed to: {self.combo_flash.currentText()} (index={state.flash_mode})")
+        self.log_message(
+            f"Flash option changed to: {self.combo_flash.currentText()} (index={state.flash_mode})"
+        )
 
     def update_image_option(self):
         # update image option and refresh available filesystems and flash modes :D
@@ -941,12 +1005,16 @@ class LufusWindow(QMainWindow):
     def update_cluster_size(self):
         # update cluster size selection :D
         state.cluster_size = self.combo_cluster.currentIndex()
-        self.log_message(f"Cluster size changed to: {self.combo_cluster.currentText()} (index={state.cluster_size})")
+        self.log_message(
+            f"Cluster size changed to: {self.combo_cluster.currentText()} (index={state.cluster_size})"
+        )
 
     def update_QF(self):
         # update quick format setting :3
         state.quick_format = 0 if self.chk_quick.isChecked() else 1
-        self.log_message(f"Quick format: {'enabled' if self.chk_quick.isChecked() else 'disabled'}")
+        self.log_message(
+            f"Quick format: {'enabled' if self.chk_quick.isChecked() else 'disabled'}"
+        )
 
     def update_create_extended(self):
         # update extended label creation setting :D
@@ -978,7 +1046,9 @@ class LufusWindow(QMainWindow):
         show = self.chk_badblocks.isChecked()
         self.combo_badblocks.setEnabled(show)
         self._animate_widget(self.combo_badblocks, show, "_anim_badblocks")
-        self.log_message(f"Bad block check: {'enabled' if self.chk_badblocks.isChecked() else 'disabled'}")
+        self.log_message(
+            f"Bad block check: {'enabled' if self.chk_badblocks.isChecked() else 'disabled'}"
+        )
 
     def update_verify_hash(self):
         # update sha256 verification setting :D
@@ -987,7 +1057,9 @@ class LufusWindow(QMainWindow):
         if hasattr(self, "lbl_expected_hash"):
             self.lbl_expected_hash.setVisible(state.verify_hash)
         self._animate_widget(self.input_hash, state.verify_hash, "_anim_hash")
-        self.log_message(f"SHA256 verification: {'enabled' if state.verify_hash else 'disabled'}")
+        self.log_message(
+            f"SHA256 verification: {'enabled' if state.verify_hash else 'disabled'}"
+        )
 
     def update_expected_hash(self, text):
         # store expected hash for verification :3
@@ -998,7 +1070,9 @@ class LufusWindow(QMainWindow):
         downloads_dir = Path.home() / "Downloads"
         if not downloads_dir.is_dir():
             return
-        isos = sorted(downloads_dir.glob("*.iso"), key=lambda p: p.stat().st_mtime, reverse=True)
+        isos = sorted(
+            downloads_dir.glob("*.iso"), key=lambda p: p.stat().st_mtime, reverse=True
+        )
         if not isos:
             return
         latest = isos[0]
@@ -1008,7 +1082,9 @@ class LufusWindow(QMainWindow):
         self.combo_boot.setItemText(0, clean_name)
         self.input_label.setText(latest.stem.upper())
         self.log_message(f"Latest download ISO loaded: {latest}")
-        self.log_message(f"Image size: {file_size:,} bytes ({file_size / (1024**3):.2f} GiB)")
+        self.log_message(
+            f"Image size: {file_size:,} bytes ({file_size / (1024**3):.2f} GiB)"
+        )
 
     def _check_clipboard(self):
         # monitor clipboard for iso file paths :D
@@ -1017,7 +1093,11 @@ class LufusWindow(QMainWindow):
         if mime.hasUrls():
             for url in mime.urls():
                 local_file = url.toLocalFile()
-                if local_file and local_file.lower().endswith(".iso") and Path(local_file).is_file():
+                if (
+                    local_file
+                    and local_file.lower().endswith(".iso")
+                    and Path(local_file).is_file()
+                ):
                     if local_file == self._last_clipboard:
                         return
                     self._last_clipboard = local_file
@@ -1027,7 +1107,9 @@ class LufusWindow(QMainWindow):
                     self.combo_boot.setItemText(0, clean_name)
                     self.input_label.setText(clean_name.split(".")[0].upper())
                     self.log_message(f"Image loaded from clipboard: {local_file}")
-                    self.log_message(f"Image size: {file_size:,} bytes ({file_size / (1024**3):.2f} GiB)")
+                    self.log_message(
+                        f"Image size: {file_size:,} bytes ({file_size / (1024**3):.2f} GiB)"
+                    )
                     return
         text = clipboard.text().strip()
         if text == self._last_clipboard:
@@ -1042,13 +1124,18 @@ class LufusWindow(QMainWindow):
             self.combo_boot.setItemText(0, clean_name)
             self.input_label.setText(clean_name.split(".")[0].upper())
             self.log_message(f"Image loaded from clipboard: {path}")
-            self.log_message(f"Image size: {file_size:,} bytes ({file_size / (1024**3):.2f} GiB)")
+            self.log_message(
+                f"Image size: {file_size:,} bytes ({file_size / (1024**3):.2f} GiB)"
+            )
 
     def dragEnterEvent(self, event):
         # accept drag of supported image files :D
         if event.mimeData().hasUrls():
             supported = [".iso", ".dmg", ".img", ".bin", ".raw"]
-            if any(url.toLocalFile().lower().endswith(tuple(supported)) for url in event.mimeData().urls()):
+            if any(
+                url.toLocalFile().lower().endswith(tuple(supported))
+                for url in event.mimeData().urls()
+            ):
                 event.acceptProposedAction()
                 return
         event.ignore()
@@ -1057,7 +1144,10 @@ class LufusWindow(QMainWindow):
         # accept drag move of supported image files :3
         if event.mimeData().hasUrls():
             supported = [".iso", ".dmg", ".img", ".bin", ".raw"]
-            if any(url.toLocalFile().lower().endswith(tuple(supported)) for url in event.mimeData().urls()):
+            if any(
+                url.toLocalFile().lower().endswith(tuple(supported))
+                for url in event.mimeData().urls()
+            ):
                 event.acceptProposedAction()
                 return
         event.ignore()
@@ -1066,7 +1156,9 @@ class LufusWindow(QMainWindow):
         # handle dropped image files :D
         supported = [".iso", ".dmg", ".img", ".bin", ".raw"]
         img_files = [
-            url.toLocalFile() for url in event.mimeData().urls() if url.toLocalFile().lower().endswith(tuple(supported))
+            url.toLocalFile()
+            for url in event.mimeData().urls()
+            if url.toLocalFile().lower().endswith(tuple(supported))
         ]
         if img_files:
             # load first dropped image file :3
@@ -1077,7 +1169,9 @@ class LufusWindow(QMainWindow):
             self.combo_boot.setItemText(0, clean_name)
             self.input_label.setText(clean_name.split(".")[0].upper())
             self.log_message(f"Image selected via drag-and-drop: {file_name}")
-            self.log_message(f"Image size: {file_size:,} bytes ({file_size / (1024**3):.2f} GiB)")
+            self.log_message(
+                f"Image size: {file_size:,} bytes ({file_size / (1024**3):.2f} GiB)"
+            )
             self._detect_iso_and_update_ui(file_name)
             event.acceptProposedAction()
         else:
@@ -1089,7 +1183,10 @@ class LufusWindow(QMainWindow):
             self,
             self._T.get("dlg_select_image_title", "Select Image"),
             "",
-            self._T.get("dlg_select_image_filter", "Disk Images (*.iso *.dmg *.img *.bin *.raw);;All Files (*)"),
+            self._T.get(
+                "dlg_select_image_filter",
+                "Disk Images (*.iso *.dmg *.img *.bin *.raw);;All Files (*)",
+            ),
         )
         if file_name:
             # load selected image file :3
@@ -1099,7 +1196,9 @@ class LufusWindow(QMainWindow):
             self.combo_boot.setItemText(0, clean_name)
             self.input_label.setText(clean_name.split(".")[0].upper())
             self.log_message(f"Image selected: {file_name}")
-            self.log_message(f"Image size: {file_size:,} bytes ({file_size / (1024**3):.2f} GiB)")
+            self.log_message(
+                f"Image size: {file_size:,} bytes ({file_size / (1024**3):.2f} GiB)"
+            )
             self._detect_iso_and_update_ui(file_name)
 
     def _detect_iso_and_update_ui(self, iso_path: str):
@@ -1108,7 +1207,9 @@ class LufusWindow(QMainWindow):
 
         # Non-ISO raw images (.img, .bin, .raw, .dmg) are always "Other / DD mode"
         if not iso_path.lower().endswith(".iso"):
-            self.log_message(f"Non-ISO image ({Path(iso_path).suffix or 'no ext'}), defaulting to Other/DD mode")
+            self.log_message(
+                f"Non-ISO image ({Path(iso_path).suffix or 'no ext'}), defaulting to Other/DD mode"
+            )
             self.combo_image_option.setCurrentIndex(2)  # Other
             return
 
@@ -1138,8 +1239,14 @@ class LufusWindow(QMainWindow):
                     level = lvl
                     break
             _, colour = _LOG_LEVELS.get(level, ("info", None))
-            escaped = entry.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-            html = f'<span style="color:{colour};">{escaped}</span>' if colour else f"<span>{escaped}</span>"
+            escaped = (
+                entry.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            )
+            html = (
+                f'<span style="color:{colour};">{escaped}</span>'
+                if colour
+                else f"<span>{escaped}</span>"
+            )
             self.log_window.log_text.append(html)
         self.log_window.show()
         self.log_window.raise_()
@@ -1157,8 +1264,14 @@ class LufusWindow(QMainWindow):
         getattr(self._logger, log_method_name)(msg)
         if self.log_window is not None:
             # update log window if open :D
-            escaped = entry.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-            html = f'<span style="color:{colour};">{escaped}</span>' if colour else f"<span>{escaped}</span>"
+            escaped = (
+                entry.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            )
+            html = (
+                f'<span style="color:{colour};">{escaped}</span>'
+                if colour
+                else f"<span>{escaped}</span>"
+            )
             self.log_window.log_text.append(html)
             scrollbar = self.log_window.log_text.verticalScrollBar()
             scrollbar.setValue(scrollbar.maximum())
@@ -1168,7 +1281,10 @@ class LufusWindow(QMainWindow):
         if self.about_window:
             self.about_window.close()
         self.about_window = AboutWindow(self)
-        content = self._T.get("about_content", "Lufus - USB Flash Tool\n\nA simple, open-source USB flashing utility.")
+        content = self._T.get(
+            "about_content",
+            "Lufus - USB Flash Tool\n\nA simple, open-source USB flashing utility.",
+        )
         flat = getattr(self, "_flat_theme", {})
         font_family = flat.get("fonts_family", "")
         fg_color = flat.get("colors_fg", "")
@@ -1195,7 +1311,9 @@ class LufusWindow(QMainWindow):
         # set active theme by name and re-apply styles :D
         user_config_dir_path = Path(user_config_dir("Lufus"))
         builtin_json = THEME_DIR / theme_name / f"{theme_name}_theme.json"
-        user_json = user_config_dir_path / "themes" / theme_name / f"{theme_name}_theme.json"
+        user_json = (
+            user_config_dir_path / "themes" / theme_name / f"{theme_name}_theme.json"
+        )
         if builtin_json.exists() or user_json.exists():
             state.theme = theme_name
             # persist so it survives restarts without needing the env var :3
@@ -1221,8 +1339,12 @@ class LufusWindow(QMainWindow):
     def _update_ui_text(self):
         # update all text labels with new translations :3
         self.setWindowTitle(self._T.get("window_title", "lufus"))
-        self.lbl_header_drive.setText(self._T.get("header_drive_properties", "Drive Properties"))
-        self.lbl_header_format.setText(self._T.get("header_format_options", "Format Options"))
+        self.lbl_header_drive.setText(
+            self._T.get("header_drive_properties", "Drive Properties")
+        )
+        self.lbl_header_format.setText(
+            self._T.get("header_format_options", "Format Options")
+        )
         self.lbl_header_status.setText(self._T.get("header_status", "Status"))
         self.lbl_device.setText(self._T.get("lbl_device", "Device"))
         self.lbl_boot.setText(self._T.get("lbl_boot_selection", "Boot Selection"))
@@ -1235,14 +1357,20 @@ class LufusWindow(QMainWindow):
         self.lbl_flash.setText(self._T.get("lbl_flash_option", "Flash Option"))
         self.lbl_cluster.setText(self._T.get("lbl_cluster_size", "Cluster Size"))
         self.chk_quick.setText(self._T.get("chk_quick_format", "Quick Format"))
-        self.chk_extended.setText(self._T.get("chk_extended_label", "Create Extended Label"))
-        self.chk_badblocks.setText(self._T.get("chk_bad_blocks", "Check for Bad Blocks"))
+        self.chk_extended.setText(
+            self._T.get("chk_extended_label", "Create Extended Label")
+        )
+        self.chk_badblocks.setText(
+            self._T.get("chk_bad_blocks", "Check for Bad Blocks")
+        )
         self.btn_start.setText(self._T.get("btn_start", "Start"))
         self.btn_cancel.setText(self._T.get("btn_cancel", "Cancel"))
         self.statusBar.showMessage(self._T.get("status_ready", "Ready"), 0)
 
         # update toolbar button tooltips :3
-        self.btn_refresh.setToolTip(self._T.get("tooltip_refresh", "Refresh USB devices (Ctrl+R)"))
+        self.btn_refresh.setToolTip(
+            self._T.get("tooltip_refresh", "Refresh USB devices (Ctrl+R)")
+        )
         self.btn_icon1.setToolTip(self._T.get("tooltip_website", "Website"))
         self.btn_icon2.setToolTip(self._T.get("tooltip_about", "About"))
         self.btn_icon3.setToolTip(self._T.get("tooltip_settings", "Settings"))
@@ -1255,7 +1383,9 @@ class LufusWindow(QMainWindow):
         self.combo_image_option.addItem(self._T.get("combo_image_windows", "Windows"))
         self.combo_image_option.addItem(self._T.get("combo_image_linux", "Linux"))
         self.combo_image_option.addItem(self._T.get("combo_image_other", "Other"))
-        self.combo_image_option.addItem(self._T.get("combo_image_format", "Format Only"))
+        self.combo_image_option.addItem(
+            self._T.get("combo_image_format", "Format Only")
+        )
         # self.combo_image_option.addItem(self._T.get("combo_image_ventoy", "Ventoy"))
         self.combo_image_option.setCurrentIndex(current_img_idx)
         self.combo_image_option.blockSignals(False)
@@ -1280,21 +1410,35 @@ class LufusWindow(QMainWindow):
         self.combo_badblocks.blockSignals(False)
 
         # update verification controls :D
-        self.chk_verify.setText(self._T.get("chk_verify_hash", "Verify SHA256 Checksum"))
-        self.lbl_expected_hash.setText(self._T.get("lbl_expected_hash", "Expected SHA256:"))
-        self.input_hash.setPlaceholderText(self._T.get("input_hash_placeholder", "Enter expected SHA256 hash here..."))
-        self.input_label.setPlaceholderText(self._T.get("lbl_volume_label", "Volume Label"))
+        self.chk_verify.setText(
+            self._T.get("chk_verify_hash", "Verify SHA256 Checksum")
+        )
+        self.lbl_expected_hash.setText(
+            self._T.get("lbl_expected_hash", "Expected SHA256:")
+        )
+        self.input_hash.setPlaceholderText(
+            self._T.get("input_hash_placeholder", "Enter expected SHA256 hash here...")
+        )
+        self.input_label.setPlaceholderText(
+            self._T.get("lbl_volume_label", "Volume Label")
+        )
 
         # update boot combo default text :3
-        if self.combo_boot.itemText(0) == "installation_media.iso" or self.combo_boot.itemText(0) == self._T.get(
+        if self.combo_boot.itemText(
+            0
+        ) == "installation_media.iso" or self.combo_boot.itemText(0) == self._T.get(
             "combo_boot_default", "installation_media.iso"
         ):
-            self.combo_boot.setItemText(0, self._T.get("combo_boot_default", "installation_media.iso"))
+            self.combo_boot.setItemText(
+                0, self._T.get("combo_boot_default", "installation_media.iso")
+            )
 
         if not self.usb_devices:
             # update no devices message :D
             self.combo_device.clear()
-            self.combo_device.addItem(self._T.get("no_usb_found", "No USB devices found"), None)
+            self.combo_device.addItem(
+                self._T.get("no_usb_found", "No USB devices found"), None
+            )
         self._update_flashing_options()
         self._apply_accessible_names()
 
@@ -1313,13 +1457,19 @@ class LufusWindow(QMainWindow):
         )
         if reply == QMessageBox.StandardButton.Yes:
             device_node = self.get_selected_mount_path()
-            self.log_message(f"Cancellation requested for device {device_node}", level="WARN")
+            self.log_message(
+                f"Cancellation requested for device {device_node}", level="WARN"
+            )
 
             try:
                 # check what processes are using device :3
-                lsof = subprocess.run(["lsof", device_node], capture_output=True, text=True)
+                lsof = subprocess.run(
+                    ["lsof", device_node], capture_output=True, text=True
+                )
                 if lsof.returncode == 0:
-                    self.log_message(f"Processes using {device_node} before kill:\n{lsof.stdout}")
+                    self.log_message(
+                        f"Processes using {device_node} before kill:\n{lsof.stdout}"
+                    )
             except Exception as e:
                 self.log_message(f"Could not run lsof: {e}")
 
@@ -1328,7 +1478,9 @@ class LufusWindow(QMainWindow):
                 self.log_message("Terminating flash worker", level="WARN")
                 self.flash_worker.terminate()
                 if not self.flash_worker.wait(3000):
-                    self.log_message("Flash worker did not stop, forcing quit", level="WARN")
+                    self.log_message(
+                        "Flash worker did not stop, forcing quit", level="WARN"
+                    )
                     self.flash_worker.quit()
                     self.flash_worker.wait(2000)
 
@@ -1339,7 +1491,11 @@ class LufusWindow(QMainWindow):
             except Exception as e:
                 self.log_message(f"fuser fallback failed: {e}")
 
-            if hasattr(self, "verify_worker") and self.verify_worker and self.verify_worker.isRunning():
+            if (
+                hasattr(self, "verify_worker")
+                and self.verify_worker
+                and self.verify_worker.isRunning()
+            ):
                 # terminate verify worker :D
                 self.log_message("Terminating verify worker", level="WARN")
                 self.verify_worker.terminate()
@@ -1397,11 +1553,16 @@ class LufusWindow(QMainWindow):
             # validate sha256 hash format
             h = state.expected_hash.strip().lower()
             if len(h) != 64 or not all(c in "0123456789abcdef" for c in h):
-                self.log_message("Start aborted: invalid SHA256 hash format", level="WARN")
+                self.log_message(
+                    "Start aborted: invalid SHA256 hash format", level="WARN"
+                )
                 QMessageBox.warning(
                     self,
                     self._T.get("msgbox_invalid_hash_title", "Invalid Hash"),
-                    self._T.get("msgbox_invalid_hash_body", "The provided SHA256 hash is invalid."),
+                    self._T.get(
+                        "msgbox_invalid_hash_body",
+                        "The provided SHA256 hash is invalid.",
+                    ),
                 )
                 return
 
@@ -1410,13 +1571,19 @@ class LufusWindow(QMainWindow):
             self.btn_cancel.setEnabled(True)
             self.progress_bar.setRange(0, 0)
             self.progress_bar.setValue(0)
-            self.progress_bar.setFormat(self._T.get("progress_verifying", "Verifying..."))
+            self.progress_bar.setFormat(
+                self._T.get("progress_verifying", "Verifying...")
+            )
             self._flash_start_time = time.monotonic()
-            self._flash_total_bytes = os.path.getsize(state.iso_path) if Path(state.iso_path).exists() else 0
+            self._flash_total_bytes = (
+                os.path.getsize(state.iso_path) if Path(state.iso_path).exists() else 0
+            )
             # if you are reading this, fuck you
             self.verify_worker = VerifyWorker(state.iso_path, state.expected_hash)
             self.verify_worker.progress.connect(self.log_message)
-            self.verify_worker.int_progress.connect(self._on_progress, Qt.ConnectionType.QueuedConnection)
+            self.verify_worker.int_progress.connect(
+                self._on_progress, Qt.ConnectionType.QueuedConnection
+            )
             self.verify_worker.flash_done.connect(self.on_verify_finished)
             self._speed_timer.start()
             self.verify_worker.start()
@@ -1481,15 +1648,25 @@ class LufusWindow(QMainWindow):
         # already root start flash worker :D
         iso_path = options.get("iso_path", "")
         self._flash_start_time = time.monotonic()
-        self._flash_total_bytes = os.path.getsize(iso_path) if iso_path and Path(iso_path).exists() else 0
+        self._flash_total_bytes = (
+            os.path.getsize(iso_path) if iso_path and Path(iso_path).exists() else 0
+        )
         self.log_message(
             f"Starting flash thread: image_option={options['image_option']}, flash_mode={options['flash_mode']}, device={options['device']}"
         )
         self.flash_worker = FlashWorker(options, self._T)
-        self.flash_worker.progress.connect(self._on_progress, Qt.ConnectionType.QueuedConnection)
-        self.flash_worker.status.connect(self._on_flash_status, Qt.ConnectionType.QueuedConnection)
-        self.flash_worker.flash_done.connect(self.on_flash_finished, Qt.ConnectionType.QueuedConnection)
-        self.flash_worker.request_tweaks.connect(self.show_tweak_dialog, Qt.ConnectionType.QueuedConnection)
+        self.flash_worker.progress.connect(
+            self._on_progress, Qt.ConnectionType.QueuedConnection
+        )
+        self.flash_worker.status.connect(
+            self._on_flash_status, Qt.ConnectionType.QueuedConnection
+        )
+        self.flash_worker.flash_done.connect(
+            self.on_flash_finished, Qt.ConnectionType.QueuedConnection
+        )
+        self.flash_worker.request_tweaks.connect(
+            self.show_tweak_dialog, Qt.ConnectionType.QueuedConnection
+        )
         self.flash_worker.start()
         self.btn_start.setEnabled(False)
         self.btn_cancel.setEnabled(True)
@@ -1521,15 +1698,25 @@ class LufusWindow(QMainWindow):
         # start flashworker directly with prebuilt options dict :3
         iso_path = options.get("iso_path", "")
         self._flash_start_time = time.monotonic()
-        self._flash_total_bytes = os.path.getsize(iso_path) if iso_path and Path(iso_path).exists() else 0
+        self._flash_total_bytes = (
+            os.path.getsize(iso_path) if iso_path and Path(iso_path).exists() else 0
+        )
         self.log_message(
             f"Starting flash: image_option={options['image_option']}, flash_mode={options['flash_mode']}, device={options['device']}"
         )
         self.flash_worker = FlashWorker(options, self._T)
-        self.flash_worker.progress.connect(self._on_progress, Qt.ConnectionType.QueuedConnection)
-        self.flash_worker.status.connect(self._on_flash_status, Qt.ConnectionType.QueuedConnection)
-        self.flash_worker.flash_done.connect(self.on_flash_finished, Qt.ConnectionType.QueuedConnection)
-        self.flash_worker.request_tweaks.connect(self.show_tweak_dialog, Qt.ConnectionType.QueuedConnection)
+        self.flash_worker.progress.connect(
+            self._on_progress, Qt.ConnectionType.QueuedConnection
+        )
+        self.flash_worker.status.connect(
+            self._on_flash_status, Qt.ConnectionType.QueuedConnection
+        )
+        self.flash_worker.flash_done.connect(
+            self.on_flash_finished, Qt.ConnectionType.QueuedConnection
+        )
+        self.flash_worker.request_tweaks.connect(
+            self.show_tweak_dialog, Qt.ConnectionType.QueuedConnection
+        )
         self.flash_worker.start()
         self.btn_start.setEnabled(False)
         self.btn_cancel.setEnabled(True)
@@ -1573,7 +1760,9 @@ class LufusWindow(QMainWindow):
         else:
             # flash failed :3
             self.progress_bar.setFormat(self._T.get("progress_failed", "Failed"))
-            self.log_message("Flash operation finished with result: FAILED", level="ERROR")
+            self.log_message(
+                "Flash operation finished with result: FAILED", level="ERROR"
+            )
             QMessageBox.critical(
                 self,
                 self._T.get("msgbox_error_title", "Error"),
@@ -1610,7 +1799,9 @@ class LufusWindow(QMainWindow):
             # rolling 8-second window for stable speed estimation
             self._speed_samples.append((now, bytes_done))
             cutoff = now - 8.0
-            self._speed_samples = [(t, b) for t, b in self._speed_samples if t >= cutoff]
+            self._speed_samples = [
+                (t, b) for t, b in self._speed_samples if t >= cutoff
+            ]
             if len(self._speed_samples) >= 2:
                 dt = self._speed_samples[-1][0] - self._speed_samples[0][0]
                 db = self._speed_samples[-1][1] - self._speed_samples[0][1]
@@ -1625,7 +1816,9 @@ class LufusWindow(QMainWindow):
                     else:
                         speed_str = f"{speed:.0f} B/s"
                     if eta_sec >= 3600:
-                        eta_str = f"{int(eta_sec // 3600)}h {int((eta_sec % 3600) // 60)}m"
+                        eta_str = (
+                            f"{int(eta_sec // 3600)}h {int((eta_sec % 3600) // 60)}m"
+                        )
                     elif eta_sec >= 60:
                         eta_str = f"{int(eta_sec // 60)}m {int(eta_sec % 60)}s"
                     else:
@@ -1641,48 +1834,93 @@ class LufusWindow(QMainWindow):
         self._lbl_speed_eta.setText("")
 
     def _apply_accessible_names(self) -> None:
-        self.combo_device.setAccessibleName(self._T.get("acc_device", "Device selector"))
-        self.combo_device.setAccessibleDescription(self._T.get("acc_device_desc", "Select the USB device to flash"))
-        self.btn_refresh.setAccessibleName(self._T.get("acc_refresh", "Refresh devices"))
-        self.btn_refresh.setAccessibleDescription(self._T.get("acc_refresh_desc", "Scan for connected USB devices"))
-        self.combo_boot.setAccessibleName(self._T.get("acc_boot", "Boot image selector"))
+        self.combo_device.setAccessibleName(
+            self._T.get("acc_device", "Device selector")
+        )
+        self.combo_device.setAccessibleDescription(
+            self._T.get("acc_device_desc", "Select the USB device to flash")
+        )
+        self.btn_refresh.setAccessibleName(
+            self._T.get("acc_refresh", "Refresh devices")
+        )
+        self.btn_refresh.setAccessibleDescription(
+            self._T.get("acc_refresh_desc", "Scan for connected USB devices")
+        )
+        self.combo_boot.setAccessibleName(
+            self._T.get("acc_boot", "Boot image selector")
+        )
         self.combo_boot.setAccessibleDescription(
             self._T.get("acc_boot_desc", "Shows the currently selected boot image file")
         )
-        self.btn_select.setAccessibleName(self._T.get("acc_select", "Browse for image file"))
-        self.combo_image_option.setAccessibleName(self._T.get("acc_image_option", "Image option selector"))
+        self.btn_select.setAccessibleName(
+            self._T.get("acc_select", "Browse for image file")
+        )
+        self.combo_image_option.setAccessibleName(
+            self._T.get("acc_image_option", "Image option selector")
+        )
         self.combo_image_option.setAccessibleDescription(
             self._T.get(
-                "acc_image_option_desc", "Choose the type of image to write: Windows, Linux, Other, or Format Only"
+                "acc_image_option_desc",
+                "Choose the type of image to write: Windows, Linux, Other, or Format Only",
             )
         )
-        self.input_label.setAccessibleName(self._T.get("acc_volume_label", "Volume label input"))
+        self.input_label.setAccessibleName(
+            self._T.get("acc_volume_label", "Volume label input")
+        )
         self.input_label.setAccessibleDescription(
             self._T.get("acc_volume_label_desc", "Enter a name for the USB volume")
         )
-        self.combo_fs.setAccessibleName(self._T.get("acc_filesystem", "File system selector"))
-        self.combo_cluster.setAccessibleName(self._T.get("acc_cluster", "Cluster size selector"))
-        self.combo_flash.setAccessibleName(self._T.get("acc_flash_option", "Flash method selector"))
-        self.chk_quick.setAccessibleName(self._T.get("acc_quick_format", "Quick format checkbox"))
-        self.chk_extended.setAccessibleName(self._T.get("acc_extended_label", "Create extended label checkbox"))
-        self.chk_badblocks.setAccessibleName(self._T.get("acc_bad_blocks", "Check for bad blocks checkbox"))
-        self.combo_badblocks.setAccessibleName(self._T.get("acc_bad_blocks_passes", "Bad block check passes selector"))
-        self.chk_verify.setAccessibleName(self._T.get("acc_verify_hash", "Verify SHA256 checksum checkbox"))
-        self.input_hash.setAccessibleName(self._T.get("acc_hash_input", "Expected SHA256 hash input"))
-        self.input_hash.setAccessibleDescription(
-            self._T.get("acc_hash_input_desc", "Paste the expected 64-character SHA256 hash here")
+        self.combo_fs.setAccessibleName(
+            self._T.get("acc_filesystem", "File system selector")
         )
-        self.progress_bar.setAccessibleName(self._T.get("acc_progress", "Operation progress bar"))
+        self.combo_cluster.setAccessibleName(
+            self._T.get("acc_cluster", "Cluster size selector")
+        )
+        self.combo_flash.setAccessibleName(
+            self._T.get("acc_flash_option", "Flash method selector")
+        )
+        self.chk_quick.setAccessibleName(
+            self._T.get("acc_quick_format", "Quick format checkbox")
+        )
+        self.chk_extended.setAccessibleName(
+            self._T.get("acc_extended_label", "Create extended label checkbox")
+        )
+        self.chk_badblocks.setAccessibleName(
+            self._T.get("acc_bad_blocks", "Check for bad blocks checkbox")
+        )
+        self.combo_badblocks.setAccessibleName(
+            self._T.get("acc_bad_blocks_passes", "Bad block check passes selector")
+        )
+        self.chk_verify.setAccessibleName(
+            self._T.get("acc_verify_hash", "Verify SHA256 checksum checkbox")
+        )
+        self.input_hash.setAccessibleName(
+            self._T.get("acc_hash_input", "Expected SHA256 hash input")
+        )
+        self.input_hash.setAccessibleDescription(
+            self._T.get(
+                "acc_hash_input_desc",
+                "Paste the expected 64-character SHA256 hash here",
+            )
+        )
+        self.progress_bar.setAccessibleName(
+            self._T.get("acc_progress", "Operation progress bar")
+        )
         self.btn_start.setAccessibleName(self._T.get("acc_start", "Start operation"))
         self.btn_cancel.setAccessibleName(self._T.get("acc_cancel", "Cancel operation"))
-        self.btn_icon1.setAccessibleName(self._T.get("acc_website", "Open Lufus website"))
+        self.btn_icon1.setAccessibleName(
+            self._T.get("acc_website", "Open Lufus website")
+        )
         self.btn_icon2.setAccessibleName(self._T.get("acc_about", "About Lufus"))
         self.btn_icon3.setAccessibleName(self._T.get("acc_settings", "Open settings"))
         self.btn_icon4.setAccessibleName(self._T.get("acc_log", "Open log window"))
 
     def keyPressEvent(self, event):
         # handle keyboard shortcuts :3
-        if event.key() == Qt.Key.Key_R and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+        if (
+            event.key() == Qt.Key.Key_R
+            and event.modifiers() == Qt.KeyboardModifier.ControlModifier
+        ):
             self.refresh_usb_devices()
         elif event.key() == Qt.Key.Key_F5:
             # f5 also refreshes device list :D
@@ -1723,20 +1961,35 @@ class LufusWindow(QMainWindow):
                 data = json.loads(req.read().decode())
                 tag_name = data.get("tag_name", "")
                 if not tag_name:
-                    self.log_message("Update check: missing tag_name in API response", level="WARNING")
+                    self.log_message(
+                        "Update check: missing tag_name in API response",
+                        level="WARNING",
+                    )
                     return
                 try:
                     is_newer = version.parse(tag_name) > version.parse(current_version)
                 except Exception:
-                    self.log_message(f"Update check: could not parse version tag {tag_name!r}", level="WARNING")
+                    self.log_message(
+                        f"Update check: could not parse version tag {tag_name!r}",
+                        level="WARNING",
+                    )
                     return
                 if is_newer:
-                    self.log_message(f"New version found: {tag_name} > {current_version}", level="DEBUG")
+                    self.log_message(
+                        f"New version found: {tag_name} > {current_version}",
+                        level="DEBUG",
+                    )
                 else:
-                    self.log_message(f"Running latest release build: {tag_name} <= {current_version}", level="INFO")
+                    self.log_message(
+                        f"Running latest release build: {tag_name} <= {current_version}",
+                        level="INFO",
+                    )
                     return
             else:
-                self.log_message(f"Couldn't get latest release, response: {req.status}", level="WARNING")
+                self.log_message(
+                    f"Couldn't get latest release, response: {req.status}",
+                    level="WARNING",
+                )
                 return
         except Exception as e:
             self.log_message(f"Update check failed: {e}", level="ERROR")
@@ -1744,7 +1997,9 @@ class LufusWindow(QMainWindow):
         newupdate = QMessageBox(self)
         newupdate.setWindowTitle("New Update Available!")
         newupdate.setText(f"A new version ({data.get('tag_name', '?')}) is available!")
-        newupdate.setInformativeText(f"Would you like to download {data.get('name', 'it')} now?")
+        newupdate.setInformativeText(
+            f"Would you like to download {data.get('name', 'it')} now?"
+        )
         download_btn = newupdate.addButton(QMessageBox.StandardButton.Apply)
         download_btn.setText("Download Now")
         later_btn = newupdate.addButton(QMessageBox.StandardButton.Discard)
@@ -1765,7 +2020,9 @@ class LufusWindow(QMainWindow):
 
 if __name__ == "__main__":
     # setup high dpi scaling :3
-    QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+    QApplication.setHighDpiScaleFactorRoundingPolicy(
+        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+    )
 
     app = QApplication(sys.argv)
 
