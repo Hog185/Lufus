@@ -90,7 +90,6 @@ dlg_select_image_title,ডিস্ক ইমেজ নির্বাচন ক
 dlg_select_image_filter,ডিস্ক ইমেজ (*.iso *.dmg *.img *.bin *.raw);;সব ফাইল (*)
 about_content,"লুফাস একটি ডিস্ক ইমেজ লেখার টুল যা লিনাক্সের জন্য Python দিয়ে তৈরি।
 উইন্ডোজের মূল Rufus টুল থেকে অনুপ্রাণিত।
-ভার্সন: v1.0.0b1
 GitHub: github.com/hog185/lufus"
 about_subtitle,USB ফ্ল্যাশ টুল
 btn_close,বন্ধ

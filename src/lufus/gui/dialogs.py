@@ -142,6 +142,12 @@ class AboutWindow(QDialog):
         sep.setFrameShadow(QFrame.Shadow.Sunken)
         layout.addWidget(sep)
 
+        # version
+        lbl_ver = QLabel(states.version)
+        lbl_ver.setStyleSheet(f"font-family: {font_family}; font-size: {tool_pt}pt;")
+        lbl_ver.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(lbl_ver)
+
         # im lying ily (context text something area, whatever)
         self.about_text = QTextEdit()
         self.about_text.setReadOnly(True)
@@ -360,7 +366,8 @@ class WinTweaks(QDialog):
         # closes window
         self.accept()
 
-# for debug 
+
+# for debug
 # if __name__ == "__main__":
 #     # Standard boilerplate for testing the class standalone
 #     app = QApplication(sys.argv)

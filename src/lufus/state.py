@@ -8,7 +8,7 @@ class AppState:
     """Mutable runtime state shared across the application."""
 
     # App info
-    version: str = "v1.1.0a1"
+    version: str = "v1.0.0"
 
     # Format options
     filesystem_index: int = 0  # 0=NTFS, 1=FAT32, 2=exFAT, 3=ext4, 4=UDF
