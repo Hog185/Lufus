@@ -3,30 +3,41 @@
   "extends": [
     "config:recommended"
   ],
-  "schedule": ["every weekend"],
+  "timezone": "America/Montreal",
+  "labels": ["dependencies"],
+  "platformAutomerge": true,
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["dependencies", "security"]
+  },
+  "prConcurrentLimit": 10,
+  "rebaseWhen": "behind-base-branch",
+  "prCreation": "not-pending",
   "packageRules": [
     {
       "matchUpdateTypes": ["patch"],
       "automerge": true,
-      "automergeType": "pr"
-    },
-    {
-      "matchUpdateTypes": ["major"],
-      "dependencyDashboardApproval": true,
-      "labels": ["dependencies", "major-update"]
+      "minimumReleaseAge": "3 days",
+      "schedule": ["at any time"]
     },
     {
       "matchUpdateTypes": ["minor"],
       "groupName": "minor dependencies",
-      "labels": ["dependencies"]
+      "schedule": ["before 9am on Monday"]
     },
     {
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true,
+      "labels": ["dependencies", "major-update"],
+      "schedule": ["before 9am on Monday"]
+    },
+    {
+      "matchManagers": ["github-actions"],
       "matchDepTypes": ["action"],
       "groupName": "GitHub Actions",
-      "pinDigests": true
+      "pinDigests": true,
+      "schedule": ["before 9am on Monday"]
     }
-  ],
-  "labels": ["dependencies"],
-  "prCreation": "not-pending",
-  "rebaseWhen": "behind-base-branch"
+  ]
 }
