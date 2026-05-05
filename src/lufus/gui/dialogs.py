@@ -14,10 +14,10 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QTextEdit,
     QVBoxLayout,
-    QRegularExpression,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont, QRegularExpressionValidator
+from PyQt6.QtCore import Qt, pyqtSignal, QRegularExpression, QUrl
+from PyQt6.QtGui import QFont, QRegularExpressionValidator, QDesktopServices
+import sys
 
 from lufus import state as states
 from lufus.gui.constants import THEME_DIR, _find_resource_dir
@@ -32,7 +32,6 @@ class LogWindow(QDialog):
         self._T = parent._T if parent else {}
         self._S: Scale = parent._S if parent else None
         self.setWindowTitle(self._T.get("log_window_title", "Log Window"))
-
         if self._S:
             # apply scaled dimensions
             self.resize(self._S.px(650), self._S.px(450))
@@ -150,6 +149,19 @@ class AboutWindow(QDialog):
         self.about_text.setFrameShape(QFrame.Shape.NoFrame)
         self.about_text.setStyleSheet(f"font-family: {font_family}; font-size: {tool_pt}pt;")
         layout.addWidget(self.about_text, 1)
+        btn_row0 = QHBoxLayout()
+        btn_discord = QPushButton(self._T.get("btn_discord", "Join Discord Server"))
+        btn_discord.setFixedWidth(self._S.px(300) if self._S else 90)
+        btn_discord.clicked.connect(self.discord_open)
+        btn_row0.addWidget(btn_discord, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addLayout(btn_row0)
+
+        btn_row1 = QHBoxLayout()
+        btn_github = QPushButton(self._T.get("btn_github", "Open Github Repo"))
+        btn_github.setFixedWidth(self._S.px(300) if self._S else 90)
+        btn_github.clicked.connect(self.github_open)
+        btn_row1.addWidget(btn_github, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addLayout(btn_row1)
 
         btn_row = QHBoxLayout()
         # close button or smth, whatever
@@ -158,8 +170,15 @@ class AboutWindow(QDialog):
         btn_close.clicked.connect(self.hide)
         btn_row.addWidget(btn_close, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addLayout(btn_row)
-
         self.setLayout(layout)
+
+    def discord_open(self):
+        url = QUrl("https://discord.gg/4G6FeBwsxb")
+        QDesktopServices.openUrl(url)
+
+    def github_open(self):
+        url = QUrl("https://github.com/Hog185/Lufus")
+        QDesktopServices.openUrl(url)
 
 
 class SettingsDialog(QDialog):
@@ -260,16 +279,12 @@ class WinTweaks(QDialog):
         self.setWindowTitle("Windows Tweaks (MAY BREAK! USE CAUTION)")
         self.setFixedSize(600, 300)
         self.ask_label = QLabel("Do you want to customize your windows installation?")
-
         self.hardware_checkbox = QCheckBox("Remove requirement for 4GB+ RAM, Secure Boot and TPM 2.0")
         self.hardware_checkbox.stateChanged.connect(self.update_winhardware)
-
         self.microsoft_checkbox = QCheckBox("Remove requirement for an online Microsoft Account")
         self.microsoft_checkbox.stateChanged.connect(self.update_winmicrosoftacc)
-
         self.localacc_checkbox = QCheckBox("Create a local account with username:")
         self.localacc_checkbox.stateChanged.connect(self.update_winlocalaccchk)
-
         self.username_input = QLineEdit()
         self.username_input.setMaxLength(20)
         self.username_input.setValidator(validator)
@@ -278,26 +293,26 @@ class WinTweaks(QDialog):
         self.localacc_checkbox.toggled.connect(self.username_input.setEnabled)
         self.username_input.setEnabled(self.localacc_checkbox.isChecked())
         self.username_input.textChanged.connect(self.sync_username)
-
         self.data_checkbox = QCheckBox("Disable data collection (skip privacy questions)")
         self.data_checkbox.stateChanged.connect(self.update_winprivacy)
-
         self.applytweaks_btn = QPushButton("Apply")
         self.applytweaks_btn.clicked.connect(self.applywintweaks)
-
         self.canceltweaks_btn = QPushButton("Cancel")
         self.canceltweaks_btn.clicked.connect(self.reject)  # closes window
-
         layout = QVBoxLayout()
-        layout.addWidget(self.ask_label)
+        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.addWidget(self.ask_label, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.hardware_checkbox)
         layout.addWidget(self.microsoft_checkbox)
         layout.addWidget(self.localacc_checkbox)
         layout.addWidget(self.username_input)
         layout.addWidget(self.data_checkbox)
-        layout.addWidget(self.applytweaks_btn)
-        layout.addWidget(self.canceltweaks_btn)
-
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.applytweaks_btn)
+        button_layout.addWidget(self.canceltweaks_btn)
+        layout.addLayout(button_layout)
+        layout.addStretch(1)
         self.setLayout(layout)
 
     def log_message(self, msg):
@@ -344,3 +359,11 @@ class WinTweaks(QDialog):
     def applywintweaks(self):
         # closes window
         self.accept()
+
+# for debug 
+# if __name__ == "__main__":
+#     # Standard boilerplate for testing the class standalone
+#     app = QApplication(sys.argv)
+#     window = WinTweaks()
+#     window.exec()
+#     sys.exit(app.exec())

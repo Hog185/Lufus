@@ -43,6 +43,7 @@ from PyQt6.QtCore import (
 from PyQt6.QtGui import QIcon
 
 from lufus import state
+from lufus import state as states
 from lufus.drives.autodetect_usb import UsbMonitor
 from lufus.lufus_logging import get_logger
 from lufus.gui.themes.icon_utils import svg_icon
@@ -149,8 +150,6 @@ class LufusWindow(QMainWindow):
         self.log_entries = []
         self._last_clipboard = ""
         self.is_terminal = False
-        self.worker = FlashWorker()
-        self.worker.request_tweaks.connect(self.show_tweak_dialog)
         try:
             self.is_terminal = sys.stdout.isatty()
         except (AttributeError, OSError):
@@ -606,7 +605,19 @@ class LufusWindow(QMainWindow):
         # filesystem cluster and flash option selectors :D
         self.lbl_fs = QLabel(self._T.get("lbl_file_system", "File System"))
         self.combo_fs = QComboBox()
-        self.all_fs_options = ["NTFS", "FAT32", "exFAT", "ext4", "UDF", "HFS+", "ext2", "ext3", "Btrfs", "XFS", "ZFS"]
+        self.all_fs_options = [
+            "NTFS",
+            "FAT32",
+            "exFAT",
+            "ext4",
+            "UDF",
+            "HFS+",
+            "ext2",
+            "ext3",
+            "Btrfs",
+            "XFS",
+            "ZFS",
+        ]
         self.combo_fs.addItems(["NTFS", "FAT32", "exFAT"])
         self.combo_fs.currentTextChanged.connect(self.updateFS)
 
@@ -826,7 +837,10 @@ class LufusWindow(QMainWindow):
         except Exception as e:
             # handle scan errors :3
             self.statusBar.showMessage(self._T.get("status_scan_failed", "Scan Failed"), 3000)
-            self.log_message(f"USB scan raised exception: {type(e).__name__}: {str(e)}", level="ERROR")
+            self.log_message(
+                f"USB scan raised exception: {type(e).__name__}: {str(e)}",
+                level="ERROR",
+            )
             QMessageBox.critical(
                 self,
                 self._T.get("msgbox_scan_error_title", "Scan Error"),
@@ -1089,7 +1103,10 @@ class LufusWindow(QMainWindow):
             self,
             self._T.get("dlg_select_image_title", "Select Image"),
             "",
-            self._T.get("dlg_select_image_filter", "Disk Images (*.iso *.dmg *.img *.bin *.raw);;All Files (*)"),
+            self._T.get(
+                "dlg_select_image_filter",
+                "Disk Images (*.iso *.dmg *.img *.bin *.raw);;All Files (*)",
+            ),
         )
         if file_name:
             # load selected image file :3
@@ -1168,7 +1185,10 @@ class LufusWindow(QMainWindow):
         if self.about_window:
             self.about_window.close()
         self.about_window = AboutWindow(self)
-        content = self._T.get("about_content", "Lufus - USB Flash Tool\n\nA simple, open-source USB flashing utility.")
+        content = self._T.get(
+            "about_content",
+            "Lufus - USB Flash Tool\n\nA simple, open-source USB flashing utility.",
+        )
         flat = getattr(self, "_flat_theme", {})
         font_family = flat.get("fonts_family", "")
         fg_color = flat.get("colors_fg", "")
@@ -1401,7 +1421,10 @@ class LufusWindow(QMainWindow):
                 QMessageBox.warning(
                     self,
                     self._T.get("msgbox_invalid_hash_title", "Invalid Hash"),
-                    self._T.get("msgbox_invalid_hash_body", "The provided SHA256 hash is invalid."),
+                    self._T.get(
+                        "msgbox_invalid_hash_body",
+                        "The provided SHA256 hash is invalid.",
+                    ),
                 )
                 return
 
@@ -1653,7 +1676,8 @@ class LufusWindow(QMainWindow):
         self.combo_image_option.setAccessibleName(self._T.get("acc_image_option", "Image option selector"))
         self.combo_image_option.setAccessibleDescription(
             self._T.get(
-                "acc_image_option_desc", "Choose the type of image to write: Windows, Linux, Other, or Format Only"
+                "acc_image_option_desc",
+                "Choose the type of image to write: Windows, Linux, Other, or Format Only",
             )
         )
         self.input_label.setAccessibleName(self._T.get("acc_volume_label", "Volume label input"))
@@ -1670,7 +1694,10 @@ class LufusWindow(QMainWindow):
         self.chk_verify.setAccessibleName(self._T.get("acc_verify_hash", "Verify SHA256 checksum checkbox"))
         self.input_hash.setAccessibleName(self._T.get("acc_hash_input", "Expected SHA256 hash input"))
         self.input_hash.setAccessibleDescription(
-            self._T.get("acc_hash_input_desc", "Paste the expected 64-character SHA256 hash here")
+            self._T.get(
+                "acc_hash_input_desc",
+                "Paste the expected 64-character SHA256 hash here",
+            )
         )
         self.progress_bar.setAccessibleName(self._T.get("acc_progress", "Operation progress bar"))
         self.btn_start.setAccessibleName(self._T.get("acc_start", "Start operation"))
@@ -1723,20 +1750,35 @@ class LufusWindow(QMainWindow):
                 data = json.loads(req.read().decode())
                 tag_name = data.get("tag_name", "")
                 if not tag_name:
-                    self.log_message("Update check: missing tag_name in API response", level="WARNING")
+                    self.log_message(
+                        "Update check: missing tag_name in API response",
+                        level="WARNING",
+                    )
                     return
                 try:
                     is_newer = version.parse(tag_name) > version.parse(current_version)
                 except Exception:
-                    self.log_message(f"Update check: could not parse version tag {tag_name!r}", level="WARNING")
+                    self.log_message(
+                        f"Update check: could not parse version tag {tag_name!r}",
+                        level="WARNING",
+                    )
                     return
                 if is_newer:
-                    self.log_message(f"New version found: {tag_name} > {current_version}", level="DEBUG")
+                    self.log_message(
+                        f"New version found: {tag_name} > {current_version}",
+                        level="DEBUG",
+                    )
                 else:
-                    self.log_message(f"Running latest release build: {tag_name} <= {current_version}", level="INFO")
+                    self.log_message(
+                        f"Running latest release build: {tag_name} <= {current_version}",
+                        level="INFO",
+                    )
                     return
             else:
-                self.log_message(f"Couldn't get latest release, response: {req.status}", level="WARNING")
+                self.log_message(
+                    f"Couldn't get latest release, response: {req.status}",
+                    level="WARNING",
+                )
                 return
         except Exception as e:
             self.log_message(f"Update check failed: {e}", level="ERROR")

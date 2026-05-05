@@ -8,7 +8,7 @@ class AppState:
     """Mutable runtime state shared across the application."""
 
     # App info
-    version: str = "v1.0.1b1"
+    version: str = "v1.1.0a1"
 
     # Format options
     filesystem_index: int = 0  # 0=NTFS, 1=FAT32, 2=exFAT, 3=ext4, 4=UDF
@@ -21,7 +21,7 @@ class AppState:
     check_bad: int = 0  # 0=1 pass, 1=2 passes
     new_label: str = "USB_DRIVE"
     flash_mode: int = 0  # 0=ISO, 1=DD
-
+    theme: str = "default"
     # Runtime state
     iso_path: str = ""
     device_node: str = ""
