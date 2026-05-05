@@ -16,10 +16,7 @@ def elevate_privileges() -> None:
         # Validate theme is a safe filename/path: no path separators, no shell metacharacters,
         # and must resolve inside the config directory to prevent path traversal.
         theme_val = str(state.theme)
-        if (
-            re.match(r"^[A-Za-z0-9_\-. ]+$", os.path.basename(theme_val))
-            and ".." not in theme_val
-        ):
+        if re.match(r"^[A-Za-z0-9_\-. ]+$", os.path.basename(theme_val)) and ".." not in theme_val:
             env["LUFUS_THEME"] = theme_val
         else:
             import logging
@@ -62,9 +59,7 @@ def require_root() -> bool:
         return True
     import logging
 
-    logging.getLogger("lufus").error(
-        "This operation requires root privileges (euid=%d).", os.geteuid()
-    )
+    logging.getLogger("lufus").error("This operation requires root privileges (euid=%d).", os.geteuid())
     return False
 
 
