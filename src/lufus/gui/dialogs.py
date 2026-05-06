@@ -211,6 +211,7 @@ class SettingsDialog(QDialog):
         lbl_lang = QLabel(self._T.get("settings_label_language", "Language"))
         lbl_lang.setStyleSheet("font-weight: normal;")
         self.combo_language = QComboBox()
+        self.combo_language.currentIndexChanged.connect(self._on_language_changed)
         languages = self._detect_languages()
         if languages:
             # populate with available languages
@@ -233,6 +234,8 @@ class SettingsDialog(QDialog):
         self.combo_theme.addItems(builtin)
         self.combo_theme.addItems(custom)
         current_theme = getattr(states, "Theme", "Default")
+        self.combo_theme.currentIndexChanged.connect(self._on_theme_changed)
+        self.combo_theme.setCurrentIndex(states.theme_index)
         for i in range(self.combo_theme.count()):
             # select current theme
             if self.combo_theme.itemText(i) == current_theme:
@@ -275,6 +278,12 @@ class SettingsDialog(QDialog):
         # user themes follow the same folder structure :D
         custom = sorted(p.parent.name for p in user_themes_dir.glob("*/*_theme.json"))
         return builtin, custom
+
+    def _on_theme_changed(self):
+        states.theme_index = self.combo_theme.currentIndex()
+
+    def _on_language_changed(self):
+        states.language_index = self.combo_language.currentIndex()
 
 
 class WinTweaks(QDialog):

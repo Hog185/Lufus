@@ -40,5 +40,9 @@ class AppState:
     win_local_acc: str = "default"
     win_privacy: int = 0
 
+    # Settings persistence
+    theme_index: int = 0
+    language_index: int = 0
+
 
 state = AppState()
