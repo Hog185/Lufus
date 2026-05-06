@@ -9,6 +9,7 @@ import html
 import re
 import subprocess
 import os
+import shutil
 from lufus.utils import get_mount_and_drive
 from lufus import state
 from lufus.lufus_logging import get_logger
@@ -54,7 +55,7 @@ def win_hardware_bypass():
     cmd_string = "\n".join(commands) + "\n"
     log.info("win_hardware_bypass: injecting registry keys into boot.wim at %s...", mount)
     try:
-        subprocess.run(["mkdir", "/media/tempwinmnt"], check=True)
+        os.makedirs("/media/tempwinmnt", exist_ok=True)
         subprocess.run(["wimmountrw", f"{mount}/sources/boot.wim", "2", "/media/tempwinmnt"], check=True)
         subprocess.run(
             ["chntpw", "e", "/media/tempwinmnt/Windows/System32/config/SYSTEM"],
@@ -64,7 +65,7 @@ def win_hardware_bypass():
             check=True,
         )
         subprocess.run(["wimunmount", "/media/tempwinmnt", "--commit"], check=True)
-        subprocess.run(["rm", "-rf", "/media/tempwinmnt"], check=True)
+        shutil.rmtree("/media/tempwinmnt", ignore_errors=True)
         log.info("win_hardware_bypass: registry keys injected successfully.")
     except subprocess.CalledProcessError as e:
         log.error("win_hardware_bypass: CalledProcessError: %s", e.stderr)
@@ -79,7 +80,7 @@ def win_local_acc():
     cmd_string = "\n".join(commands) + "\n"
     log.info("win_local_acc: bypassing online account requirement at %s...", mount)
     try:
-        subprocess.run(["mkdir", "/media/tempwinmnt"], check=True)
+        os.makedirs("/media/tempwinmnt", exist_ok=True)
         subprocess.run(["wimmountrw", f"{mount}/sources/boot.wim", "2", "/media/tempwinmnt"], check=True)
         subprocess.run(
             ["chntpw", "e", "/media/tempwinmnt/Windows/System32/config/SOFTWARE"],
@@ -89,7 +90,7 @@ def win_local_acc():
             check=True,
         )
         subprocess.run(["wimunmount", "/media/tempwinmnt", "--commit"], check=True)
-        subprocess.run(["rm", "-rf", "/media/tempwinmnt"], check=True)
+        shutil.rmtree("/media/tempwinmnt", ignore_errors=True)
         log.info("win_local_acc: online account bypass applied successfully.")
     except subprocess.CalledProcessError as e:
         log.error("win_local_acc: CalledProcessError: %s", e.stderr)

@@ -162,7 +162,7 @@ unit: sectors
         # Refresh kernel table
         subprocess.run(["partprobe", target_device], check=False)
         subprocess.run(["udevadm", "settle"], check=False)
-        subprocess.run(["sync"], check=True)
+        os.sync()
 
         # Wait for device nodes to be created by udev
         efi_part = f"{target_device}{sep}2"
