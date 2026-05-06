@@ -42,5 +42,5 @@ AppDir
 *.spec
 site/
 .desloppify/
-
+*.geany
 .briefcase/

@@ -90,7 +90,6 @@ dlg_select_image_title,Välj enhetsavbildning
 dlg_select_image_filter,Enhetsavbildningar (*.iso *.dmg *.img *.bin *.raw);;Alla filer (*)
 about_content,"Lufus är ett verktyg för att skriva diskavbildningar, skrivet i Python för Linux.
 Inspirerat av det ursprungliga Rufus-verktyget för Windows.
-Version: v1.0.0b1
 GitHub: github.com/hog185/lufus"
 about_subtitle,USB-skrivningsverktyg
 btn_close,Stäng

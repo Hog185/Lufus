@@ -90,7 +90,6 @@ dlg_select_image_title,Abbild auswählen
 dlg_select_image_filter,Abbilder (*.iso *.dmg *.img *.bin *.raw);;Alle Dateien (*)
 about_content,"lufus ist ein in Python geschriebener USB-Image-Writer für Linux.
 Inspiriert vom originalen lufus-Tool für Windows.
-Version: v1.0.0b1
 GitHub: github.com/hog185/lufus"
 about_subtitle,USB-Flash-Tool
 btn_close,Schließen

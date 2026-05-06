@@ -90,7 +90,6 @@ dlg_select_image_title,Sélectionner l'image disque
 dlg_select_image_filter,Images disque (*.iso *.dmg *.img *.bin *.raw);;Tous les fichiers (*)
 about_content,"Lufus est un logiciel libre d'écriture d'images disque écrit en Python pour GNU/Linux, 
 inspiré par l'outil original Rufus, disponible uniquement pour Windows.
-Version : v1.0.0b1
 GitHub : https://github.com/Hog185/Lufus/"
 about_subtitle,Outil d'écriture USB
 btn_close,Fermer

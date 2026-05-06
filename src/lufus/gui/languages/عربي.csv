@@ -90,7 +90,6 @@ dlg_select_image_title,اختار ملف الصورة
 dlg_select_image_filter,Disk Images (*.iso *.dmg *.img *.bin *.raw);;كل الملفات (*)
 about_content,"لوفس (lufus) هو برنامج مصنوع بلغة بايثون لنظام تشغيل لينيكس.
 مستوحى من برنامج روفس (rufus) الأصلي لنظام تشغيل ويندوز.
-الإصدار: 1.0.0b1
 GitHub: github.com/hog185/lufus"
 about_subtitle,أداة USB Flash
 btn_close,إغلاق

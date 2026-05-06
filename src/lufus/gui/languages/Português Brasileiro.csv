@@ -90,7 +90,6 @@ dlg_select_image_title,Selecionar imagem de disco
 dlg_select_image_filter,Imagems ISO (*.iso);;Todos os arquivos (*)
 about_content,"O Lufus é um gravador de imagem escrito em python para o Linux.
 É inspirado no Rufus para o Windows.
-Version: v1.0.0b1
 GitHub: github.com/hog185/lufus"
 about_subtitle,Ferramenta de Flash USB
 btn_close,Fechar
