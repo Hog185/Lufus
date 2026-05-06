@@ -43,6 +43,7 @@ from PyQt6.QtCore import (
 from PyQt6.QtGui import QIcon
 
 from lufus import state
+from lufus import state as states
 from lufus.drives.autodetect_usb import UsbMonitor
 from lufus.lufus_logging import get_logger
 from lufus.gui.themes.icon_utils import svg_icon
@@ -50,8 +51,9 @@ from lufus.gui.constants import THEME_DIR, ASSETS_DIR, ICONS
 from lufus.gui.scale import Scale
 from lufus.gui.i18n import load_translations
 from lufus.gui.redirector import StdoutRedirector
-from lufus.gui.dialogs import LogWindow, AboutWindow, SettingsDialog
+from lufus.gui.dialogs import LogWindow, AboutWindow, SettingsDialog, WinTweaks
 from lufus.gui.workers import FlashWorker, VerifyWorker
+from lufus.writing.windows.tweaks import *
 
 # log level mapping for colors and methods
 _LOG_LEVELS = {
@@ -603,7 +605,19 @@ class LufusWindow(QMainWindow):
         # filesystem cluster and flash option selectors :D
         self.lbl_fs = QLabel(self._T.get("lbl_file_system", "File System"))
         self.combo_fs = QComboBox()
-        self.all_fs_options = ["NTFS", "FAT32", "exFAT", "ext4", "UDF", "HFS+", "ext2", "ext3", "Btrfs", "XFS", "ZFS"]
+        self.all_fs_options = [
+            "NTFS",
+            "FAT32",
+            "exFAT",
+            "ext4",
+            "UDF",
+            "HFS+",
+            "ext2",
+            "ext3",
+            "Btrfs",
+            "XFS",
+            "ZFS",
+        ]
         self.combo_fs.addItems(["NTFS", "FAT32", "exFAT"])
         self.combo_fs.currentTextChanged.connect(self.updateFS)
 
@@ -823,7 +837,10 @@ class LufusWindow(QMainWindow):
         except Exception as e:
             # handle scan errors :3
             self.statusBar.showMessage(self._T.get("status_scan_failed", "Scan Failed"), 3000)
-            self.log_message(f"USB scan raised exception: {type(e).__name__}: {str(e)}", level="ERROR")
+            self.log_message(
+                f"USB scan raised exception: {type(e).__name__}: {str(e)}",
+                level="ERROR",
+            )
             QMessageBox.critical(
                 self,
                 self._T.get("msgbox_scan_error_title", "Scan Error"),
@@ -1086,7 +1103,10 @@ class LufusWindow(QMainWindow):
             self,
             self._T.get("dlg_select_image_title", "Select Image"),
             "",
-            self._T.get("dlg_select_image_filter", "Disk Images (*.iso *.dmg *.img *.bin *.raw);;All Files (*)"),
+            self._T.get(
+                "dlg_select_image_filter",
+                "Disk Images (*.iso *.dmg *.img *.bin *.raw);;All Files (*)",
+            ),
         )
         if file_name:
             # load selected image file :3
@@ -1165,7 +1185,10 @@ class LufusWindow(QMainWindow):
         if self.about_window:
             self.about_window.close()
         self.about_window = AboutWindow(self)
-        content = self._T.get("about_content", "Lufus - USB Flash Tool\n\nA simple, open-source USB flashing utility.")
+        content = self._T.get(
+            "about_content",
+            "Lufus - USB Flash Tool\n\nA simple, open-source USB flashing utility.",
+        )
         flat = getattr(self, "_flat_theme", {})
         font_family = flat.get("fonts_family", "")
         fg_color = flat.get("colors_fg", "")
@@ -1398,7 +1421,10 @@ class LufusWindow(QMainWindow):
                 QMessageBox.warning(
                     self,
                     self._T.get("msgbox_invalid_hash_title", "Invalid Hash"),
-                    self._T.get("msgbox_invalid_hash_body", "The provided SHA256 hash is invalid."),
+                    self._T.get(
+                        "msgbox_invalid_hash_body",
+                        "The provided SHA256 hash is invalid.",
+                    ),
                 )
                 return
 
@@ -1419,6 +1445,10 @@ class LufusWindow(QMainWindow):
             self.verify_worker.start()
         else:
             # skip verification and start flash :3
+            if states.image_option == 0 and states.currentflash == 0:
+                dlg = WinTweaks(self)
+                if dlg.exec() == QDialog.DialogCode.Rejected:
+                    return
             self.perform_flash()
 
     def on_verify_finished(self, success: bool):
@@ -1426,6 +1456,14 @@ class LufusWindow(QMainWindow):
         if success:
             self.log_message("SHA256 verification successful, proceeding to flash")
             self._clear_speed_eta()
+            if states.image_option == 0 and states.currentflash == 0:
+                dlg = WinTweaks(self)
+                if dlg.exec() == QDialog.DialogCode.Rejected:
+                    self.btn_start.setEnabled(True)
+                    self.btn_cancel.setEnabled(False)
+                    self.progress_bar.setValue(0)
+                    self.progress_bar.setFormat("")
+                    return
             self.perform_flash()
         else:
             # verification failed  (╯°□°)╯( ┻━┻
@@ -1474,6 +1512,7 @@ class LufusWindow(QMainWindow):
         self.flash_worker.progress.connect(self._on_progress, Qt.ConnectionType.QueuedConnection)
         self.flash_worker.status.connect(self._on_flash_status, Qt.ConnectionType.QueuedConnection)
         self.flash_worker.flash_done.connect(self.on_flash_finished, Qt.ConnectionType.QueuedConnection)
+        self.flash_worker.request_tweaks.connect(self.show_tweak_dialog, Qt.ConnectionType.QueuedConnection)
         self.flash_worker.start()
         self.btn_start.setEnabled(False)
         self.btn_cancel.setEnabled(True)
@@ -1513,6 +1552,7 @@ class LufusWindow(QMainWindow):
         self.flash_worker.progress.connect(self._on_progress, Qt.ConnectionType.QueuedConnection)
         self.flash_worker.status.connect(self._on_flash_status, Qt.ConnectionType.QueuedConnection)
         self.flash_worker.flash_done.connect(self.on_flash_finished, Qt.ConnectionType.QueuedConnection)
+        self.flash_worker.request_tweaks.connect(self.show_tweak_dialog, Qt.ConnectionType.QueuedConnection)
         self.flash_worker.start()
         self.btn_start.setEnabled(False)
         self.btn_cancel.setEnabled(True)
@@ -1536,7 +1576,18 @@ class LufusWindow(QMainWindow):
             # flash succeeded :D
             self.progress_bar.setValue(100)
             self.progress_bar.setFormat(self._T.get("progress_complete", "Complete"))
+            # change from fo to tweaks
             self.log_message("Flash operation finished with result: SUCCESS")
+            if states.image_option == 0 and states.currentflash == 0:
+                if getattr(states, "win_hardware_bypass", 0) == 1:
+                    win_hardware_bypass()
+                if getattr(states, "win_microsoft_acc", 0) == 1:
+                    if getattr(states, "win_local_acc_chk", 0) == 1:
+                        win_local_acc_name()
+                    else:
+                        win_local_acc()
+                if getattr(states, "win_privacy", 0) == 1:
+                    win_skip_privacy_questions()
             QMessageBox.information(
                 self,
                 self._T.get("msgbox_success_title", "Success"),
@@ -1625,7 +1676,8 @@ class LufusWindow(QMainWindow):
         self.combo_image_option.setAccessibleName(self._T.get("acc_image_option", "Image option selector"))
         self.combo_image_option.setAccessibleDescription(
             self._T.get(
-                "acc_image_option_desc", "Choose the type of image to write: Windows, Linux, Other, or Format Only"
+                "acc_image_option_desc",
+                "Choose the type of image to write: Windows, Linux, Other, or Format Only",
             )
         )
         self.input_label.setAccessibleName(self._T.get("acc_volume_label", "Volume label input"))
@@ -1642,7 +1694,10 @@ class LufusWindow(QMainWindow):
         self.chk_verify.setAccessibleName(self._T.get("acc_verify_hash", "Verify SHA256 checksum checkbox"))
         self.input_hash.setAccessibleName(self._T.get("acc_hash_input", "Expected SHA256 hash input"))
         self.input_hash.setAccessibleDescription(
-            self._T.get("acc_hash_input_desc", "Paste the expected 64-character SHA256 hash here")
+            self._T.get(
+                "acc_hash_input_desc",
+                "Paste the expected 64-character SHA256 hash here",
+            )
         )
         self.progress_bar.setAccessibleName(self._T.get("acc_progress", "Operation progress bar"))
         self.btn_start.setAccessibleName(self._T.get("acc_start", "Start operation"))
@@ -1695,20 +1750,35 @@ class LufusWindow(QMainWindow):
                 data = json.loads(req.read().decode())
                 tag_name = data.get("tag_name", "")
                 if not tag_name:
-                    self.log_message("Update check: missing tag_name in API response", level="WARNING")
+                    self.log_message(
+                        "Update check: missing tag_name in API response",
+                        level="WARNING",
+                    )
                     return
                 try:
                     is_newer = version.parse(tag_name) > version.parse(current_version)
                 except Exception:
-                    self.log_message(f"Update check: could not parse version tag {tag_name!r}", level="WARNING")
+                    self.log_message(
+                        f"Update check: could not parse version tag {tag_name!r}",
+                        level="WARNING",
+                    )
                     return
                 if is_newer:
-                    self.log_message(f"New version found: {tag_name} > {current_version}", level="DEBUG")
+                    self.log_message(
+                        f"New version found: {tag_name} > {current_version}",
+                        level="DEBUG",
+                    )
                 else:
-                    self.log_message(f"Running latest release build: {tag_name} <= {current_version}", level="INFO")
+                    self.log_message(
+                        f"Running latest release build: {tag_name} <= {current_version}",
+                        level="INFO",
+                    )
                     return
             else:
-                self.log_message(f"Couldn't get latest release, response: {req.status}", level="WARNING")
+                self.log_message(
+                    f"Couldn't get latest release, response: {req.status}",
+                    level="WARNING",
+                )
                 return
         except Exception as e:
             self.log_message(f"Update check failed: {e}", level="ERROR")
@@ -1728,6 +1798,11 @@ class LufusWindow(QMainWindow):
             webbrowser.open("https://github.com/Hog185/Lufus/releases")
         else:
             self.log_message(f"download later button clicked", level="DEBUG")
+
+    # for win twaks
+    def show_tweak_dialog(self):
+        dialog = WinTweaks(self)
+        dialog.exec()
 
 
 if __name__ == "__main__":

@@ -90,7 +90,6 @@ dlg_select_image_title,Выберите образ для записи
 dlg_select_image_filter,Образы дисков (*.iso *.dmg *.img *.bin *.raw);;Все файлы (*)
 about_content,"Lufus - это программа для записи образов дисков, написанная на языке Python для Linux.
 Вдохновлено оригинальным инструментом Rufus для Windows.
-Версия: v1.0.0b1
 GitHub: github.com/hog185/lufus"
 about_subtitle,Инструмент для записи USB
 btn_close,Закрыть

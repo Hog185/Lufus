@@ -235,7 +235,11 @@ def check_device_bad_blocks() -> bool:
                 probe.returncode,
             )
     except Exception as exc:
-        log.warning("Could not probe sector size for %s: %s. Using default block size.", drive, exc)
+        log.warning(
+            "Could not probe sector size for %s: %s. Using default block size.",
+            drive,
+            exc,
+        )
 
     # -s = show progress, -v = verbose output
     # -n = non-destructive read-write test (safe default)
@@ -316,10 +320,30 @@ def disk_format(status_cb=None) -> bool:
             "NTFS",
             "ntfs-3g",
         ),
-        1: ("mkfs.vfat", lambda: ["-I", "-s", str(sectors_per_cluster), "-F", "32", raw_device], "FAT32", "dosfstools"),
-        2: ("mkfs.exfat", lambda: ["-b", str(block_size), raw_device], "exFAT", "exfatprogs or exfat-utils"),
-        3: ("mkfs.ext4", lambda: ["-b", str(block_size), raw_device], "ext4", "e2fsprogs"),
-        4: ("mkudffs", lambda: ["--blocksize=" + str(sector_size), raw_device], "UDF", "udftools"),
+        1: (
+            "mkfs.vfat",
+            lambda: ["-I", "-s", str(sectors_per_cluster), "-F", "32", raw_device],
+            "FAT32",
+            "dosfstools",
+        ),
+        2: (
+            "mkfs.exfat",
+            lambda: ["-b", str(block_size), raw_device],
+            "exFAT",
+            "exfatprogs or exfat-utils",
+        ),
+        3: (
+            "mkfs.ext4",
+            lambda: ["-b", str(block_size), raw_device],
+            "ext4",
+            "e2fsprogs",
+        ),
+        4: (
+            "mkudffs",
+            lambda: ["--blocksize=" + str(sector_size), raw_device],
+            "UDF",
+            "udftools",
+        ),
     }
 
     if fs_type not in fs_configs:
@@ -367,14 +391,30 @@ def _apply_partition_scheme(drive: str) -> None:
             # GPT — used for UEFI targets
             subprocess.run([_find_tool("parted"), "-s", raw_device, "mklabel", "gpt"], check=True)
             subprocess.run(
-                [_find_tool("parted"), "-s", raw_device, "mkpart", "primary", "1MiB", "100%"],
+                [
+                    _find_tool("parted"),
+                    "-s",
+                    raw_device,
+                    "mkpart",
+                    "primary",
+                    "1MiB",
+                    "100%",
+                ],
                 check=True,
             )
         else:
             # MBR — used for BIOS/legacy targets
             subprocess.run([_find_tool("parted"), "-s", raw_device, "mklabel", "msdos"], check=True)
             subprocess.run(
-                [_find_tool("parted"), "-s", raw_device, "mkpart", "primary", "1MiB", "100%"],
+                [
+                    _find_tool("parted"),
+                    "-s",
+                    raw_device,
+                    "mkpart",
+                    "primary",
+                    "1MiB",
+                    "100%",
+                ],
                 check=True,
             )
         log.info("Partition scheme %s applied to %s.", scheme_name, raw_device)
@@ -388,6 +428,11 @@ def _apply_partition_scheme(drive: str) -> None:
 
 
 def drive_repair() -> None:
+    # todo:
+    # add smartctl check if possible
+    # use fsck to prevent deletion of files for repair
+    # use testdisk for partition recovery if possible
+    # do dd if=/dev/zero of=/dev/sdX bs=1M count=10 conv=notrunc before sfdisk use
     _, drive, _ = _get_mount_and_drive()
     if not drive:
         log.error("No drive node found. Cannot repair.")

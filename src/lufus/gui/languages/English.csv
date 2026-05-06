@@ -90,7 +90,6 @@ dlg_select_image_title,Select Disk Image
 dlg_select_image_filter,Disk Images (*.iso *.dmg *.img *.bin *.raw);;All Files (*)
 about_content,"Lufus is a disk image writer written in Python for Linux.
 Inspired by the original Rufus tool for Windows.
-Version: v1.0.0b1
 GitHub: github.com/hog185/lufus"
 about_subtitle,USB Flash Tool
 btn_close,Close

@@ -22,11 +22,19 @@ def elevate_privileges() -> None:
             import logging
 
             logging.getLogger("lufus").warning(
-                "elevate_privileges: rejected suspicious LUFUS_THEME value %r", theme_val
+                "elevate_privileges: rejected suspicious LUFUS_THEME value %r",
+                theme_val,
             )
 
     # Preserve DISPLAY and XAUTHORITY for GUI apps under pkexec/sudo
-    env_vars = ["DISPLAY", "XAUTHORITY", "XDG_RUNTIME_DIR", "WAYLAND_DISPLAY", "PYTHONPATH", "LUFUS_THEME"]
+    env_vars = [
+        "DISPLAY",
+        "XAUTHORITY",
+        "XDG_RUNTIME_DIR",
+        "WAYLAND_DISPLAY",
+        "PYTHONPATH",
+        "LUFUS_THEME",
+    ]
 
     cmd = ["pkexec", "env"]
     for var in env_vars:
