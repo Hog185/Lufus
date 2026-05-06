@@ -1,3 +1,4 @@
+# Not tested, at least by me, I don't remember when that was added, and never used it nor really know what it's supposed to do.
 """Windows installation customization functions.
 
 These modify Windows installation media (boot.wim, autounattend.xml)
