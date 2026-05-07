@@ -1,6 +1,6 @@
 import psutil
 import os
-import subprocess
+import pyudev
 import getpass
 from lufus import state
 from lufus.lufus_logging import get_logger
@@ -43,6 +43,7 @@ def find_usb() -> dict[str, str]:
     dir_set = set(all_directories)
 
     # Check each partition to see if it matches our potential mount points
+    context = pyudev.Context()
     for part in psutil.disk_partitions(all=True):
         if part.mountpoint not in dir_set:
             continue
@@ -53,12 +54,11 @@ def find_usb() -> dict[str, str]:
 
         label = None
         try:
-            label = subprocess.check_output(
-                ["lsblk", "-d", "-n", "-o", "LABEL", device_node],
-                text=True,
-                timeout=5,
-            ).strip()
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            # Using os.stat to get device number as per requirements
+            st = os.stat(device_node)
+            device = pyudev.Devices.from_device_number(context, "block", st.st_rdev)
+            label = device.get("ID_FS_LABEL")
+        except Exception:
             pass
 
         if not label:
