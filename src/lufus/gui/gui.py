@@ -1211,7 +1211,9 @@ class LufusWindow(QMainWindow):
         """Automatically detect ISO type and update UI selectors."""
         from lufus.writing.windows.detect import detect_iso_type, IsoType
 
-        if not iso_path.lower().endswith(".iso"):
+        # Support various disk image formats, not just .iso
+        valid_extensions = (".iso", ".img", ".dmg", ".bin", ".raw")
+        if not iso_path.lower().endswith(valid_extensions):
             return
 
         self.log_message(f"Detecting ISO type for: {iso_path}...")

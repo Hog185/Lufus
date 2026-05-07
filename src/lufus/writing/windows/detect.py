@@ -210,22 +210,27 @@ _LINUX_LABEL_RE = re.compile(
 #
 _LINUX_FILE_MARKERS = [
     # ---- SysLinux / ISOLINUX (Linux-only bootloaders) ----
+    "isolinux/isolinux.bin",
     "isolinux/isolinux.cfg",
+    "syslinux/syslinux.bin",
     "syslinux/syslinux.cfg",
     "syslinux/ldlinux.c32",
     # ---- GRUB config files — Linux-only for optical/USB media ----
     # Windows uses BCD / bootmgr; it never ships grub.cfg on install media.
     "boot/grub/grub.cfg",
-    "boot/grub/i386-pc/",
+    "boot/grub/i386-pc",
     "grub/grub.cfg",
+    "boot/grub/x86_64-efi",
     # ---- Ubuntu / Kubuntu / Xubuntu / Mint (Casper live system) ----
     "casper/filesystem.squashfs",
     "casper/filesystem.manifest",
     "casper/vmlinuz",
+    "casper/initrd",
     # ---- Debian / Kali / Tails / Parrot (live-boot) ----
     "live/filesystem.squashfs",
     "live/filesystem.manifest",
     "live/vmlinuz",
+    "live/initrd.img",
     # ---- Ubuntu / Debian installer marker ----
     ".disk/info",
     # ---- Arch Linux (specific sub-paths, not the broad "arch/" directory) ----
@@ -233,10 +238,8 @@ _LINUX_FILE_MARKERS = [
     "arch/boot/x86_64/vmlinuz-linux",
     # ---- Fedora / RHEL / CentOS installer (Anaconda) ----
     "images/pxeboot/vmlinuz",
+    "images/pxeboot/initrd.img",
     ".discinfo",
-    # ---- Generic kernel presence under known Linux-only directories ----
-    "boot/vmlinuz",
-    "boot/bzimage",
 ]
 
 
@@ -290,11 +293,12 @@ def detect_iso_type(iso_path: str) -> IsoType:
             log.info("ISO detection: found Windows marker %r -> Windows", marker)
             return IsoType.WINDOWS
 
-    # Linux markers second — all verified non-overlapping with Windows
-    for marker in _LINUX_FILE_MARKERS:
-        if marker in listing:
-            log.info("ISO detection: found Linux marker %r -> Linux", marker)
-            return IsoType.LINUX
+    # Linux markers second — count matches to be more conservative
+    # Require at least 2 markers to avoid false positives from generic bootloader files
+    linux_marker_count = sum(1 for marker in _LINUX_FILE_MARKERS if marker in listing)
+    if linux_marker_count >= 2:
+        log.info("ISO detection: found %d Linux markers -> Linux", linux_marker_count)
+        return IsoType.LINUX
 
     log.info("ISO detection: no definitive markers found -> Other")
     return IsoType.OTHER
