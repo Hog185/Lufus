@@ -42,12 +42,14 @@ def test_find_usb_returns_mount_to_label_mapping(monkeypatch) -> None:
 
     # Mock os.stat safely
     os_stat_orig = os.stat
+
     def mock_os_stat(p):
         if str(p).startswith("/dev/"):
             mock_stat = MagicMock()
             mock_stat.st_rdev = 1234
             return mock_stat
         return os_stat_orig(p)
+
     monkeypatch.setattr(find_usb_module.os, "stat", mock_os_stat)
 
     # Mock pyudev
@@ -90,18 +92,22 @@ def test_find_usb_falls_back_to_dir_name_when_pyudev_fails(monkeypatch) -> None:
 
     # Mock os.stat safely
     os_stat_orig = os.stat
+
     def mock_os_stat(p):
         if str(p).startswith("/dev/"):
             mock_stat = MagicMock()
             mock_stat.st_rdev = 5678
             return mock_stat
         return os_stat_orig(p)
+
     monkeypatch.setattr(find_usb_module.os, "stat", mock_os_stat)
 
     # Mock pyudev to fail
     mock_context = MagicMock()
     monkeypatch.setattr(find_usb_module.pyudev, "Context", lambda: mock_context)
-    monkeypatch.setattr(find_usb_module.pyudev.Devices, "from_device_number", MagicMock(side_effect=Exception("udev fail")))
+    monkeypatch.setattr(
+        find_usb_module.pyudev.Devices, "from_device_number", MagicMock(side_effect=Exception("udev fail"))
+    )
 
     result = find_usb_module.find_usb()
     assert result == {mount_path: "NO_LABEL"}

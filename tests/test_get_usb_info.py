@@ -34,12 +34,14 @@ def test_get_usb_info_returns_expected_dictionary(monkeypatch) -> None:
 
     # Mock os.stat safely
     os_stat_orig = get_usb_info_module.os.stat
+
     def mock_os_stat(p):
         if str(p).startswith("/dev/"):
             mock_stat = MagicMock()
             mock_stat.st_rdev = 1234
             return mock_stat
         return os_stat_orig(p)
+
     monkeypatch.setattr(get_usb_info_module.os, "stat", mock_os_stat)
 
     # Mock pyudev
@@ -70,12 +72,14 @@ def test_get_usb_info_uses_mount_basename_when_label_is_empty(monkeypatch) -> No
 
     # Mock os.stat safely
     os_stat_orig = get_usb_info_module.os.stat
+
     def mock_os_stat(p):
         if str(p).startswith("/dev/"):
             mock_stat = MagicMock()
             mock_stat.st_rdev = 5678
             return mock_stat
         return os_stat_orig(p)
+
     monkeypatch.setattr(get_usb_info_module.os, "stat", mock_os_stat)
 
     # Mock pyudev
@@ -102,10 +106,12 @@ def test_get_usb_info_returns_empty_when_pyudev_fails(monkeypatch) -> None:
 
     # Mock os.stat safely
     os_stat_orig = get_usb_info_module.os.stat
+
     def mock_os_stat(p):
         if str(p).startswith("/dev/"):
             raise Exception("stat fail")
         return os_stat_orig(p)
+
     monkeypatch.setattr(get_usb_info_module.os, "stat", mock_os_stat)
 
     # This should return None because of the catch-all Exception in get_usb_info

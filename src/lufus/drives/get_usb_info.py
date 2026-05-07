@@ -29,11 +29,11 @@ def get_usb_info(usb_path: str) -> USBDeviceInfo | None:
         # Using os.stat to get device number as per requirements
         st = os.stat(device_node)
         device = pyudev.Devices.from_device_number(context, "block", st.st_rdev)
-        
+
         # Size in bytes: udev attributes 'size' is in 512-byte sectors
         size_attr = device.attributes.get("size")
         usb_size = int(size_attr) * 512 if size_attr else 0
-        
+
         label = device.get("ID_FS_LABEL")
 
         if usb_size > 32 * 1024**3:

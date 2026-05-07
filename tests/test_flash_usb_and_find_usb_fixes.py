@@ -314,13 +314,16 @@ class TestFindUsbHappyPath:
 
         import os as real_os
         from unittest.mock import MagicMock
+
         os_stat_orig = find_usb_module.os.stat
+
         def mock_os_stat(p):
             if str(p).startswith("/dev/"):
                 m = MagicMock()
                 m.st_rdev = 1234
                 return m
             return os_stat_orig(p)
+
         monkeypatch.setattr(find_usb_module.os, "stat", mock_os_stat)
 
         mock_context = MagicMock()

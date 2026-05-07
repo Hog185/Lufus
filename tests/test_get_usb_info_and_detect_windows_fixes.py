@@ -24,12 +24,14 @@ def _fake_partitions(mount, device):
 def _mock_os_stat_and_pyudev(monkeypatch, size="1000000000", label="MY_USB"):
     # Mock os.stat safely
     os_stat_orig = gui_module.os.stat
+
     def mock_os_stat(p):
         if str(p).startswith("/dev/"):
             m = MagicMock()
             m.st_rdev = 1234
             return m
         return os_stat_orig(p)
+
     monkeypatch.setattr(gui_module.os, "stat", mock_os_stat)
 
     # Mock pyudev
