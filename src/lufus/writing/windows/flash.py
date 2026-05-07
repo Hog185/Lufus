@@ -71,12 +71,12 @@ def _fix_efi_bootloader(efi_mount):
 
     log.info("EFI bootloader fix: BOOTX64.EFI not found, will attempt to create at %s", boot_dir)
     bootx64 = os.path.join(boot_dir, "BOOTX64.EFI")
-    run_cmd(["sudo", "mkdir", "-p", boot_dir])
+    os.makedirs(boot_dir, exist_ok=True)
     log.info("EFI bootloader fix: created directory %s", boot_dir)
 
     src = _find_path_case_insensitive(efi_mount, "EFI", "Microsoft", "Boot", "bootmgfw.efi")
     if src:
-        run_cmd(["sudo", "cp", src, bootx64])
+        shutil.copy2(src, bootx64)
         log.info("EFI bootloader fix: copied %s -> %s", src, bootx64)
         return
 
@@ -155,7 +155,7 @@ def _copy_tree_with_progress(
 def _find_ntfs_tool(status_cb=None) -> str | None:
     """Find mkfs.ntfs/mkntfs, installing ntfs-3g if needed. Returns command name or None."""
     for candidate in ["mkfs.ntfs", "mkntfs"]:
-        if subprocess.run(["which", candidate], capture_output=True).returncode == 0:
+        if shutil.which(candidate):
             return candidate
 
     if status_cb:
@@ -167,13 +167,13 @@ def _find_ntfs_tool(status_cb=None) -> str | None:
         ["zypper", "install", "-y", "ntfs-3g"],
     ]
     for pm_cmd in pkg_managers:
-        if subprocess.run(["which", pm_cmd[0]], capture_output=True).returncode == 0:
+        if shutil.which(pm_cmd[0]):
             run_cmd(["sudo"] + pm_cmd)
             break  # stop after the first working package manager
 
     # Re-check after installation attempt
     for candidate in ["mkfs.ntfs", "mkntfs"]:
-        if subprocess.run(["which", candidate], capture_output=True).returncode == 0:
+        if shutil.which(candidate):
             return candidate  # installation succeeded
 
     return None
@@ -181,7 +181,7 @@ def _find_ntfs_tool(status_cb=None) -> str | None:
 
 def _ensure_wimlib(status_cb=None) -> None:
     """Install wimlib-imagex if not present. Raises FileNotFoundError if it can't be found after install."""
-    if subprocess.run(["which", "wimlib-imagex"], capture_output=True).returncode == 0:
+    if shutil.which("wimlib-imagex"):
         return
     if status_cb:
         status_cb("wimlib-imagex not found, attempting to install...")
@@ -192,10 +192,10 @@ def _ensure_wimlib(status_cb=None) -> None:
         ["zypper", "install", "-y", "wimtools"],
     ]
     for pm_cmd in pkg_managers:
-        if subprocess.run(["which", pm_cmd[0]], capture_output=True).returncode == 0:
+        if shutil.which(pm_cmd[0]):
             run_cmd(["sudo"] + pm_cmd)
             break
-    if subprocess.run(["which", "wimlib-imagex"], capture_output=True).returncode != 0:
+    if not shutil.which("wimlib-imagex"):
         raise FileNotFoundError(
             "wimlib-imagex not found. Install manually: sudo pacman -S wimlib  /  sudo apt install wimtools"
         )
@@ -271,20 +271,34 @@ def _copy_efi_boot_files(iso_mount, mount_efi, _status):
     if efi_src:
         efi_items = os.listdir(efi_src)
         _status(f"Found EFI/ with {len(efi_items)} items: {efi_items}")
-        run_cmd(["sudo", "cp", "-r"] + [os.path.join(efi_src, i) for i in efi_items] + [mount_efi])
+        for item in efi_items:
+            src_path = os.path.join(efi_src, item)
+            dst_path = os.path.join(mount_efi, "EFI", item)
+            if os.path.isdir(src_path):
+                shutil.copytree(src_path, dst_path, dirs_exist_ok=True)
+            else:
+                os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+                shutil.copy2(src_path, dst_path)
         _status("Copied EFI/ tree to EFI partition")
     else:
         _status("WARNING: No EFI directory found in ISO - drive may not be UEFI bootable")
 
     boot_src = _find_path_case_insensitive(iso_mount, "boot")
     if boot_src:
-        run_cmd(["sudo", "cp", "-r"] + [os.path.join(boot_src, i) for i in os.listdir(boot_src)] + [mount_efi])
+        for item in os.listdir(boot_src):
+            src_path = os.path.join(boot_src, item)
+            dst_path = os.path.join(mount_efi, "boot", item)
+            if os.path.isdir(src_path):
+                shutil.copytree(src_path, dst_path, dirs_exist_ok=True)
+            else:
+                os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+                shutil.copy2(src_path, dst_path)
         _status("Copied boot/ tree to EFI partition")
 
     for fname in ["bootmgr", "bootmgr.efi"]:
         src = _find_path_case_insensitive(iso_mount, fname)
         if src:
-            run_cmd(["sudo", "cp", src, f"{mount_efi}/{fname}"])
+            shutil.copy2(src, os.path.join(mount_efi, fname))
             _status(f"Copied {fname} to EFI partition root")
 
     _fix_efi_bootloader(mount_efi)
@@ -412,7 +426,7 @@ def flash_windows(device: str, iso: str, scheme: PartitionScheme, progress_cb=No
 
                 # Step 7: Sync
                 _status("Syncing all writes to disk...")
-                run_cmd(["sudo", "sync"])
+                os.sync()
                 _emit(97)
                 _status("Sync complete")
 

@@ -285,9 +285,10 @@ class TestFindDNGuardsEmptyDevice:
 
 
 class TestFindUsbHappyPath:
-    def test_find_usb_returns_label_from_lsblk(self, monkeypatch):
+    def test_find_usb_returns_label_from_udev(self, monkeypatch):
         user = "testuser"
         mount_path = f"/media/{user}/MY_USB"
+        device_node = "/dev/sdb1"
 
         monkeypatch.setattr(find_usb_module.getpass, "getuser", lambda: user)
         monkeypatch.setattr(
@@ -308,13 +309,25 @@ class TestFindUsbHappyPath:
         monkeypatch.setattr(
             find_usb_module.psutil,
             "disk_partitions",
-            lambda *args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device="/dev/sdb1")],
+            lambda *args, **kwargs: [SimpleNamespace(mountpoint=mount_path, device=device_node)],
         )
-        monkeypatch.setattr(
-            find_usb_module.subprocess,
-            "check_output",
-            lambda *a, **kw: "MY_LABEL\n",
-        )
+
+        import os as real_os
+        from unittest.mock import MagicMock
+        os_stat_orig = find_usb_module.os.stat
+        def mock_os_stat(p):
+            if str(p).startswith("/dev/"):
+                m = MagicMock()
+                m.st_rdev = 1234
+                return m
+            return os_stat_orig(p)
+        monkeypatch.setattr(find_usb_module.os, "stat", mock_os_stat)
+
+        mock_context = MagicMock()
+        mock_device = MagicMock()
+        mock_device.get.return_value = "MY_LABEL"
+        monkeypatch.setattr(find_usb_module.pyudev, "Context", lambda: mock_context)
+        monkeypatch.setattr(find_usb_module.pyudev.Devices, "from_device_number", lambda ctx, type, num: mock_device)
 
         result = find_usb_module.find_usb()
         assert result == {mount_path: "MY_LABEL"}

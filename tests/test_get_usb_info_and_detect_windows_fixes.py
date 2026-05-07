@@ -13,19 +13,33 @@ import lufus.drives.get_usb_info as gui_module
 from lufus.drives.get_usb_info import get_usb_info
 import lufus.writing.windows.detect as dw_module
 from lufus.writing.windows.detect import _label_is_windows, _read_iso_label, is_windows_iso
+from unittest.mock import MagicMock
+import os as real_os
 
 
 def _fake_partitions(mount, device):
     return lambda all=False: [SimpleNamespace(mountpoint=mount, device=device)]
 
 
-def _fake_check_output(size="1000000000", label="MY_USB"):
-    def impl(cmd, **kwargs):
-        if "SIZE" in cmd:
-            return size + "\n"
-        return label + "\n"
+def _mock_os_stat_and_pyudev(monkeypatch, size="1000000000", label="MY_USB"):
+    # Mock os.stat safely
+    os_stat_orig = gui_module.os.stat
+    def mock_os_stat(p):
+        if str(p).startswith("/dev/"):
+            m = MagicMock()
+            m.st_rdev = 1234
+            return m
+        return os_stat_orig(p)
+    monkeypatch.setattr(gui_module.os, "stat", mock_os_stat)
 
-    return impl
+    # Mock pyudev
+    mock_context = MagicMock()
+    mock_device = MagicMock()
+    # size in 512-byte sectors
+    mock_device.attributes = {"size": str(int(size) // 512)}
+    mock_device.get.return_value = label
+    monkeypatch.setattr(gui_module.pyudev, "Context", lambda: mock_context)
+    monkeypatch.setattr(gui_module.pyudev.Devices, "from_device_number", lambda ctx, type, num: mock_device)
 
 
 class Testget_usb_infoNormalisedMountPath:
@@ -36,14 +50,14 @@ class Testget_usb_infoNormalisedMountPath:
 
     def test_trailing_slash_is_stripped(self, monkeypatch):
         monkeypatch.setattr(gui_module.psutil, "disk_partitions", _fake_partitions("/media/u/USB/", "/dev/sdb1"))
-        monkeypatch.setattr(gui_module.subprocess, "check_output", _fake_check_output())
+        _mock_os_stat_and_pyudev(monkeypatch)
         result = get_usb_info("/media/u/USB/")
         assert result["mount_path"] == "/media/u/USB"
 
     def test_normalised_path_matches_normpath(self, monkeypatch, tmp_path):
         mount = str(tmp_path)
         monkeypatch.setattr(gui_module.psutil, "disk_partitions", _fake_partitions(mount, "/dev/sdc1"))
-        monkeypatch.setattr(gui_module.subprocess, "check_output", _fake_check_output())
+        _mock_os_stat_and_pyudev(monkeypatch)
         result = get_usb_info(mount)
         import os
 
@@ -67,28 +81,6 @@ class Testget_usb_infoAllTrue:
         assert calls.get("all") is True
 
 
-class Testget_usb_infoTimeoutExpired:
-    """TimeoutExpired was previously swallowed by the broad Exception handler
-    with a generic message.  It must now be caught explicitly.
-    """
-
-    def test_returns_empty_dict_on_timeout(self, monkeypatch):
-        monkeypatch.setattr(gui_module.psutil, "disk_partitions", _fake_partitions("/media/u/USB", "/dev/sdb1"))
-
-        def raise_timeout(*args, **kwargs):
-            raise subprocess.TimeoutExpired(cmd="lsblk", timeout=5)
-
-        monkeypatch.setattr(gui_module.subprocess, "check_output", raise_timeout)
-        result = get_usb_info("/media/u/USB")
-        assert result is None
-
-    def test_timeout_handler_is_explicit(self):
-        import inspect
-
-        src = inspect.getsource(get_usb_info)
-        assert "TimeoutExpired" in src
-
-
 class Testget_usb_infoForElse:
     """When no partition matches the mount path, get_usb_info must return {}."""
 
@@ -100,7 +92,7 @@ class Testget_usb_infoForElse:
 
 class TestLabelIsWindowsDeadBranch:
     """'or label.startswith("WINDOWS")' was dead code — every "WINDOWS…"
-    string already starts with "WIN".  The redundant check must be gone.
+    string already starts with "WIN".  The redundant check must be gone. Idk why I don't like that, but eh, it works...
     """
 
     def test_windows_prefix_still_detected(self):
