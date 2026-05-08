@@ -438,7 +438,7 @@ def test_dskformat_calls_unexpected_for_unknown_fs(monkeypatch) -> None:
     def fake_unexpected():
         called["unexpected"] = True
 
-    monkeypatch.setattr(formatting, "unexpected", fake_unexpected)
+    monkeypatch.setattr("lufus.drives.formatting.unexpected", fake_unexpected)
     monkeypatch.setattr(formatting.subprocess, "run", lambda *args, **kwargs: None)
 
     formatting.dskformat()
