@@ -33,7 +33,8 @@ project_name = "Lufus"
 bundle = "com.github.hog185"
 version = "1.0.0"  # keep synced with [project] version
 url = "https://github.com/Hog185/Lufus"
-license.file = "LICENSE"
+license = "MIT"
+license-files = ["LICENSE"]
 author = "Hog185"
 author_email = "example@example.com"
 
