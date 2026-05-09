@@ -34,28 +34,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # UBUNTU SETUP
       - name: Install Build Dependencies (Ubuntu)
         if: matrix.container == ''
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential git python3-dev libfuse2 binutils debhelper devscripts
+          sudo apt-get install -y build-essential git python3-dev libfuse2 binutils debhelper devscripts \
+          dosfstools ntfs-3g exfatprogs e2fsprogs udftools btrfs-progs xfsprogs libgl1 libqt6dbus6 libqt6gui6
 
+      # FEDORA SETUP 
       - name: Install Build Dependencies (Fedora)
         if: matrix.container != ''
         run: |
-          dnf install -y python3-pip python3-devel gcc git rpm-build mesa-libGL libxcb
-          # Fix the Fedora packaging conflict
-          python3 -m pip install --upgrade pip
-
-      - name: Set up Python
-        if: matrix.container == ''
+          dnf install -y python3-pip python3-devel gcc git rpm-build mesa-libGL libxcb \
+          btrfs-progs dosfstools e2fsprogs exfatprogs hfsplus-tools ntfs-3g qt6-qtbase-gui udftools xfsprogs
+          
+      - name: Set up Python (AppImage only)
+        if: matrix.format == 'appimage'
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
       - name: Install Briefcase
         run: |
-          # Use --ignore-installed to bypass the RPM 'packaging' conflict in Fedora
+          python3 -m pip install --upgrade pip
           python3 -m pip install briefcase --ignore-installed
 
       - name: Build Package
