@@ -51,6 +51,16 @@ def _show_root_warning() -> None:
 def launch_gui_with_usb_data() -> None:
     elevation_attempted = False
     if os.geteuid() != 0:
+        # Capture user context (XDG_DOWNLOAD_DIR path) before pkexec elevation
+        from lufus.user_paths import get_best_starting_dir, ENV_DOWNLOAD_DIR
+
+        try:
+            detected_path = get_best_starting_dir()
+            os.environ[ENV_DOWNLOAD_DIR] = detected_path
+            log.info("Captured user starting directory: %s", detected_path)
+        except Exception as e:
+            log.warning("Could not capture user starting directory: %s", e)
+
         _load_initial_theme()
         elevation_attempted = True
         elevate_privileges()

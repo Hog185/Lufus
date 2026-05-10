@@ -1099,10 +1099,16 @@ class LufusWindow(QMainWindow):
 
     def browse_file(self):
         # open file dialog to select image :D
+        from lufus.user_paths import get_best_starting_dir
+        # ^ Uses the XDG_DOWNALOD_DIR that was detected and shoved into a variable
+
+        starting_dir = get_best_starting_dir()
+        self.log_message(f"Opening file browser at: {starting_dir}")
+
         file_name, _ = QFileDialog.getOpenFileName(
             self,
             self._T.get("dlg_select_image_title", "Select Image"),
-            "",
+            starting_dir,
             self._T.get(
                 "dlg_select_image_filter",
                 "Disk Images (*.iso *.dmg *.img *.bin *.raw);;All Files (*)",

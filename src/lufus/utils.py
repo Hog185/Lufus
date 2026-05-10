@@ -27,6 +27,7 @@ def elevate_privileges() -> None:
             )
 
     # Preserve DISPLAY and XAUTHORITY for GUI apps under pkexec/sudo
+    # Now also takes the detected XDG_DOWNLOAD_DIR of /src/lufus/user_paths.py to put it into LUFUS_DOWNLOAD_DIR
     env_vars = [
         "DISPLAY",
         "XAUTHORITY",
@@ -34,6 +35,7 @@ def elevate_privileges() -> None:
         "WAYLAND_DISPLAY",
         "PYTHONPATH",
         "LUFUS_THEME",
+        "LUFUS_DOWNLOAD_DIR",
     ]
 
     cmd = ["pkexec", "env"]
@@ -47,7 +49,7 @@ def elevate_privileges() -> None:
         subprocess.run(cmd, check=True)
         sys.exit(0)
     except subprocess.CalledProcessError:
-        # User likely cancelled or pkexec failed
+        # User likely cancelled or pkexec failed/isn't installed
         pass
     except Exception as e:
         print(f"Elevation failed: {e}")

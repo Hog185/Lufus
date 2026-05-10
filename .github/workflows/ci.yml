@@ -34,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install psutil pytest
+          pip install psutil platformdirs pytest
 
       - name: Install package (no-deps to avoid GUI reqs)
         run: pip install -e . --no-deps
